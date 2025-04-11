@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import Header from "../util/Header";
+import Footer from "../util/Footer";
 
 export const metadata: Metadata = {
   title: "Transpot marketplace",
@@ -16,8 +17,8 @@ export default function WebsiteLayout({
     <html lang="en">
       <body>
         <Header />
-        <h1>Tranport marketplace WEBSITE</h1>
         {children}
+        <Footer/>
       </body>
     </html>
   );

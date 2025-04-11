@@ -67,8 +67,8 @@ export interface User {
 }
 
 export const checkUser = async (obj: userDetails) => {
-  try {
-    const response = await fetch("http://localhost:8080/login", {
+    try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -85,7 +85,7 @@ export const checkUser = async (obj: userDetails) => {
 
 export const createUser = async (obj: User) => {
   try {
-    const response = await fetch("http://localhost:8080/Register", {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/Register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -103,7 +103,7 @@ export const createUser = async (obj: User) => {
 export const getUser = async (obj: string) => {
   try {
     const response = await fetch(
-      `http://localhost:8080/profile?userId=${obj}`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile?userId=${obj}`,
       {
         method: "GET",
         headers: {

@@ -1,3 +1,4 @@
+"use client"
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { Menu } from "lucide-react";
@@ -10,8 +11,8 @@ import {
 import { useRouter } from "next/navigation";
 
 const navigation = [
-  { name: "Post Load", href: "/Postload" },
-  { name: "Find Trucks", href: "/FindTrucks" },
+  { name: "Find Loads", href: "/findloads" },
+  { name: "Find Trucks", href: "/findtrucks" },
 ];
 
 const Header = () => {

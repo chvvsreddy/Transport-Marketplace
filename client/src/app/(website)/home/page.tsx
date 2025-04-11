@@ -2,6 +2,13 @@
 
 import Header from "@/app/util/Header";
 import Link from "next/link";
+import Lp2 from "./Lp2";
+import Lp3 from "./Lp3";
+import Lp4 from "./Lp4";
+import Lp5 from "./Lp5";
+import Lp6 from "./Lp6";
+import Footer from "@/app/util/Footer";
+
 
 const Home = () => {
   return (
@@ -32,6 +39,12 @@ const Home = () => {
             </div>
           </div>
         </div>
+        <Lp2/>
+        <Lp3/>
+        <Lp4/>
+        <Lp5/>
+        <Lp6/>
+        <Footer/>
       </div>
     </div>
   );
