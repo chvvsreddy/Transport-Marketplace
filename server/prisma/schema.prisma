@@ -1,0 +1,442 @@
+// schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User Types
+enum UserType {
+  SHIPPER_COMPANY // Companies posting bulk loads
+  INDIVIDUAL_SHIPPER // Individuals posting occasional loads
+  LOGISTICS_COMPANY // Companies with multiple trucks
+  INDIVIDUAL_DRIVER // Independent truck drivers
+  ADMIN
+}
+
+// User Management Module
+model Users {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  type         UserType
+  phone        String
+  isVerified   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relationships based on user type
+  companyDetails           CompanyDetails?
+  individualShipperDetails IndividualShipperDetails?
+  driverDetails            DriverDetails?
+
+  // Common relationships
+  ratingsReceived Ratings[] @relation("UserRatingsReceived")
+  ratingsGiven    Ratings[] @relation("UserRatingsGiven")
+  loads           Loads[]   @relation("ShipperLoads")
+  bids            Bid[]     @relation("CarrierBids")
+  vehicles        Vehicle[]
+  trips           Trips[]
+  orders          Order[]
+  //payments          Payment[]
+  isDeleted       Boolean   @default(false)
+  deletedAt       DateTime?
+}
+
+// Company Details (for Shipper Companies and Logistics Companies)
+model CompanyDetails {
+  id          String  @id @default(uuid())
+  user        Users   @relation(fields: [userId], references: [id])
+  userId      String  @unique
+  companyName String
+  legalName   String
+  address     String
+  city        String
+  state       String
+  country     String
+  postalCode  String
+  website     String?
+
+  // For Indian companies
+  cin       String? // Corporate Identification Number (for shipper companies)
+  gstNumber String? // GSTIN (for both shipper and logistics companies)
+  panNumber String? // Permanent Account Number
+
+  // Additional fields for logistics companies
+  fleetSize      Int? // Number of trucks owned/operated
+  operatingSince DateTime? // When the company started operations
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Individual Shipper Details (for individuals posting loads)
+model IndividualShipperDetails {
+  id         String @id @default(uuid())
+  user       Users  @relation(fields: [userId], references: [id])
+  userId     String @unique
+  address    String
+  city       String
+  state      String
+  country    String
+  postalCode String
+
+  // Identification for individual shippers
+  aadhaarNumber String? // For Indian individuals
+  panNumber     String? // Permanent Account Number
+
+  // Additional fields
+  isBusiness   Boolean @default(false) // Whether shipping for business purposes
+  businessName String? // If shipping for business
+  businessGST  String? // If has GST number
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Driver Details (for Individual Drivers)
+model DriverDetails {
+  id              String   @id @default(uuid())
+  user            Users    @relation(fields: [userId], references: [id])
+  userId          String   @unique
+  licenseNumber   String
+  licenseExpiry   DateTime
+  licenseFrontUrl String // URL to license front image
+  licenseBackUrl  String? // URL to license back image
+  insuranceNumber String
+  insuranceExpiry DateTime
+  insuranceDocUrl String // URL to insurance document
+
+  // Additional driver information
+  yearsOfExperience Int?
+  preferredRoutes   String[] // Preferred operating routes
+  hasOwnVehicle     Boolean  @default(false)
+
+  // Emergency contact
+  emergencyContactName  String
+  emergencyContactPhone String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Rating model
+model Ratings {
+  id          String   @id @default(uuid())
+  rating      Int
+  comment     String?
+  reviewer    Users    @relation("UserRatingsGiven", fields: [reviewerId], references: [id])
+  reviewerId  String
+  recipient   Users    @relation("UserRatingsReceived", fields: [recipientId], references: [id])
+  recipientId String
+  //trip              Trip?      @relation(fields: [tripId], references: [id])
+  tripId      String?
+  createdAt   DateTime @default(now())
+}
+
+// Load Management Module
+enum LoadStatus {
+  AVAILABLE
+  PENDING
+  ASSIGNED
+  IN_TRANSIT
+  DELIVERED
+  CANCELLED
+}
+
+model Location {
+  id         String @id @default(uuid())
+  address    String
+  lat        Float
+  lng        Float
+  city       String
+  state      String
+  country    String
+  postalCode String
+}
+
+model Loads {
+  id                  String     @id @default(uuid())
+  shipper             Users      @relation("ShipperLoads", fields: [shipperId], references: [id])
+  shipperId           String
+  origin              Json // { address: String, lat: Float, lng: Float }
+  destination         Json // { address: String, lat: Float, lng: Float }
+  weight              Float
+  dimensions          Json // { length: Float, width: Float, height: Float }
+  cargoType           String
+  specialRequirements String[]
+  status              LoadStatus @default(AVAILABLE)
+  price               Float
+  pickupWindowStart   DateTime
+  pickupWindowEnd     DateTime
+  deliveryWindowStart DateTime
+  deliveryWindowEnd   DateTime
+  isBulkLoad          Boolean    @default(false)
+  isFragile           Boolean    @default(false)
+  requiresColdStorage Boolean    @default(false)
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+
+  // Relationships
+  bids Bid[]
+
+  //trip              Trip?
+  //order             Order?
+  @@index([shipperId])
+  @@index([status])
+  @@index([pickupWindowStart])
+}
+
+// Bid model
+model Bid {
+  id        String    @id @default(uuid())
+  load      Loads     @relation(fields: [loadId], references: [id])
+  loadId    String
+  carrier   Users     @relation("CarrierBids", fields: [carrierId], references: [id])
+  carrierId String
+  price     Float
+  notes     String?
+  status    BidStatus @default(PENDING)
+
+  // Additional bid information
+  //proposedVehicle   Vehicle?   @relation(fields: [vehicleId], references: [id])
+  vehicleId         String?
+  estimatedDuration Float // in minutes
+  isCompanyBid      Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([loadId])
+  @@index([carrierId])
+  @@index([status])
+}
+
+enum BidStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+// Vehicle model
+model Vehicle {
+  id                 String  @id @default(uuid())
+  registrationNumber String  @unique
+  make               String
+  model              String
+  year               Int
+  capacity           Float // in kg
+  dimensions         Json // { length: Float, width: Float, height: Float }
+  vehicleType        String
+  isActive           Boolean @default(true)
+
+  // Ownership
+  owner   Users  @relation(fields: [ownerId], references: [id])
+  ownerId String
+
+  // Additional vehicle details
+  insuranceNumber   String
+  insuranceExpiry   DateTime
+  fitnessCertExpiry DateTime
+  permitType        String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  trips   Trips[]
+  devices Device[]
+}
+
+// Trip Management Module
+enum TripStatus {
+  SCHEDULED
+  IN_PROGRESS
+  DELAYED
+  COMPLETED
+  CANCELLED
+}
+
+model Trips {
+  id                String      @id @default(uuid())
+  //load              Load       @relation(fields: [loadId], references: [id])
+  loadId            String
+  driver            Users       @relation(fields: [driverId], references: [id])
+  driverId          String
+  vehicle           Vehicle     @relation(fields: [vehicleId], references: [id])
+  vehicleId         String
+  plannedRoute      Json // Route coordinates
+  actualRoute       Json? // Actual path taken
+  distance          Float // in km
+  estimatedDuration Float // in minutes
+  actualDuration    Float? // in minutes
+  startTime         DateTime?
+  endTime           DateTime?
+  status            TripStatus  @default(SCHEDULED)
+  events            TripEvent[]
+  documents         Document[]
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  //order             Order?
+  payments          Payment[]
+}
+
+// Trip Event model
+model TripEvent {
+  id          String    @id @default(uuid())
+  trip        Trips     @relation(fields: [tripId], references: [id])
+  tripId      String
+  type        EventType
+  location    Json? // { lat: Float, lng: Float, address: String }
+  timestamp   DateTime
+  description String?
+  metadata    Json? // Additional event-specific data
+}
+
+enum EventType {
+  DISPATCHED
+  PICKUP_STARTED
+  PICKUP_COMPLETED
+  DEPARTURE
+  ARRIVAL
+  DELAY
+  ROUTE_CHANGE
+  DELIVERY_STARTED
+  DELIVERY_COMPLETED
+  INCIDENT
+  GEOLOCATION_UPDATE
+}
+
+// Document model
+model Document {
+  id        String       @id @default(uuid())
+  trip      Trips        @relation(fields: [tripId], references: [id])
+  tripId    String
+  type      DocumentType
+  url       String
+  metadata  Json? // { signedBy: String, timestamp: DateTime, etc. }
+  createdAt DateTime     @default(now())
+}
+
+enum DocumentType {
+  BILL_OF_LADING
+  PROOF_OF_DELIVERY
+  INVOICE
+  DAMAGE_REPORT
+  OTHER
+}
+
+// Device model for IoT integration
+model Device {
+  id         String     @id @default(uuid())
+  vehicle    Vehicle?   @relation(fields: [vehicleId], references: [id])
+  vehicleId  String?
+  //driver            User?      @relation(fields: [driverId], references: [id])
+  driverId   String?
+  type       DeviceType
+  identifier String     @unique
+  lastSeen   DateTime?
+  metadata   Json? // Additional device-specific data
+}
+
+enum DeviceType {
+  GPS_TRACKER
+  TELEMATICS
+  MOBILE_APP
+}
+
+// Order Management Module
+enum OrderStatus {
+  CREATED
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model Order {
+  id            String         @id @default(uuid())
+  //load              Loads       @relation(fields: [loadId], references: [id])
+  loadId        String
+  //trip              Trip?      @relation(fields: [tripId], references: [id])
+  tripId        String?
+  //shipper           User       @relation(fields: [shipperId], references: [id])
+  shipperId     String
+  //carrier           Users       @relation(fields: [carrierId], references: [id])
+  carrierId     String
+  status        OrderStatus    @default(CREATED)
+  price         Float
+  notes         String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  payments      Payment[]
+  notifications Notification[]
+  Users         Users?         @relation(fields: [usersId], references: [id])
+  usersId       String?
+}
+
+// Payment, Billing & Settlement Module
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  CREDIT_CARD
+  BANK_TRANSFER
+  DIGITAL_WALLET
+  OTHER
+}
+
+model Payment {
+  id            String        @id @default(uuid())
+  order         Order?        @relation(fields: [orderId], references: [id])
+  orderId       String?
+  trip          Trips?        @relation(fields: [tripId], references: [id])
+  tripId        String?
+  amount        Float
+  currency      String        @default("USD")
+  status        PaymentStatus @default(PENDING)
+  method        PaymentMethod
+  transactionId String?
+  metadata      Json? // Payment gateway response, etc.
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+// Notification System
+model Notification {
+  id        String   @id @default(uuid())
+  order     Order?   @relation(fields: [orderId], references: [id])
+  orderId   String?
+  //user              User       @relation(fields: [userId], references: [id])
+  userId    String
+  type      String // e.g., "ORDER_CREATED", "TRIP_UPDATE", etc.
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+// Analytics
+model TripAnalytics {
+  id              String   @id @default(uuid())
+  //trip              Trip       @relation(fields: [tripId], references: [id])
+  tripId          String
+  distance        Float
+  duration        Float
+  fuelConsumption Float?
+  avgSpeed        Float?
+  idleTime        Float?
+  harshEvents     Int? // Harsh braking/acceleration
+  complianceScore Float?
+  deliveryOnTime  Boolean
+  createdAt       DateTime @default(now())
+}

@@ -1,0 +1,122 @@
+[
+      {
+        "id": 1,
+        "from": "Mumbai, MH",
+        "zipcode": "400001",
+        "to": "Delhi, DL",
+        "zip_code": "110001",
+        "equipment_type": "Container Truck",
+        "shipment_type": "Full Truckload",
+        "no_of_trucks": 2,
+        "est_pickup": "2025-03-20",
+        "est_delivery": "2025-03-22"
+      },
+      {
+        "id": 2,
+        "from": "Bangalore, KA",
+        "zipcode": "560001",
+        "to": "Hyderabad, TS",
+        "zip_code": "500001",
+        "equipment_type": "Refrigerated Truck",
+        "shipment_type": "Less than Truckload",
+        "no_of_trucks": 1,
+        "est_pickup": "2025-03-21",
+        "est_delivery": "2025-03-23"
+      },
+      {
+        "id": 3,
+        "from": "Chennai, TN",
+        "zipcode": "600001",
+        "to": "Kolkata, WB",
+        "zip_code": "700001",
+        "equipment_type": "Flatbed Truck",
+        "shipment_type": "Full Truckload",
+        "no_of_trucks": 3,
+        "est_pickup": "2025-03-22",
+        "est_delivery": "2025-03-24"
+      },
+      {
+        "id": 4,
+        "from": "Pune, MH",
+        "zipcode": "411001",
+        "to": "Ahmedabad, GJ",
+        "zip_code": "380001",
+        "equipment_type": "Container Truck",
+        "shipment_type": "Less than Truckload",
+        "no_of_trucks": 1,
+        "est_pickup": "2025-03-23",
+        "est_delivery": "2025-03-24"
+      },
+      {
+        "id": 5,
+        "from": "Jaipur, RJ",
+        "zipcode": "302001",
+        "to": "Lucknow, UP",
+        "zip_code": "226001",
+        "equipment_type": "Refrigerated Truck",
+        "shipment_type": "Full Truckload",
+        "no_of_trucks": 2,
+        "est_pickup": "2025-03-24",
+        "est_delivery": "2025-03-25"
+      },
+      {
+        "id": 6,
+        "from": "Indore, MP",
+        "zipcode": "452001",
+        "to": "Nagpur, MH",
+        "zip_code": "440001",
+        "equipment_type": "Flatbed Truck",
+        "shipment_type": "Less than Truckload",
+        "no_of_trucks": 1,
+        "est_pickup": "2025-03-25",
+        "est_delivery": "2025-03-26"
+      },
+      {
+        "id": 7,
+        "from": "Surat, GJ",
+        "zipcode": "395001",
+        "to": "Bhopal, MP",
+        "zip_code": "462001",
+        "equipment_type": "Container Truck",
+        "shipment_type": "Full Truckload",
+        "no_of_trucks": 2,
+        "est_pickup": "2025-03-26",
+        "est_delivery": "2025-03-26"
+      },
+      {
+        "id": 8,
+        "from": "Patna, BR",
+        "zipcode": "800001",
+        "to": "Chandigarh, CH",
+        "zip_code": "160001",
+        "equipment_type": "Refrigerated Truck",
+        "shipment_type": "Less than Truckload",
+        "no_of_trucks": 1,
+        "est_pickup": "2025-03-27",
+        "est_delivery": "2025-03-27"
+      },
+      {
+        "id": 9,
+        "from": "Kochi, KL",
+        "zipcode": "682001",
+        "to": "Visakhapatnam, AP",
+        "zip_code": "530001",
+        "equipment_type": "Flatbed Truck",
+        "shipment_type": "Full Truckload",
+        "no_of_trucks": 2,
+        "est_pickup": "2025-03-28",
+        "est_delivery": "2025-03-29"
+      },
+      {
+        "id": 10,
+        "from": "Goa, GA",
+        "zipcode": "403001",
+        "to": "Coimbatore, TN",
+        "zip_code": "641001",
+        "equipment_type": "Container Truck",
+        "shipment_type": "Less than Truckload",
+        "no_of_trucks": 1,
+        "est_pickup": "2025-03-29",
+        "est_delivery": "2025-03-29"
+      }
+    ]

@@ -1,0 +1,57 @@
+@import "tailwindcss";
+/* @custom-variant dark (&:where(.dark, .dark *));
+@custom-variant light (&:where(.light, .light *)); */
+
+
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+.dark{
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  
+}
+
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+hr{    border-color: #ccc;}
+.main-layout{max-width: 1600px;margin: 0 auto;padding: 0 40px;}
+.home-banner{background: url(../../public/banner-bg.webp) top center no-repeat;max-width: 1600px;margin: 0 auto;position: relative;}
+.home-banner::after{background-color:#2A004E; opacity: 0.5; 
+  position: absolute;  content: "";  top: 0px;  left:0px;  width:100%;bottom: 0;  
+}
+.login-left{background: url(../../public/banner-bg.webp) top center no-repeat;border-radius:20px;position: relative;overflow: hidden;}
+.login-left::after{background-color:#2A004E; opacity: 0.5; 
+  position: absolute;  content: "";  top: 0px;  left:0px;  width:100%;bottom: 0;  
+}
+
+
+.button-white{ 
+ @apply  rounded-md bg-white py-3 px-5 text-xl font-semibold  shadow-xs hover:bg-amber-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600
+}
+.button-primary{ background-color: #C62300;
+  @apply  rounded-md py-3 px-5 text-white font-semibold  shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 
+ }
+ .button-secondary{ background-color: rgba(198,35,0,0.1);
+  @apply  rounded-md py-3 px-5 font-semibold  shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2
+ }

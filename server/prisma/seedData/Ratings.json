@@ -1,0 +1,93 @@
+[
+  {
+    "id":"rat_1a2b",
+    "rating":4,
+    "comment":"Driver was professional and delivered on time",
+    "reviewerId":"usr_1a2b",
+    "recipientId":"usr_7g8h",
+    "tripId":"trp_3c4d",
+    "createdAt":"2023-06-07T14:00:00Z"
+  },
+  {
+    "id":"rat_3c4d",
+    "rating":5,
+    "comment":"Excellent service, will use again",
+    "reviewerId":"usr_o5p6",
+    "recipientId":"usr_q7r8",
+    "tripId":"trp_5e6f",
+    "createdAt":"2023-06-12T09:00:00Z"
+  },
+  {
+    "id":"rat_5e6f",
+    "rating":3,
+    "comment":"Delivery was delayed by 2 hours",
+    "reviewerId":"usr_u1v2",
+    "recipientId":"usr_w3x4",
+    "tripId":"trp_9i0j",
+    "createdAt":"2023-06-22T10:00:00Z"
+  },
+  {
+    "id":"rat_7g8h",
+    "rating":5,
+    "comment":"Perfect handling of fragile items",
+    "reviewerId":"usr_4g6h",
+    "recipientId":"usr_3e5f",
+    "tripId":"trp_m3n4",
+    "createdAt":"2023-07-02T03:00:00Z"
+  },
+  {
+    "id":"rat_9i0j",
+    "rating":4,
+    "comment":"Good communication throughout",
+    "reviewerId":"usr_8o0p",
+    "recipientId":"usr_7o9p",
+    "tripId":"trp_q7r8",
+    "createdAt":"2023-07-12T12:00:00Z"
+  },
+  {
+    "id":"rat_k1l2",
+    "rating":2,
+    "comment":"Package was damaged during transit",
+    "reviewerId":"usr_2w4x",
+    "recipientId":"usr_9k1l",
+    "tripId":"trp_u1v2",
+    "createdAt":"2023-07-22T07:00:00Z"
+  },
+  {
+    "id":"rat_m3n4",
+    "rating":5,
+    "comment":"Exceeded expectations",
+    "reviewerId":"usr_6e8f",
+    "recipientId":"usr_1i3j",
+    "tripId":"trp_y5z6",
+    "createdAt":"2023-08-01T11:00:00Z"
+  },
+  {
+    "id":"rat_o5p6",
+    "rating":4,
+    "comment":"Professional and courteous",
+    "reviewerId":"usr_0m2n",
+    "recipientId":"usr_3g5h",
+    "tripId":"trp_2c4d",
+    "createdAt":"2023-08-12T04:00:00Z"
+  },
+  {
+    "id":"rat_q7r8",
+    "rating":5,
+    "comment":"On-time delivery with no issues",
+    "reviewerId":"usr_4u6v",
+    "recipientId":"usr_5q7r",
+    "tripId":"trp_1a3b",
+    "createdAt":"2023-08-05T11:00:00Z"
+  },
+  {
+    "id":"rat_s9t0",
+    "rating":3,
+    "comment":"Average service",
+    "reviewerId":"usr_8c0d",
+    "recipientId":"usr_7a9b",
+    "tripId":"trp_w3x4",
+    "createdAt":"2023-07-25T10:00:00Z"
+  }
+
+]

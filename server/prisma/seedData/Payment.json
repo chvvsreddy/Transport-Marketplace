@@ -1,0 +1,343 @@
+[
+  {
+    "id": "pay_1a2b",
+    "orderId": "ord_3c4d",
+    "tripId": "trp_3c4d",
+    "amount": 37000.0,
+    "currency": "INR",
+    "status": "COMPLETED",
+    "method": "BANK_TRANSFER",
+    "transactionId": "TXN2023060737000",
+    "metadata": {
+      "bankRef": "BREF20230607",
+      "UTR": "UTR2023060737000"
+    },
+    "createdAt": "2023-06-07T13:30:00Z",
+    "updatedAt": "2023-06-08T10:15:00Z"
+  },
+  {
+    "id": "pay_3c4d",
+    "orderId": "ord_5e6f",
+    "tripId": "trp_5e6f",
+    "amount": 41000.0,
+    "currency": "INR",
+    "status": "COMPLETED",
+    "method": "BANK_TRANSFER",
+    "transactionId": "TXN2023061241000",
+    "metadata": {
+      "bankRef": "BREF20230612",
+      "UTR": "UTR2023061241000"
+    },
+    "createdAt": "2023-06-12T08:30:00Z",
+    "updatedAt": "2023-06-13T11:20:00Z"
+  },
+  {
+    "id": "pay_5e6f",
+    "orderId": "ord_9i0j",
+    "tripId": "trp_9i0j",
+    "amount": 29000.0,
+    "currency": "INR",
+    "status": "COMPLETED",
+    "method": "DIGITAL_WALLET",
+    "transactionId": "TXN2023062229000",
+    "metadata": {
+      "walletProvider": "PayTM",
+      "walletRef": "WREF20230622"
+    },
+    "createdAt": "2023-06-22T09:30:00Z",
+    "updatedAt": "2023-06-23T09:45:00Z"
+  },
+  {
+    "id": "pay_7g8h",
+    "orderId": "ord_m3n4",
+    "tripId": "trp_m3n4",
+    "amount": 31000.0,
+    "currency": "INR",
+    "status": "COMPLETED",
+    "method": "BANK_TRANSFER",
+    "transactionId": "TXN2023070231000",
+    "metadata": {
+      "bankRef": "BREF20230702",
+      "UTR": "UTR2023070231000"
+    },
+    "createdAt": "2023-07-02T02:30:00Z",
+    "updatedAt": "2023-07-03T14:10:00Z"
+  },
+  {
+    "id": "pay_9i0j",
+    "orderId": "ord_q7r8",
+    "tripId": "trp_q7r8",
+    "amount": 37000.0,
+    "currency": "INR",
+    "status": "COMPLETED",
+    "method": "DIGITAL_WALLET",
+    "transactionId": "TXN2023071237000",
+    "metadata": {
+      "walletProvider": "PhonePe",
+      "walletRef": "WREF20230712"
+    },
+    "createdAt": "2023-07-12T11:30:00Z",
+    "updatedAt": "2023-07-13T16:25:00Z"
+  },
+  {
+    "id": "pay_k1l2",
+    "orderId": "ord_u1v2",
+    "tripId": "trp_u1v2",
+    "amount": 34000.0,
+    "currency": "INR",
+    "status": "COMPLETED",
+    "method": "BANK_TRANSFER",
+    "transactionId": "TXN2023072234000",
+    "metadata": {
+      "bankRef": "BREF20230722",
+      "UTR": "UTR2023072234000"
+    },
+    "createdAt": "2023-07-22T06:30:00Z",
+    "updatedAt": "2023-07-24T10:30:00Z"
+  },
+  {
+    "id": "pay_m3n4",
+    "orderId": "ord_y5z6",
+    "tripId": "trp_y5z6",
+    "amount": 37000.0,
+    "currency": "INR",
+    "status": "COMPLETED",
+    "method": "DIGITAL_WALLET",
+    "transactionId": "TXN2023080137000",
+    "metadata": {
+      "walletProvider": "PayTM",
+      "walletRef": "WREF20230801"
+    },
+    "createdAt": "2023-08-01T10:30:00Z",
+    "updatedAt": "2023-08-02T12:15:00Z"
+  },
+  {
+    "id": "pay_o5p6",
+    "orderId": "ord_2c4d",
+    "tripId": "trp_2c4d",
+    "amount": 47000.0,
+    "currency": "INR",
+    "status": "COMPLETED",
+    "method": "BANK_TRANSFER",
+    "transactionId": "TXN2023081247000",
+    "metadata": {
+      "bankRef": "BREF20230812",
+      "UTR": "UTR2023081247000"
+    },
+    "createdAt": "2023-08-12T03:30:00Z",
+    "updatedAt": "2023-08-14T09:20:00Z"
+  },
+  {
+    "id": "pay_q7r8",
+    "orderId": "ord_1a2b",
+    "amount": 43000.0,
+    "currency": "INR",
+    "status": "PENDING",
+    "method": "BANK_TRANSFER",
+    "transactionId": null,
+    "metadata": null,
+    "createdAt": "2023-05-28T14:30:00Z",
+    "updatedAt": "2023-05-28T14:30:00Z"
+  },
+  {
+    "id": "pay_s9t0",
+    "orderId": "ord_7g8h",
+    "amount": 34000.0,
+    "currency": "INR",
+    "status": "PENDING",
+    "method": "BANK_TRANSFER",
+    "transactionId": null,
+    "metadata": null,
+    "createdAt": "2023-06-13T11:15:00Z",
+    "updatedAt": "2023-06-13T11:15:00Z"
+  },
+  {
+    "id": "pay_u1v2",
+    "orderId": "ord_k1l2",
+    "amount": 47000.0,
+    "currency": "INR",
+    "status": "PENDING",
+    "method": "DIGITAL_WALLET",
+    "transactionId": null,
+    "metadata": null,
+    "createdAt": "2023-06-23T15:45:00Z",
+    "updatedAt": "2023-06-23T15:45:00Z"
+  },
+  {
+    "id": "pay_w3x4",
+    "orderId": "ord_o5p6",
+    "amount": 39000.0,
+    "currency": "INR",
+    "status": "PENDING",
+    "method": "BANK_TRANSFER",
+    "transactionId": null,
+    "metadata": null,
+    "createdAt": "2023-07-03T12:15:00Z",
+    "updatedAt": "2023-07-03T12:15:00Z"
+  },
+  {
+    "id": "pay_y5z6",
+    "orderId": "ord_s9t0",
+    "amount": 41000.0,
+    "currency": "INR",
+    "status": "PENDING",
+    "method": "DIGITAL_WALLET",
+    "transactionId": null,
+    "metadata": null,
+    "createdAt": "2023-07-13T16:45:00Z",
+    "updatedAt": "2023-07-13T16:45:00Z"
+  },
+  {
+    "id": "pay_1a3b",
+    "orderId": "ord_w3x4",
+    "amount": 44000.0,
+    "currency": "INR",
+    "status": "PENDING",
+    "method": "BANK_TRANSFER",
+    "transactionId": null,
+    "metadata": null,
+    "createdAt": "2023-07-23T13:15:00Z",
+    "updatedAt": "2023-07-23T13:15:00Z"
+  },
+  {
+    "id": "pay_2c4d",
+    "orderId": "ord_1a3b",
+    "amount": 41000.0,
+    "currency": "INR",
+    "status": "PENDING",
+    "method": "DIGITAL_WALLET",
+    "transactionId": null,
+    "metadata": null,
+    "createdAt": "2023-08-02T17:45:00Z",
+    "updatedAt": "2023-08-02T17:45:00Z"
+  },
+  {
+    "id": "pay_3e5f",
+    "orderId": "ord_3c4d",
+    "tripId": "trp_3c4d",
+    "amount": 37000.0,
+    "currency": "INR",
+    "status": "PROCESSING",
+    "method": "BANK_TRANSFER",
+    "transactionId": "TXN2023060737001",
+    "metadata": {
+      "bankRef": "BREF20230607",
+      "UTR": "UTR2023060737001"
+    },
+    "createdAt": "2023-06-07T13:30:00Z",
+    "updatedAt": "2023-06-07T13:30:00Z"
+  },
+  {
+    "id": "pay_4g6h",
+    "orderId": "ord_5e6f",
+    "tripId": "trp_5e6f",
+    "amount": 41000.0,
+    "currency": "INR",
+    "status": "FAILED",
+    "method": "BANK_TRANSFER",
+    "transactionId": "TXN2023061241001",
+    "metadata": {
+      "error": "Insufficient funds",
+      "retryAttempt": 1
+    },
+    "createdAt": "2023-06-12T08:30:00Z",
+    "updatedAt": "2023-06-12T10:30:00Z"
+  },
+  {
+    "id": "pay_5i7j",
+    "orderId": "ord_9i0j",
+    "tripId": "trp_9i0j",
+    "amount": 29000.0,
+    "currency": "INR",
+    "status": "REFUNDED",
+    "method": "DIGITAL_WALLET",
+    "transactionId": "TXN2023062229001",
+    "metadata": {
+      "refundReason": "Cancelled by shipper",
+      "refundDate": "2023-06-23"
+    },
+    "createdAt": "2023-06-22T09:30:00Z",
+    "updatedAt": "2023-06-23T10:30:00Z"
+  },
+  {
+    "id": "pay_6k8l",
+    "orderId": "ord_m3n4",
+    "tripId": "trp_m3n4",
+    "amount": 31000.0,
+    "currency": "INR",
+    "status": "COMPLETED",
+    "method": "CREDIT_CARD",
+    "transactionId": "TXN2023070231001",
+    "metadata": {
+      "cardLast4": "4242",
+      "authCode": "AUTH20230702"
+    },
+    "createdAt": "2023-07-02T02:30:00Z",
+    "updatedAt": "2023-07-03T14:10:00Z"
+  },
+  {
+    "id": "pay_7m9n",
+    "orderId": "ord_q7r8",
+    "tripId": "trp_q7r8",
+    "amount": 37000.0,
+    "currency": "INR",
+    "status": "COMPLETED",
+    "method": "OTHER",
+    "transactionId": "TXN2023071237001",
+    "metadata": {
+      "paymentType": "UPI",
+      "upiId": "shipper@upi"
+    },
+    "createdAt": "2023-07-12T11:30:00Z",
+    "updatedAt": "2023-07-13T16:25:00Z"
+  },
+  {
+    "id": "pay_8o0p",
+    "orderId": "ord_u1v2",
+    "tripId": "trp_u1v2",
+    "amount": 34000.0,
+    "currency": "INR",
+    "status": "COMPLETED",
+    "method": "BANK_TRANSFER",
+    "transactionId": "TXN2023072234001",
+    "metadata": {
+      "bankRef": "BREF20230722",
+      "UTR": "UTR2023072234001"
+    },
+    "createdAt": "2023-07-22T06:30:00Z",
+    "updatedAt": "2023-07-24T10:30:00Z"
+  },
+  {
+    "id": "pay_9q1r",
+    "orderId": "ord_y5z6",
+    "tripId": "trp_y5z6",
+    "amount": 37000.0,
+    "currency": "INR",
+    "status": "COMPLETED",
+    "method": "DIGITAL_WALLET",
+    "transactionId": "TXN2023080137001",
+    "metadata": {
+      "walletProvider": "PayTM",
+      "walletRef": "WREF20230801"
+    },
+    "createdAt": "2023-08-01T10:30:00Z",
+    "updatedAt": "2023-08-02T12:15:00Z"
+  },
+  {
+    "id": "pay_0s2t",
+    "orderId": "ord_2c4d",
+    "tripId": "trp_2c4d",
+    "amount": 47000.0,
+    "currency": "INR",
+    "status": "COMPLETED",
+    "method": "BANK_TRANSFER",
+    "transactionId": "TXN2023081247001",
+    "metadata": {
+      "bankRef": "BREF20230812",
+      "UTR": "UTR2023081247001"
+    },
+    "createdAt": "2023-08-12T03:30:00Z",
+    "updatedAt": "2023-08-14T09:20:00Z"
+  }
+
+]

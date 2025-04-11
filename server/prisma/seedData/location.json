@@ -1,0 +1,103 @@
+[
+  {
+    "id":"loc_1a2b",
+    "address":"12, Industrial Area, Phase 1",
+    "lat":28.6139,
+    "lng":77.2090,
+    "city":"Delhi",
+    "state":"Delhi",
+    "country":"India",
+    "postalCode":"110020"
+  },
+  {
+    "id":"loc_3c4d",
+    "address":"45, GST Road, Guindy",
+    "lat":13.0827,
+    "lng":80.2707,
+    "city":"Chennai",
+    "state":"Tamil Nadu",
+    "country":"India",
+    "postalCode":"600032"
+  },
+  {
+    "id":"loc_5e6f",
+    "address":"78, Park Street",
+    "lat":22.5726,
+    "lng":88.3639,
+    "city":"Kolkata",
+    "state":"West Bengal",
+    "country":"India",
+    "postalCode":"700016"
+  },
+  {
+    "id":"loc_7g8h",
+    "address":"23, Bund Garden Road",
+    "lat":18.5204,
+    "lng":73.8567,
+    "city":"Pune",
+    "state":"Maharashtra",
+    "country":"India",
+    "postalCode":"411001"
+  },
+  {
+    "id":"loc_9i0j",
+    "address":"56, Hazratganj",
+    "lat":26.8467,
+    "lng":80.9462,
+    "city":"Lucknow",
+    "state":"Uttar Pradesh",
+    "country":"India",
+    "postalCode":"226001"
+  },
+  {
+    "id":"loc_k1l2",
+    "address":"34, Sitabuldi",
+    "lat":21.1458,
+    "lng":79.0882,
+    "city":"Nagpur",
+    "state":"Maharashtra",
+    "country":"India",
+    "postalCode":"440012"
+  },
+  {
+    "id":"loc_m3n4",
+    "address":"12, Panjim",
+    "lat":15.4909,
+    "lng":73.8278,
+    "city":"Panaji",
+    "state":"Goa",
+    "country":"India",
+    "postalCode":"403001"
+  },
+  {
+    "id":"loc_o5p6",
+    "address":"67, MP Nagar",
+    "lat":23.2599,
+    "lng":77.4126,
+    "city":"Bhopal",
+    "state":"Madhya Pradesh",
+    "country":"India",
+    "postalCode":"462011"
+  },
+  {
+    "id":"loc_q7r8",
+    "address":"89, Mall Road",
+    "lat":26.4499,
+    "lng":80.3319,
+    "city":"Kanpur",
+    "state":"Uttar Pradesh",
+    "country":"India",
+    "postalCode":"208001"
+  },
+  {
+    "id":"loc_s9t0",
+    "address":"34, Ferozepur Road",
+    "lat":30.9010,
+    "lng":75.8573,
+    "city":"Ludhiana",
+    "state":"Punjab",
+    "country":"India",
+    "postalCode":"141001"
+  }
+
+]

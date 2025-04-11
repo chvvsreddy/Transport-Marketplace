@@ -1,0 +1,18 @@
+[
+  {"id":"tre_1a2b","tripId":"trp_3c4d","type":"DISPATCHED","location":{"lat":13.0827,"lng":80.2707},"timestamp":"2023-06-05T09:00:00Z","description":"Truck dispatched from origin","metadata":{"driverCheck":"completed","vehicleCheck":"passed"}},
+  {"id":"tre_3c4d","tripId":"trp_3c4d","type":"PICKUP_STARTED","location":{"lat":13.0827,"lng":80.2707},"timestamp":"2023-06-05T09:30:00Z","description":"Loading started at warehouse","metadata":{"loadingBay":"Bay 3"}},
+  {"id":"tre_5e6f","tripId":"trp_3c4d","type":"PICKUP_COMPLETED","location":{"lat":13.0827,"lng":80.2707},"timestamp":"2023-06-05T11:45:00Z","description":"Loading completed, documents verified","metadata":{"loadingTime":"2.25 hours","weightVerified":true}},
+  {"id":"tre_7g8h","tripId":"trp_3c4d","type":"DEPARTURE","location":{"lat":13.0827,"lng":80.2707},"timestamp":"2023-06-05T12:00:00Z","description":"Departed from origin","metadata":{"initialFuel":"85%","odometer":12543}},
+  {"id":"tre_9i0j","tripId":"trp_3c4d","type":"GEOLOCATION_UPDATE","location":{"lat":14.4426,"lng":79.9865},"timestamp":"2023-06-05T15:30:00Z","description":"Enroute to Hyderabad","metadata":{"speed":65,"fuel":"78%"}},
+  {"id":"tre_k1l2","tripId":"trp_3c4d","type":"GEOLOCATION_UPDATE","location":{"lat":16.5062,"lng":80.6480},"timestamp":"2023-06-05T18:45:00Z","description":"Entered Andhra Pradesh","metadata":{"speed":62,"fuel":"72%"}},
+  {"id":"tre_m3n4","tripId":"trp_3c4d","type":"ARRIVAL","location":{"lat":17.3850,"lng":78.4867},"timestamp":"2023-06-05T22:30:00Z","description":"Arrived at Hyderabad checkpoint","metadata":{"stopDuration":"30 mins","fuelAdded":"50 liters"}},
+  {"id":"tre_o5p6","tripId":"trp_3c4d","type":"DEPARTURE","location":{"lat":17.3850,"lng":78.4867},"timestamp":"2023-06-05T23:00:00Z","description":"Departed from Hyderabad","metadata":{"fuel":"95%","odometer":12678}},
+  {"id":"tre_q7r8","tripId":"trp_3c4d","type":"GEOLOCATION_UPDATE","location":{"lat":19.7515,"lng":85.2002},"timestamp":"2023-06-06T08:00:00Z","description":"Entered Odisha","metadata":{"speed":60,"fuel":"65%"}},
+  {"id":"tre_s9t0","tripId":"trp_3c4d","type":"DELAY","location":{"lat":21.2787,"lng":86.6885},"timestamp":"2023-06-06T12:30:00Z","description":"1 hour delay due to road work","metadata":{"delayReason":"Road construction","detourTaken":true}},
+  {"id":"tre_u1v2","tripId":"trp_3c4d","type":"GEOLOCATION_UPDATE","location":{"lat":22.5726,"lng":88.3639},"timestamp":"2023-06-07T11:00:00Z","description":"Approaching Kolkata","metadata":{"speed":55,"fuel":"45%"}},
+  {"id":"tre_w3x4","tripId":"trp_3c4d","type":"DELIVERY_STARTED","location":{"lat":22.5726,"lng":88.3639},"timestamp":"2023-06-07T12:30:00Z","description":"Unloading started at destination","metadata":{"unloadingBay":"Bay 5"}},
+  {"id":"tre_y5z6","tripId":"trp_3c4d","type":"DELIVERY_COMPLETED","location":{"lat":22.5726,"lng":88.3639},"timestamp":"2023-06-07T13:00:00Z","description":"Delivery completed, POD signed","metadata":{"unloadingTime":"0.5 hours","recipient":"Warehouse Manager"}},
+  {"id":"tre_1a3b","tripId":"trp_5e6f","type":"DISPATCHED","location":{"lat":22.5726,"lng":88.3639},"timestamp":"2023-06-10T10:00:00Z","description":"Truck dispatched from origin","metadata":{"driverCheck":"completed","vehicleCheck":"passed"}},
+  {"id":"tre_2c4d","tripId":"trp_5e6f","type":"PICKUP_STARTED","location":{"lat":22.5726,"lng":88.3639},"timestamp":"2023-06-10T10:30:00Z","description":"Loading started at warehouse","metadata":{"loadingBay":"Bay 2"}}
+
+]
