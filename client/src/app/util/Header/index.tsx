@@ -134,13 +134,11 @@ const Header = () => {
                 </>
               ) : (
                 <>
-                  <Link href={"/login"} className="button-secondary mr-5">
+                  <Link href={"/login"} className="button-secondary mr-5" target="_blank">
                     Login <span aria-hidden="true">&rarr;</span>
                   </Link>
-                  <Link href={"/Register"}>
-                    <button type="button" className="button-primary" >
-                      Get Started
-                    </button>
+                  <Link href={"/Register"}  className="button-primary"  target="_blank">
+                        Get Started
                   </Link>
                 </>
               )}

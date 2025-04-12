@@ -40,7 +40,7 @@ hr{    border-color: #ccc;}
 .home-banner::after{background-color:#2A004E; opacity: 0.5; 
   position: absolute;  content: "";  top: 0px;  left:0px;  width:100%;bottom: 0;  
 }
-.login-left{background: url(../../public/banner-bg.webp) top center no-repeat;border-radius:20px;position: relative;overflow: hidden;}
+.login-left{background: url(../../public/banner-bg.webp) top center no-repeat;position: relative;overflow: hidden; background-size: cover;}
 .login-left::after{background-color:#2A004E; opacity: 0.5; 
   position: absolute;  content: "";  top: 0px;  left:0px;  width:100%;bottom: 0;  
 }
