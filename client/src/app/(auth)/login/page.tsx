@@ -4,25 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { checkUser } from "@/state/api";
 import { useRouter } from "next/navigation";
-import Header from "@/app/util/Header";
 
-const features = [
-  {
-    name: "Push to deploy.",
-    description:
-      "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Maiores impedit perferendis suscipit eaque, iste dolor cupiditate blanditiis ratione.",
-  },
-  {
-    name: "SSL certificates.",
-    description:
-      "Anim aute id magna aliqua ad ad non deserunt sunt. Qui irure qui lorem cupidatat commodo.",
-  },
-  {
-    name: "Database backups.",
-    description:
-      "Ac tincidunt sapien vehicula erat auctor pellentesque rhoncus. Et magna sit morbi lobortis.",
-  },
-];
+
 
 export default function LoginPage() {
   const [email, setEmail] = useState<string>("");
@@ -74,23 +57,55 @@ export default function LoginPage() {
       <div className="overflow-hidden bg-white">
 
           <div className="mx-auto grid lg:grid-cols-3 gap-x-0 gap-y-16 sm:gap-y-20 lg:mx-0 lg:max-w-none min-h-dvh">
-            <div className="login-left flex flex-1 flex-col justify-center py-12 px-12 lg:col-span-2">
+          <div className="login-left flex-1 flex-col justify-center py-12 px-12 lg:col-span-2  hidden lg:flex">
               <div className="relative z-30">
-                <p className="mt-2 text-4xl font-semibold tracking-tight text-pretty text-white sm:text-5xl">
+              <p className="mt-2 text-2xl font-semibold text-white lg:text-5xl text-center lg:text-right">
                   A better Transit
                 </p>
-                <p className="mt-6 text-lg/8 text-white">
-                  Lorem ipsum, dolor sit amet consectetur adipisicing elit.
-                  Maiores impedit perferendis suscipit eaque, iste dolor
-                  cupiditate blanditiis ratione.
-                </p>
-                <dl className="mt-10 max-w-xl space-y-8 text-base/7 text-white lg:max-w-none">
-                  {features.map((feature) => (
-                    <div key={feature.name} className="relative pl-9">
-                      <dd className="inline">{feature.description}</dd>
+                <div className="absolute transform sm:top-0 sm:left-1/2 sm:translate-x-8 lg:top-1/2 lg:left-1/2 lg:-translate-x-full lg:-translate-y-1/2">
+                  <div className="flex items-center space-x-6 lg:space-x-8">
+                    <div className="grid shrink-0 grid-cols-1 gap-y-6 lg:gap-y-8">
+                      <div className="h-44 w-64 overflow-hidden rounded-lg sm:opacity-0 lg:opacity-100">
+                        <img alt=""
+                          src="Lorry.jpg"
+                          className="size-full object-cover"
+                        />
+                      </div>
+                      <div className="h-64 w-64 overflow-hidden rounded-lg">
+                        <img
+                          alt=""
+                          src="happyness.png"
+                          className="size-full object-cover"
+                        />
+                      </div>
                     </div>
-                  ))}
-                </dl>
+
+                    <div className="grid shrink-0 grid-cols-1 gap-y-6 lg:gap-y-8">
+                      <div className="h-64 w-64 overflow-hidden rounded-lg">
+                        <img
+                          alt=""
+                          src="happy.jpg"
+                          className="size-full object-cover"
+                        />
+                      </div>
+                      <div className="h-64 w-44 overflow-hidden rounded-lg">
+                        <img
+                          alt=""
+                          src="happiness.png"
+                          className="size-full object-cover"
+                        />
+                      </div>
+                      <div className="h-44 w-64 overflow-hidden rounded-lg">
+                        <img
+                          alt=""
+                          src="lorry1.png"
+                          className="size-full object-cover"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
               </div>
             </div>
 
@@ -194,6 +209,7 @@ export default function LoginPage() {
           </div>
 
       </div>
+
     </div>
   );
 }

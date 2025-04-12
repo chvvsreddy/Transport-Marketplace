@@ -41,7 +41,7 @@ hr{    border-color: #ccc;}
   position: absolute;  content: "";  top: 0px;  left:0px;  width:100%;bottom: 0;  
 }
 .login-left{background: url(../../public/banner-bg.webp) top center no-repeat;position: relative;overflow: hidden; background-size: cover;}
-.login-left::after{background-color:#2A004E; opacity: 0.5; 
+.login-left::after{background-color:#2A004E; opacity: 0.9; 
   position: absolute;  content: "";  top: 0px;  left:0px;  width:100%;bottom: 0;  
 }
 .lp3-head-text { margin-bottom: 0;}
