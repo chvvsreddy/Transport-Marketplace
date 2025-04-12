@@ -162,10 +162,6 @@ const sidebarClassNames = `fixed top-0 left-0 flex flex-col h-full z-50 bg-gray-
           icon={BoxIcon}
           label="Available Loads"
           isCollapsed={isSidebarCollapsed}
-          subItems={[
-            { href: "/loads/browse", label: "Browse Loads" },
-            { href: "/loads/details", label: "Load Details" },
-          ]}
         />
 
         <SidebarLink
@@ -173,10 +169,6 @@ const sidebarClassNames = `fixed top-0 left-0 flex flex-col h-full z-50 bg-gray-
           icon={CircleDollarSign}
           label="Bidding System"
           isCollapsed={isSidebarCollapsed}
-          subItems={[
-            { href: "/bidding/place", label: "Place a Bid" },
-            { href: "/bidding/my-bids", label: "My Bids" },
-          ]}
         />
 
         <SidebarLink
@@ -184,12 +176,6 @@ const sidebarClassNames = `fixed top-0 left-0 flex flex-col h-full z-50 bg-gray-
           icon={TruckIcon}
           label="Trip Management"
           isCollapsed={isSidebarCollapsed}
-          subItems={[
-            { href: "/trips/assigned", label: "Assigned Trips" },
-            { href: "/trips/start", label: "Start Trip" },
-            { href: "/trips/tracking", label: "Live Tracking" },
-            { href: "/trips/events", label: "Trip Events" },
-          ]}
         />
 
         <SidebarLink
@@ -197,10 +183,6 @@ const sidebarClassNames = `fixed top-0 left-0 flex flex-col h-full z-50 bg-gray-
           icon={ChartBarIncreasing}
           label="Earnings & Payments"
           isCollapsed={isSidebarCollapsed}
-          subItems={[
-            { href: "/payments/history", label: "Payment History" },
-            { href: "/payments/settlements", label: "Settlement Requests" },
-          ]}
         />
 
         <SidebarLink
@@ -208,13 +190,6 @@ const sidebarClassNames = `fixed top-0 left-0 flex flex-col h-full z-50 bg-gray-
           icon={User}
           label="Profile"
           isCollapsed={isSidebarCollapsed}
-          subItems={[
-            { href: "/profile/vehicles", label: "Vehicle Details" },
-            { href: "/profile/documents", label: "Upload Documents" },
-            { href: "/profile/license", label: "License & KYC" },
-            { href: "/profile/ratings", label: "Ratings & Reviews" },
-            { href: "/profile/emergency", label: "Emergency Contacts" },
-          ]}
         />
 
         <h6

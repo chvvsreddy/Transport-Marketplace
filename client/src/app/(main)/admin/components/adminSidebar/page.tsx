@@ -3,25 +3,23 @@
 import { useAppDispatch, useAppSelector } from "@/app/redux";
 import { setIsSidebarCollapsed } from "@/state";
 import {
-  Atom,
   BoxIcon,
   ChartBarIncreasing,
   User,
   Layout,
-  Menu,
+  TruckIcon,
+  DollarSign,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import React, { useState } from "react";
+import React from "react";
 
 interface SidebarLinkProps {
   href: string;
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   label: string;
   isCollapsed: boolean;
-  hasSubMenu?: boolean; // Added prop to indicate if there are sub-menu options
-  subLinks?: { href: string; label: string }[]; // Sub-links for nested menu items
 }
 
 const SidebarLink = ({
@@ -29,55 +27,26 @@ const SidebarLink = ({
   icon: Icon,
   label,
   isCollapsed,
-  hasSubMenu = false,
-  subLinks = [],
 }: SidebarLinkProps) => {
   const pathname = usePathname();
   const isActive =
     pathname === href || (pathname === "/" && href === "/dashboard");
 
-  const [isSubMenuOpen, setIsSubMenuOpen] = useState(false);
-
-  const handleSubMenuToggle = () => {
-    if (hasSubMenu) {
-      setIsSubMenuOpen(!isSubMenuOpen);
-    }
-  };
-
   return (
-    <div>
+    <Link href={href}>
       <div
-        onClick={handleSubMenuToggle}
         className={`cursor-pointer flex items-center ${
           isCollapsed ? "justify-center py-3" : "justify-start p-3"
-        }
-          hover:text-blue-500 hover:bg-white gap-3 mb-2 rounded-md transition-colors ${
-            isActive ? "bg-white text-white" : ""
-          }`}
+        } hover:text-blue-500 hover:bg-white gap-3 mb-2 rounded-md transition-colors ${
+          isActive ? "bg-white text-blue-500" : "text-gray-700"
+        }`}
       >
-        <Icon className="w-6 h-6 !text-gray-700" />
-        <span
-          className={`${
-            isCollapsed ? "hidden" : "block"
-          } font-medium text-gray-700`}
-        >
-          {label}
-        </span>
+        <Icon className="w-6 h-6" />
+        {!isCollapsed && (
+          <span className="font-medium text-gray-700">{label}</span>
+        )}
       </div>
-
-      {/* Submenu Links */}
-      {isSubMenuOpen && subLinks.length > 0 && (
-        <div className={`pl-6 ${isCollapsed ? "hidden" : "block"}`}>
-          {subLinks.map((subLink) => (
-            <Link href={subLink.href} key={subLink.href}>
-              <div className="py-1 px-3 hover:bg-gray-300 rounded-md">
-                <span className="text-sm text-gray-600">{subLink.label}</span>
-              </div>
-            </Link>
-          ))}
-        </div>
-      )}
-    </div>
+    </Link>
   );
 };
 
@@ -97,10 +66,8 @@ const Sidebar = () => {
 
   return (
     <div className={sidebarClassNames}>
-      {/* TOP LOGO */}
-      <div
-        className={`flex justify-between items-center px-4 py-3 border-b border-gray-300`}
-      >
+      {/* Header */}
+      <div className="flex justify-between items-center px-4 py-3 border-b border-gray-300">
         {!isSidebarCollapsed && (
           <Image
             src="/goodseva-logo.png"
@@ -111,7 +78,6 @@ const Sidebar = () => {
           />
         )}
 
-        {/* Mobile Close Button */}
         <button
           className="md:hidden text-gray-700 hover:text-red-600"
           onClick={toggleSidebar}
@@ -120,11 +86,8 @@ const Sidebar = () => {
         </button>
       </div>
 
-      {/* LINKS */}
+      {/* Links */}
       <div className="flex-grow mt-8 px-4 overflow-y-auto">
-        {" "}
-        {/* Add scroll functionality here */}
-        {/* Overview */}
         <h6
           className={`${
             isSidebarCollapsed ? "hidden" : "block"
@@ -132,239 +95,58 @@ const Sidebar = () => {
         >
           Overview
         </h6>
+
         <SidebarLink
           href="/login"
           icon={Layout}
           label="Dashboard"
           isCollapsed={isSidebarCollapsed}
         />
-        {/* Activity */}
-        <h6
-          className={`${
-            isSidebarCollapsed ? "hidden" : "block"
-          } font-normal text-sm p-2 text-neutral-500`}
-        >
-          Activity
-        </h6>
         <SidebarLink
-          href="/analytics"
-          icon={ChartBarIncreasing}
-          label="Analytics"
-          isCollapsed={isSidebarCollapsed}
-          hasSubMenu
-          subLinks={[
-            { href: "/analytics/total-users", label: "Total users" },
-            { href: "/analytics/loads", label: "Total loads" },
-            { href: "/analytics/revenue", label: "Revenue" },
-            { href: "/analytics/active-trips", label: "Active trips" },
-          ]}
-        />
-        <SidebarLink
-          href="/recent-activities"
-          icon={BoxIcon}
-          label="Recent Activities"
-          isCollapsed={isSidebarCollapsed}
-        />
-        <SidebarLink
-          href="/system-alerts"
-          icon={BoxIcon}
-          label="System alerts"
-          isCollapsed={isSidebarCollapsed}
-        />
-        {/* User Management */}
-        <h6
-          className={`${
-            isSidebarCollapsed ? "hidden" : "block"
-          } font-normal text-sm p-2 text-neutral-500`}
-        >
-          User Management
-        </h6>
-        <SidebarLink
-          href="/user-list"
+          href="/admin/dashboard/usermanagement"
           icon={User}
-          label="User list"
+          label="User Management"
           isCollapsed={isSidebarCollapsed}
-          hasSubMenu
-          subLinks={[
-            { href: "/user-list/shipper", label: "Shipper" },
-            { href: "/user-list/driver", label: "Driver" },
-            { href: "/user-list/logistics", label: "Logistics Company" },
-          ]}
         />
         <SidebarLink
           href="/user-details"
-          icon={User}
-          label="User details"
+          icon={TruckIcon}
+          label="Load Management"
           isCollapsed={isSidebarCollapsed}
-          hasSubMenu
-          subLinks={[
-            { href: "/user-details/view", label: "View" },
-            { href: "/user-details/edit", label: "Edit" },
-            { href: "/user-details/block", label: "Block" },
-          ]}
         />
         <SidebarLink
           href="/document-verification"
-          icon={BoxIcon}
-          label="Document verification"
-          isCollapsed={isSidebarCollapsed}
-          hasSubMenu
-          subLinks={[
-            { href: "/document-verification/kyc", label: "KYC" },
-            { href: "/document-verification/licenses", label: "Licenses" },
-          ]}
-        />
-        {/* Load Management */}
-        <h6
-          className={`${
-            isSidebarCollapsed ? "hidden" : "block"
-          } font-normal text-sm p-2 text-neutral-500`}
-        >
-          Load Management
-        </h6>
-        <SidebarLink
-          href="/all-loads"
-          icon={BoxIcon}
-          label="All loads"
-          isCollapsed={isSidebarCollapsed}
-          hasSubMenu
-          subLinks={[
-            { href: "/all-loads/available", label: "Available" },
-            { href: "/all-loads/assigned", label: "Assigned" },
-            { href: "/all-loads/delivered", label: "Delivered" },
-          ]}
-        />
-        <SidebarLink
-          href="/load-details"
-          icon={BoxIcon}
-          label="Load details"
+          icon={DollarSign}
+          label="Trip Monitoring"
           isCollapsed={isSidebarCollapsed}
         />
-        {/* Trip Monitoring */}
-        <h6
-          className={`${
-            isSidebarCollapsed ? "hidden" : "block"
-          } font-normal text-sm p-2 text-neutral-500`}
-        >
-          Trip Monitoring
-        </h6>
-        <SidebarLink
-          href="/live-tracking"
-          icon={BoxIcon}
-          label="Live tracking"
-          isCollapsed={isSidebarCollapsed}
-        />
-        <SidebarLink
-          href="/trip-history"
-          icon={BoxIcon}
-          label="Trip history"
-          isCollapsed={isSidebarCollapsed}
-        />
-        <SidebarLink
-          href="/incident-reports"
-          icon={BoxIcon}
-          label="Incident reports"
-          isCollapsed={isSidebarCollapsed}
-        />
-        {/* Bid & Order Management */}
-        <h6
-          className={`${
-            isSidebarCollapsed ? "hidden" : "block"
-          } font-normal text-sm p-2 text-neutral-500`}
-        >
-          Bid & Order Management
-        </h6>
         <SidebarLink
           href="/view-bids"
           icon={BoxIcon}
-          label="View all bids"
+          label="Bid & Order Management"
           isCollapsed={isSidebarCollapsed}
         />
         <SidebarLink
           href="/order-history"
-          icon={BoxIcon}
-          label="Order history"
-          isCollapsed={isSidebarCollapsed}
-          hasSubMenu
-          subLinks={[
-            { href: "/order-history/status", label: "Filter by status" },
-          ]}
-        />
-        {/* Payments & Settlements */}
-        <h6
-          className={`${
-            isSidebarCollapsed ? "hidden" : "block"
-          } font-normal text-sm p-2 text-neutral-500`}
-        >
-          Payments & Settlements
-        </h6>
-        <SidebarLink
-          href="/transaction-history"
-          icon={BoxIcon}
-          label="Transaction history"
+          icon={DollarSign}
+          label="Payments & Settlements"
           isCollapsed={isSidebarCollapsed}
         />
-        <SidebarLink
-          href="/payout-approvals"
-          icon={BoxIcon}
-          label="Payout approvals"
-          isCollapsed={isSidebarCollapsed}
-        />
-        {/* Reports & Analytics */}
-        <h6
-          className={`${
-            isSidebarCollapsed ? "hidden" : "block"
-          } font-normal text-sm p-2 text-neutral-500`}
-        >
-          Reports & Analytics
-        </h6>
         <SidebarLink
           href="/revenue-reports"
           icon={ChartBarIncreasing}
-          label="Revenue reports"
+          label="Reports & Analytics"
           isCollapsed={isSidebarCollapsed}
         />
-        <SidebarLink
-          href="/user-engagement"
-          icon={ChartBarIncreasing}
-          label="User engagement metrics"
-          isCollapsed={isSidebarCollapsed}
-        />
-        <SidebarLink
-          href="/trip-performance"
-          icon={ChartBarIncreasing}
-          label="Trip performance"
-          isCollapsed={isSidebarCollapsed}
-        />
-        {/* System Settings */}
-        <h6
-          className={`${
-            isSidebarCollapsed ? "hidden" : "block"
-          } font-normal text-sm p-2 text-neutral-500`}
-        >
-          System Settings
-        </h6>
         <SidebarLink
           href="/admin-roles"
           icon={BoxIcon}
-          label="Admin roles & permissions"
-          isCollapsed={isSidebarCollapsed}
-        />
-        <SidebarLink
-          href="/notification-settings"
-          icon={BoxIcon}
-          label="Notification settings"
-          isCollapsed={isSidebarCollapsed}
-        />
-        <SidebarLink
-          href="/platform-fees"
-          icon={BoxIcon}
-          label="Platform fees configuration"
+          label="System Settings"
           isCollapsed={isSidebarCollapsed}
         />
       </div>
 
-      {/* FOOTER */}
+      {/* Footer */}
       <div className={`${isSidebarCollapsed ? "hidden" : "block"} mb-10`}>
         <p className="text-center text-xs text-gray-500">
           &copy; 2024 Goodseva

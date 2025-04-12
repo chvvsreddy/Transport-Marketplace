@@ -38,8 +38,7 @@ export default function Profile() {
   ];
   return (
     <div>
-      <Header />
-      <div style={{ margin: 10, marginLeft: 80 }}>
+      <div style={{ margin: 10 }}>
         <Typography.Text style={{ fontSize: 40, fontWeight: 600 }}>
           Profile
         </Typography.Text>

@@ -3,84 +3,53 @@
 import { useAppDispatch, useAppSelector } from "@/app/redux";
 import { setIsSidebarCollapsed } from "@/state";
 import {
-  Atom,
   BoxIcon,
   ChartBar,
   CircleDollarSign,
   Layout,
-  Menu,
   TruckIcon,
   User,
+  Menu,
+  X,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import React, { useState } from "react";
 
 // Sidebar link component
 const SidebarLink = ({
   href,
   label,
   isCollapsed,
+  icon: Icon,
 }: {
   href: string;
   label: string;
   isCollapsed: boolean;
+  icon: any;
 }) => {
   const pathname = usePathname();
   const isActive = pathname === href;
+
   return (
     <Link href={href}>
       <div
-        className={`cursor-pointer text-sm px-3 py-2 rounded-md ${
+        className={`cursor-pointer flex items-center ${
+          isCollapsed ? "justify-center py-3" : "justify-start p-3"
+        } hover:text-blue-500 hover:bg-white gap-3 mb-2 rounded-md transition-colors ${
           isActive ? "bg-white text-blue-500" : "text-gray-700"
-        } hover:bg-white hover:text-blue-500 transition-colors`}
+        }`}
       >
-        {!isCollapsed && label}
+        <Icon className="w-6 h-6 !text-gray-700" />
+        <span
+          className={`${
+            isCollapsed ? "hidden" : "block"
+          } font-medium text-gray-700`}
+        >
+          {label}
+        </span>
       </div>
     </Link>
-  );
-};
-
-// Collapsible group component
-const SidebarLinkGroup = ({
-  icon: Icon,
-  label,
-  isCollapsed,
-  links,
-}: {
-  icon: any;
-  label: string;
-  isCollapsed: boolean;
-  links: { href: string; label: string }[];
-}) => {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="mb-2">
-      <div
-        className={`flex items-center cursor-pointer ${
-          isCollapsed ? "justify-center py-3" : "justify-start p-3"
-        } gap-3 hover:bg-white rounded-md transition-colors`}
-        onClick={() => setOpen(!open)}
-      >
-        <Icon className="w-5 h-5 text-gray-700" />
-        {!isCollapsed && (
-          <span className="font-medium text-gray-700">{label}</span>
-        )}
-      </div>
-      {open && !isCollapsed && (
-        <div className="ml-8">
-          {links.map((link) => (
-            <SidebarLink
-              key={link.href}
-              href={link.href}
-              label={link.label}
-              isCollapsed={isCollapsed}
-            />
-          ))}
-        </div>
-      )}
-    </div>
   );
 };
 
@@ -89,6 +58,7 @@ const Sidebar = () => {
   const isSidebarCollapsed = useAppSelector(
     (state) => state.global.isSidebarCollapsed
   );
+
   const toggleSidebar = () => {
     dispatch(setIsSidebarCollapsed(!isSidebarCollapsed));
   };
@@ -116,11 +86,15 @@ const Sidebar = () => {
           className="md:hidden text-gray-700 hover:text-red-600"
           onClick={toggleSidebar}
         >
-          <span className="text-2xl font-bold">×</span>
+          {isSidebarCollapsed ? (
+            <Menu className="w-6 h-6" />
+          ) : (
+            <X className="w-6 h-6" />
+          )}
         </button>
       </div>
 
-      {/* Scrollable Links */}
+      {/* Links */}
       <div className="flex-grow mt-8 px-4 overflow-y-auto max-h-[calc(100vh-100px)] scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100 pr-2">
         <h6
           className={`${
@@ -129,11 +103,11 @@ const Sidebar = () => {
         >
           Main
         </h6>
-        <SidebarLinkGroup
+        <SidebarLink
+          href="/dashboard"
           icon={Layout}
           label="Dashboard"
           isCollapsed={isSidebarCollapsed}
-          links={[{ href: "/dashboard", label: "Dashboard" }]}
         />
 
         <h6
@@ -143,66 +117,35 @@ const Sidebar = () => {
         >
           Management
         </h6>
-
-        <SidebarLinkGroup
+        <SidebarLink
+          href="/loadmanagement"
           icon={TruckIcon}
           label="Load Management"
           isCollapsed={isSidebarCollapsed}
-          links={[
-            { href: "/loads/post", label: "Post a New Load" },
-            { href: "/loads/map", label: "Origin/Destination Map" },
-            { href: "/loads/details", label: "Cargo Details" },
-            { href: "/loads/time-slots", label: "Pickup/Delivery Time" },
-            { href: "/loads/special", label: "Special Requirements" },
-            { href: "/loads/my", label: "My Loads" },
-            { href: "/loads/active", label: "Active Loads" },
-          ]}
         />
-
-        <SidebarLinkGroup
+        <SidebarLink
+          href="/bids&orders"
           icon={BoxIcon}
           label="Bids & Orders"
           isCollapsed={isSidebarCollapsed}
-          links={[
-            { href: "/bids/view", label: "View Bids" },
-            { href: "/bids/confirm", label: "Accept/Reject Bids" },
-            { href: "/orders/confirmation", label: "Order Confirmation" },
-          ]}
         />
-
-        <SidebarLinkGroup
+        <SidebarLink
+          href="/admin/dashboard/triptracking"
           icon={ChartBar}
           label="Trip Tracking"
           isCollapsed={isSidebarCollapsed}
-          links={[
-            { href: "/trip/status", label: "Live Trip Status" },
-            { href: "/trip/updates", label: "Delivery Updates" },
-            { href: "/trip/documents", label: "Upload Documents" },
-          ]}
         />
-
-        <SidebarLinkGroup
+        <SidebarLink
+          href="/admin/dashboard/payments"
           icon={CircleDollarSign}
           label="Payments"
           isCollapsed={isSidebarCollapsed}
-          links={[
-            { href: "/payments/history", label: "Payment History" },
-            { href: "/payments/invoices", label: "Invoice Generation" },
-          ]}
         />
-
-        <SidebarLinkGroup
+        <SidebarLink
+          href="/admin/dashboard/user"
           icon={User}
           label="Profile & Settings"
           isCollapsed={isSidebarCollapsed}
-          links={[
-            { href: "/profile/company", label: "Company/Individual Details" },
-            { href: "/profile/documents", label: "Upload Documents" },
-            {
-              href: "/profile/notifications",
-              label: "Notification Preferences",
-            },
-          ]}
         />
       </div>
 

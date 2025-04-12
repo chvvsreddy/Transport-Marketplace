@@ -4,13 +4,15 @@ import React, { useEffect } from "react";
 import Navbar from "./components/adminNavbar/page";
 import Sidebar from "./components/adminSidebar/page";
 import StoreProvider, { useAppSelector } from "@/app/redux";
+import { SearchProvider } from "../../util/SearchContext";
+import { UserProvider } from "../../util/UserContext"; 
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
-  useEffect(() => {}, []);
   const isSidebarCollapsed = useAppSelector(
     (state) => state.global.isSidebarCollapsed
   );
   const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
+
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add("dark");
@@ -23,7 +25,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div
-      className={` flex bg-gray-50 text-gray-900 w-full min-h-screen ${
+      className={`flex bg-gray-50 text-gray-900 w-full min-h-screen ${
         isDarkMode ? "dark" : "light"
       }`}
       id="fordash"
@@ -44,7 +46,11 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 const DashboardWrapper = ({ children }: { children: React.ReactNode }) => {
   return (
     <StoreProvider>
-      <DashboardLayout>{children}</DashboardLayout>
+      <SearchProvider>
+        <UserProvider>
+          <DashboardLayout>{children}</DashboardLayout>
+        </UserProvider>
+      </SearchProvider>
     </StoreProvider>
   );
 };

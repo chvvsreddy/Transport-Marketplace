@@ -67,14 +67,17 @@ export interface User {
 }
 
 export const checkUser = async (obj: userDetails) => {
-    try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(obj),
-    });
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/login`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(obj),
+      }
+    );
 
     const data = await response.json();
     return data;
@@ -85,13 +88,16 @@ export const checkUser = async (obj: userDetails) => {
 
 export const createUser = async (obj: User) => {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/Register`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(obj),
-    });
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/Register`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(obj),
+      }
+    );
 
     const data = await response.json();
     return data;
@@ -116,6 +122,25 @@ export const getUser = async (obj: string) => {
     return data;
   } catch (error) {
     console.error("user getting error:", error);
+  }
+};
+
+export const getAllUsers = async () => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/allUsers`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("users getting error:", error);
   }
 };
 

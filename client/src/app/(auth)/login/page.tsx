@@ -8,48 +8,45 @@ import { useRouter } from "next/navigation";
 
 
 export default function LoginPage() {
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string>("");
+const [email, setEmail] = useState("");
+const [password, setPassword] = useState("");
+const [loading, setLoading] = useState(false);
+const [error, setError] = useState("");
 
-  const router = useRouter();
-  useEffect(() => {
-    localStorage.removeItem("token");
-  }, []);
-  const onsubmit = async (e: any) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
+const router = useRouter();
 
-    try {
-      const res = await checkUser({
-        email,
-        password,
-      });
+useEffect(() => {
+  localStorage.removeItem("token");
+}, []);
 
-      if (res.userId) {
-        localStorage.setItem("token", JSON.stringify(res));
-        if (res.type == "SHIPPER_COMPANY") {
-          router.push("/shipper/dashboard");
-        } else if (res.type == "INDIVIDUAL_SHIPPER") {
-          router.push("/individualShipper/dashboard");
-        } else if (res.type == "LOGISTICS_COMPANY") {
-          router.push("/logistics/dashboard");
-        } else if (res.type == "INDIVIDUAL_DRIVER") {
-          router.push("/driver/dashboard");
-        } else if (res.type == "ADMIN") {
-          router.push("/admin/dashboard");
-        }
-      } else {
-        setError("Invalid credentials, please try again.");
-      }
-    } catch (error) {
-      setError("An error occurred. Please try again later.");
-    } finally {
-      setLoading(false);
+const onsubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
+  setError("");
+
+  try {
+    const res = await checkUser({ email, password });
+
+    if (res?.userId) {
+      localStorage.setItem("token", JSON.stringify(res));
+      const routeMap: Record<string, string> = {
+        SHIPPER_COMPANY: "/shipper/dashboard",
+        INDIVIDUAL_SHIPPER: "/individualShipper/dashboard",
+        LOGISTICS_COMPANY: "/logistics/dashboard",
+        INDIVIDUAL_DRIVER: "/driver/dashboard",
+        ADMIN: "/admin/dashboard",
+      };
+      router.push(routeMap[res.type] || "/");
+    } else {
+      setError("Invalid credentials, please try again.");
     }
-  };
+  } catch {
+    setError("An error occurred. Please try again later.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div>
