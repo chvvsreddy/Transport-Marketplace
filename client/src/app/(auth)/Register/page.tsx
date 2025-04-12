@@ -76,7 +76,7 @@ export default function RegisterPage() {
       <div>
         <div className="overflow-hidden bg-white">
             <div className="mx-auto grid lg:grid-cols-3 gap-x-0 gap-y-16 sm:gap-y-20 lg:mx-0 lg:max-w-none  min-h-dvh">
-              <div className="login-left py-12 px-12 lg:col-span-2">
+              <div className="login-left flex flex-1 flex-col justify-center py-12 px-12 lg:col-span-2">
                 <div className="relative z-30">
                   <p className="mt-2 text-4xl font-semibold tracking-tight text-pretty text-white sm:text-5xl">
                     A better Transit
