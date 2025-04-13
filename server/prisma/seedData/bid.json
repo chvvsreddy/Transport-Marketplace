@@ -14,5 +14,5 @@
   {"id":"bid_y5z6","loadId":"lod_y5z6","carrierId":"usr_0g2h","price":37000.0,"notes":"Dry van with air ride","status":"PENDING","vehicleId":"veh_y5z6","estimatedDuration":48.0,"isCompanyBid":true,"createdAt":"2023-07-26T14:30:00Z","updatedAt":"2023-07-26T14:30:00Z"},
   {"id":"bid_1a3b","loadId":"lod_1a3b","carrierId":"usr_6k8l","price":41000.0,"notes":"Temperature controlled pharma transport","status":"PENDING","vehicleId":"veh_1a3b","estimatedDuration":50.0,"isCompanyBid":true,"createdAt":"2023-07-31T16:45:00Z","updatedAt":"2023-07-31T16:45:00Z"},
   {"id":"bid_2c4d","loadId":"lod_2c4d","carrierId":"usr_2c4d","price":47000.0,"notes":"Refrigerated truck with GPS tracking","status":"PENDING","vehicleId":"veh_2c4d","estimatedDuration":44.0,"isCompanyBid":true,"createdAt":"2023-08-05T18:00:00Z","updatedAt":"2023-08-05T18:00:00Z"}
-
+  
 ]

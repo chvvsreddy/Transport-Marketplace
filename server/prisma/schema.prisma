@@ -124,7 +124,7 @@ model DriverDetails {
   updatedAt DateTime @updatedAt
 }
 
-// Rating model
+// Rating model 
 model Ratings {
   id          String   @id @default(uuid())
   rating      Int
