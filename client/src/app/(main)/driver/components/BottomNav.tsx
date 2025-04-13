@@ -12,18 +12,20 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const navItems = [
-  { href: "/loads/post", label: "Loads", icon: Map },
-  { href: "/trip/status", label: "Trips", icon: Layout },
-  { href: "/trucks", label: "Trucks", icon: TruckIcon },
-  { href: "/chat", label: "Chat", icon: MessagesSquare },
-  { href: "/profile/company", label: "Account", icon: User },
+  { href: "loads", label: "Loads", icon: Map },
+  { href: "trips", label: "Trips", icon: Layout },
+  { href: "trucks", label: "Trucks", icon: TruckIcon },
+  { href: "chat", label: "Chat", icon: MessagesSquare },
+  { href: "profile", label: "Account", icon: User },
 ];
 
-const MobileBottomNav = () => {
+const BottomNav = () => {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-inner flex justify-around items-center py-2 md:hidden z-50">
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-inner ">
+    <nav className="max-w-[800px] mx-auto w-full flex justify-around items-center py-2 z-50">
+      
       {navItems.map((item) => {
         const isActive = pathname === item.href;
         const Icon = item.icon;
@@ -49,8 +51,10 @@ const MobileBottomNav = () => {
           </Link>
         );
       })}
-    </nav>
+      </nav>
+      </div>
+    
   );
 };
 
-export default MobileBottomNav;
+export default BottomNav;

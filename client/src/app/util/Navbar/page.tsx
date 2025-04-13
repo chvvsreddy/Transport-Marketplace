@@ -8,6 +8,7 @@ import { setIsDarkmode, setIsSidebarCollapsed } from "@/state";
 import { useRouter } from "next/navigation";
 
 const Navbar = () => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const settingsRef = useRef<HTMLDivElement>(null);
 
@@ -58,7 +59,7 @@ const Navbar = () => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     setLoggedUser({ message: "", userId: "", type: "", email: "" });
-    router.push("/");
+    router.push("/login");
   };
 
   const toggleSidebar = () => {
@@ -131,7 +132,7 @@ const Navbar = () => {
             <span className="font-semibold">
               {loggedUser.email.split("@")[0]}
             </span>
-            <span className="text-sm">{loggedUser.type.split("_")[1]}</span>
+            <span className="text-sm">{loggedUser.type.toLowerCase()}</span>
           </div>
         </div>
 

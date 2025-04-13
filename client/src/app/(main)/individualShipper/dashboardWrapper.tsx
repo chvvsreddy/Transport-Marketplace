@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useEffect } from "react";
-import Navbar from "./components/shipperNavbar/page";
+//import Navbar from "./components/shipperNavbar/page";
 import Sidebar from "./components/shipperSidebar/page";
 import StoreProvider, { useAppSelector } from "@/app/redux";
+import Navbar from "@/app/util/Navbar/page";
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {}, []);
@@ -31,7 +32,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           isSidebarCollapsed ? "md:pl-24" : "md:pl-72"
         }`}
       >
-        <Navbar />
+        <Navbar/>
         {children}
       </main>
     </div>

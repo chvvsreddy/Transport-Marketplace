@@ -36,12 +36,9 @@ const Navbar = () => {
 
       if (
         (userObj.type === "SHIPPER_COMPANY" && userTypeFromUrl === "shipper") ||
-        (userObj.type === "INDIVIDUAL_SHIPPER" &&
-          userTypeFromUrl === "individualShipper") ||
-        (userObj.type === "LOGISTICS_COMPANY" &&
-          userTypeFromUrl === "logistics") ||
-        (userObj.type === "INDIVIDUAL_DRIVER" &&
-          userTypeFromUrl === "driver") ||
+        (userObj.type === "INDIVIDUAL_SHIPPER" && userTypeFromUrl === "individualShipper") ||
+        (userObj.type === "LOGISTICS_COMPANY" && userTypeFromUrl === "logistics") ||
+        (userObj.type === "INDIVIDUAL_DRIVER" && userTypeFromUrl === "driver") ||
         (userObj.type === "ADMIN" && userTypeFromUrl === "admin")
       ) {
         setLoggedUser(userObj);
@@ -58,7 +55,7 @@ const Navbar = () => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     setLoggedUser({ message: "", userId: "", type: "", email: "" });
-    router.push("/");
+    router.push("/login");
   };
 
   const toggleSidebar = () => {
@@ -148,11 +145,7 @@ const Navbar = () => {
               >
                 Settings
               </Link>
-              <button
-                onClick={() => {
-                  setSettingsOpen(false);
-                  handleLogout();
-                }}
+              <button onClick={() => {setSettingsOpen(false); handleLogout();}}
                 className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
               >
                 Logout

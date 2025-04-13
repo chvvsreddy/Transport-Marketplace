@@ -2,14 +2,7 @@
 
 import { useAppDispatch, useAppSelector } from "@/app/redux";
 import { setIsSidebarCollapsed } from "@/state";
-import {
-  BoxIcon,
-  ChartBarIncreasing,
-  User,
-  Layout,
-  TruckIcon,
-  DollarSign,
-} from "lucide-react";
+import { BoxIcon, ChartBarIncreasing, User, Layout, TruckIcon, DollarSign,} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";

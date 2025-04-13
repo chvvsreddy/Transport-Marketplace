@@ -24,7 +24,7 @@ const CardPerformance = dynamic(() => import("./CardPerformance"), {
   loading: () => <div>Loading Performance...</div>,
 });
 const MobileBottomNav = dynamic(
-  () => import("@/app/(main)/driver/components/MobileBottomNav"),
+  () => import("@/app/(main)/driver/components/BottomNav"),
   {
     ssr: false,
     loading: () => <div>Loading Navigation...</div>,
