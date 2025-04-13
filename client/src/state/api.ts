@@ -144,4 +144,23 @@ export const getAllUsers = async () => {
   }
 };
 
+export const getLoads = async () => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/allLoads`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("loads getting error:", error);
+  }
+};
+
 export const { useGetAllLoadsQuery } = api;
