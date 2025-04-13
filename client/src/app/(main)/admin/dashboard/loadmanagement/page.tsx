@@ -55,7 +55,7 @@ export default function Posted() {
       );
     });
     setFiltered(filteredLoads);
-    setCurrentPage(1); // reset to page 1 on filter
+    setCurrentPage(1);
   }, [originFilter, destinationFilter, loads]);
 
   const handlePrev = () => {
