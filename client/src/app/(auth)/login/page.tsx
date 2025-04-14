@@ -26,7 +26,7 @@ const onsubmit = async (e: React.FormEvent) => {
 
   try {
     const res = await checkUser({ email, password });
-
+    console.log(res)
     if (res?.userId) {
       localStorage.setItem("token", JSON.stringify(res));
       const routeMap: Record<string, string> = {
@@ -109,10 +109,10 @@ const onsubmit = async (e: React.FormEvent) => {
             <div className="flex flex-1 flex-col justify-center px-6 py-12 lg:px-8">
               <div className="flex justify-center">
                 <Link href={"/"}>
-                  <img
+                  <img 
                     src="/goodseva-logo.png"
                     alt="Goodseva-logo"
-                    className="h-12 w-auto"
+                    className="h-12 w-auto" width="auto" height="auto"
                   />
                 </Link>
               </div>

@@ -22,7 +22,7 @@ export default function Step1() {
                   <img
                     src="../../../../goodseva-logo.png"
                     alt=" Goodseva logo"
-                    height={50}
+                    height={50} width="auto" 
                   />
                 </Link>
                 <Typography.Title level={2} id="Text-Register">

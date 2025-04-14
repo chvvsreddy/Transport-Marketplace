@@ -107,7 +107,7 @@ const Sidebar = () => {
         </h6>
 
         <SidebarLink
-          href="/dashboard"
+          href="dashboard"
           icon={Layout}
           label="Dashboard"
           isCollapsed={isSidebarCollapsed}
@@ -122,39 +122,39 @@ const Sidebar = () => {
         </h6>
 
         <SidebarLink
-          href="/loadmanagement"
+          href=""
           icon={TruckIcon}
           label="Post a load"
           isCollapsed={isSidebarCollapsed}
         />
 
         <SidebarLink
-          href="/loadmanagement"
+          href=""
           icon={TruckIcon}
           label="My Loads"
           isCollapsed={isSidebarCollapsed}
         />
 
         <SidebarLink
-          href="/bids&orders"
+          href="bids&orders"
           icon={BoxIcon}
           label="Bids & Orders"
           isCollapsed={isSidebarCollapsed}
         />
         <SidebarLink
-          href="/admin/dashboard/triptracking"
+          href="triptracking"
           icon={ChartBar}
           label="Trip Tracking"
           isCollapsed={isSidebarCollapsed}
         />
         <SidebarLink
-          href="/admin/dashboard/payments"
+          href="payments"
           icon={CircleDollarSign}
           label="Payments"
           isCollapsed={isSidebarCollapsed}
         />
         <SidebarLink
-          href="/admin/dashboard/user"
+          href="user"
           icon={User}
           label="Profile & Settings"
           isCollapsed={isSidebarCollapsed}

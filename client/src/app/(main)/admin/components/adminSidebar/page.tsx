@@ -66,7 +66,7 @@ const Sidebar = () => {
             src="/goodseva-logo.png"
             alt="Goodseva-logo"
             width={160}
-            height={36}
+            height={36} 
             className="rounded"
           />
         )}
@@ -96,43 +96,43 @@ const Sidebar = () => {
           isCollapsed={isSidebarCollapsed}
         />
         <SidebarLink
-          href="/admin/dashboard/usermanagement"
+          href="usermanagement"
           icon={User}
           label="User Management"
           isCollapsed={isSidebarCollapsed}
         />
         <SidebarLink
-          href="/admin/dashboard/loadmanagement"
+          href="loadmanagement"
           icon={TruckIcon}
           label="Load Management"
           isCollapsed={isSidebarCollapsed}
         />
         <SidebarLink
-          href="/document-verification"
+          href="document-verification"
           icon={DollarSign}
           label="Trip Monitoring"
           isCollapsed={isSidebarCollapsed}
         />
         <SidebarLink
-          href="/view-bids"
+          href="view-bids"
           icon={BoxIcon}
           label="Bid & Order Management"
           isCollapsed={isSidebarCollapsed}
         />
         <SidebarLink
-          href="/order-history"
+          href="order-history"
           icon={DollarSign}
           label="Payments & Settlements"
           isCollapsed={isSidebarCollapsed}
         />
         <SidebarLink
-          href="/revenue-reports"
+          href="revenue-reports"
           icon={ChartBarIncreasing}
           label="Reports & Analytics"
           isCollapsed={isSidebarCollapsed}
         />
         <SidebarLink
-          href="/admin-roles"
+          href="admin-roles"
           icon={BoxIcon}
           label="System Settings"
           isCollapsed={isSidebarCollapsed}

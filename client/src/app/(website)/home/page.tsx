@@ -1,14 +1,15 @@
 "use client";
 
 import Header from "@/app/util/Header";
-import Link from "next/link";
-import Lp2 from "./Lp2";
-import Lp3 from "./Lp3";
-import Lp4 from "./Lp4";
-import Lp5 from "./Lp5";
-import Lp6 from "./Lp6";
+import dynamic from "next/dynamic";
 import Footer from "@/app/util/Footer";
+import Link from "next/link";
 
+const Lp2 = dynamic(() => import("./Lp2"));
+const Lp3 = dynamic(() => import("./Lp3"));
+const Lp4 = dynamic(() => import("./Lp4"));
+const Lp5 = dynamic(() => import("./Lp5"));
+const Lp6 = dynamic(() => import("./Lp6"));
 
 const Home = () => {
   return (

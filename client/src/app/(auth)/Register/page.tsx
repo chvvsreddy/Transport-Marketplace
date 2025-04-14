@@ -117,7 +117,7 @@ export default function RegisterPage() {
                     <img
                       src="/goodseva-logo.png"
                       alt="Goodseva-logo"
-                      className="h-12 w-auto"
+                      className="h-12 w-auto" width="auto" height="auto"
                     />
                   </Link>
                 </div>
