@@ -33,6 +33,7 @@ export const checkUser = async (req: Request, res: Response): Promise<any> => {
       userId: checkedUser.id,
       type: checkedUser.type,
       email: checkedUser.email,
+      phone:checkedUser.phone
     });
   } catch (error) {
     console.error(error);
