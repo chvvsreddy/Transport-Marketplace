@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useUser } from "@/app/util/UserContext";
 import { useRouter } from "next/navigation";
 import {
   Button,
@@ -20,25 +19,37 @@ import { InboxOutlined } from "@ant-design/icons";
 import Image from "next/image";
 import Lorryimg1 from "../../../../public/Lp3.png";
 import "../../(styles)/Postload.css";
+import { getLoggedUserFromLS } from "@/app/util/getLoggedUserFromLS";
 
 export default function PostLoad() {
-  const { user } = useUser();
   const router = useRouter();
   const [authorized, setAuthorized] = useState(false);
+  const [loggedUser, setLoggedUser] = useState({
+    message: "",
+    userId: "",
+    email: "",
+    phone: "",
+    type: "",
+  });
 
   const [activeGoodsType, setActiveGoodsType] = useState<number | null>(null);
   const [selectedTruck, setSelectedTruck] = useState<number | null>(null);
 
   useEffect(() => {
+    const userObj = getLoggedUserFromLS();
     if (
-      !user ||
-      !(user.type === "SHIPPER_COMPANY" || user.type === "INDIVIDUAL_SHIPPER")
+      !userObj ||
+      !(
+        userObj.type === "SHIPPER_COMPANY" ||
+        userObj.type === "INDIVIDUAL_SHIPPER"
+      )
     ) {
       router.push("/login");
     } else {
+      setLoggedUser(userObj);
       setAuthorized(true);
     }
-  }, [user, router]);
+  }, [router]);
 
   if (!authorized) return null;
 

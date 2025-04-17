@@ -163,4 +163,24 @@ export const getLoads = async () => {
   }
 };
 
+export const getLoadsById = async (obj: any) => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/allLoads`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(obj),
+      }
+    );
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("loads getting By id, got error:", error);
+  }
+};
+
 export const { useGetAllLoadsQuery } = api;

@@ -1,15 +1,37 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button, Col, Flex, Row, Space, Typography, Input, Card } from "antd";
+import {
+  Button,
+  Col,
+  Flex,
+  Row,
+  Space,
+  Typography,
+  Input,
+  Card,
+  Select,
+} from "antd";
 import { getLoads } from "@/state/api";
 import Link from "next/link";
+import { getLoggedUserFromLS } from "@/app/util/getLoggedUserFromLS";
+import { useRouter } from "next/navigation";
+
+const { Option } = Select;
 
 interface Location {
   city: string;
   state: string;
   postalCode: string;
 }
+
+type LoadStatus =
+  | "AVAILABLE"
+  | "PENDING"
+  | "ASSIGNED"
+  | "IN_TRANSIT"
+  | "DELIVERED"
+  | "CANCELLED";
 
 interface Load {
   id: string;
@@ -20,15 +42,25 @@ interface Load {
   trucks: number;
   pickupWindowStart: string;
   deliveryWindowEnd: string;
+  status: LoadStatus;
 }
 
 const ITEMS_PER_PAGE = 4;
 
 export default function Posted() {
+  const [loggedUser, setLoggedUser] = useState({
+    message: "",
+    userId: "",
+    email: "",
+    phone: "",
+    type: "",
+  });
+
   const [loads, setLoads] = useState<Load[]>([]);
   const [filtered, setFiltered] = useState<Load[]>([]);
   const [originFilter, setOriginFilter] = useState("");
   const [destinationFilter, setDestinationFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState<LoadStatus | "ALL">("ALL");
 
   const [debouncedOrigin, setDebouncedOrigin] = useState(originFilter);
   const [debouncedDestination, setDebouncedDestination] =
@@ -36,6 +68,17 @@ export default function Posted() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+
+  const router = useRouter();
+
+  useEffect(() => {
+    const userObj = getLoggedUserFromLS();
+    if (userObj && userObj !== "no user found" && userObj.type === "ADMIN") {
+      setLoggedUser(userObj);
+    } else {
+      router.push("/login");
+    }
+  }, []);
 
   useEffect(() => {
     const fetchLoads = async () => {
@@ -66,18 +109,23 @@ export default function Posted() {
 
   useEffect(() => {
     const filteredLoads = loads.filter((load) => {
-      return (
-        load.origin.city
-          .toLowerCase()
-          .includes(debouncedOrigin.toLowerCase()) &&
-        load.destination.city
-          .toLowerCase()
-          .includes(debouncedDestination.toLowerCase())
-      );
+      const matchesOrigin = load.origin.city
+        .toLowerCase()
+        .includes(debouncedOrigin.toLowerCase());
+
+      const matchesDestination = load.destination.city
+        .toLowerCase()
+        .includes(debouncedDestination.toLowerCase());
+
+      const matchesStatus =
+        statusFilter === "ALL" || load.status === statusFilter;
+
+      return matchesOrigin && matchesDestination && matchesStatus;
     });
+
     setFiltered(filteredLoads);
     setCurrentPage(1);
-  }, [debouncedOrigin, debouncedDestination, loads]);
+  }, [debouncedOrigin, debouncedDestination, statusFilter, loads]);
 
   const handlePrev = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 1));
@@ -111,6 +159,7 @@ export default function Posted() {
           </Typography.Title>
         </Col>
 
+        {/* Filters */}
         <Col span={24}>
           <Flex gap={12} style={{ marginBottom: 16 }} wrap="wrap">
             <Input
@@ -125,6 +174,19 @@ export default function Posted() {
               onChange={(e) => setDestinationFilter(e.target.value)}
               style={{ maxWidth: 250 }}
             />
+            <Select
+              value={statusFilter}
+              onChange={(val) => setStatusFilter(val)}
+              style={{ width: 200 }}
+            >
+              <Option value="ALL">All Statuses</Option>
+              <Option value="AVAILABLE">Available</Option>
+              <Option value="PENDING">Pending</Option>
+              <Option value="ASSIGNED">Assigned</Option>
+              <Option value="IN_TRANSIT">In Transit</Option>
+              <Option value="DELIVERED">Delivered</Option>
+              <Option value="CANCELLED">Cancelled</Option>
+            </Select>
           </Flex>
         </Col>
 
@@ -141,7 +203,6 @@ export default function Posted() {
                   }}
                 >
                   <Row gutter={[16, 16]}>
-                    {/* Origin */}
                     <Col xs={24} sm={12} md={4}>
                       <Typography.Text style={labelStyle}>
                         Origin
@@ -156,7 +217,6 @@ export default function Posted() {
                       </Flex>
                     </Col>
 
-                    {/* Destination */}
                     <Col xs={24} sm={12} md={4}>
                       <Typography.Text style={labelStyle}>
                         Destination
@@ -171,7 +231,6 @@ export default function Posted() {
                       </Flex>
                     </Col>
 
-                    {/* Equipment Type */}
                     <Col xs={24} sm={12} md={4}>
                       <Typography.Text style={labelStyle}>
                         Equipment Type
@@ -181,7 +240,6 @@ export default function Posted() {
                       </Typography.Text>
                     </Col>
 
-                    {/* Shipment Type */}
                     <Col xs={24} sm={12} md={4}>
                       <Typography.Text style={labelStyle}>
                         Shipment Type
@@ -191,7 +249,6 @@ export default function Posted() {
                       </Typography.Text>
                     </Col>
 
-                    {/* Est Pickup */}
                     <Col xs={24} sm={12} md={4}>
                       <Typography.Text style={labelStyle}>
                         Est Pickup
@@ -201,7 +258,6 @@ export default function Posted() {
                       </Typography.Text>
                     </Col>
 
-                    {/* Est Delivery */}
                     <Col xs={24} sm={12} md={4}>
                       <Typography.Text style={labelStyle}>
                         Est Delivery
@@ -211,7 +267,6 @@ export default function Posted() {
                       </Typography.Text>
                     </Col>
 
-                    {/* View Button */}
                     <Col xs={24} md={2}>
                       <Link href={`/loadmanagement/${load.id}`}>
                         <Button

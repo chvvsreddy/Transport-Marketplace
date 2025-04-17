@@ -7,27 +7,43 @@ import { getAllUsers } from "@/state/api";
 
 const USERS_PER_PAGE = 6;
 
+const USER_TYPE_LABELS: { [key: string]: string } = {
+  SHIPPER_COMPANY: "Shipper Company",
+  INDIVIDUAL_SHIPPER: "Individual Shipper",
+  LOGISTICS_COMPANY: "Logistics Company",
+  INDIVIDUAL_DRIVER: "Individual Driver",
+};
+
 const Users = () => {
   const [users, setUsers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const { searchTerm } = useSearch();
+  const [userType, setUserType] = useState("All");
 
   useEffect(() => {
     const fetchUsers = async () => {
       const gettedAllUsers = await getAllUsers();
-      setUsers(gettedAllUsers);
+      setUsers(gettedAllUsers.filter((u: any) => u.type !== "ADMIN"));
     };
 
     fetchUsers();
   }, []);
 
-  const filteredUsers = users.filter(
-    (person: any) =>
-      person.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      person.type.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const handleUserTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setUserType(e.target.value);
+    setCurrentPage(1);
+  };
 
-  // Pagination logic
+  const filteredUsers = users.filter((person: any) => {
+    const matchesSearch =
+      person.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      person.type.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesType = userType === "All" || person.type === userType;
+
+    return matchesSearch && matchesType;
+  });
+
   const totalPages = Math.ceil(filteredUsers.length / USERS_PER_PAGE);
   const startIndex = (currentPage - 1) * USERS_PER_PAGE;
   const currentUsers = filteredUsers.slice(
@@ -42,6 +58,27 @@ const Users = () => {
   return (
     <>
       <Heading name="Users" />
+
+      {/* Dropdown filter */}
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <label htmlFor="userType" className="text-sm text-gray-700">
+          Filter by Type:
+        </label>
+        <select
+          id="userType"
+          value={userType}
+          onChange={handleUserTypeChange}
+          className="border border-gray-300 rounded px-3 py-1 text-sm"
+        >
+          <option value="All">All</option>
+          {Object.entries(USER_TYPE_LABELS).map(([key, label]) => (
+            <option key={key} value={key}>
+              {label}
+            </option>
+          ))}
+        </select>
+      </div>
+
       {currentUsers.length === 0 ? (
         <div className="text-center text-gray-500 py-10 text-sm">
           No users found.
@@ -75,7 +112,7 @@ const Users = () => {
                   </div>
                   <div className="hidden shrink-0 sm:flex sm:flex-col sm:items-end">
                     <p className="text-sm/6 text-gray-900">
-                      {person.type.toLowerCase()}
+                      {USER_TYPE_LABELS[person.type] || person.type}
                     </p>
                     {person.lastSeen ? (
                       <p className="mt-1 text-xs/5 text-gray-500">

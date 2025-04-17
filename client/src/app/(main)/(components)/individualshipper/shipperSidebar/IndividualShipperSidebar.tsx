@@ -121,7 +121,7 @@ const Sidebar = () => {
           Management
         </h6>
         <SidebarLink
-          href="loadmanagement"
+          href="/myloads"
           icon={TruckIcon}
           label="My Loads"
           isCollapsed={isSidebarCollapsed}

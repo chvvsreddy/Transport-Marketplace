@@ -14,3 +14,22 @@ export const getAllLoads = async (
     res.status(500).json({ message: "Error in receiving All Loads" });
   }
 };
+
+export const getLoadsById = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { shipperId } = req.body;
+    const gettedLoads = await prisma.loads.findMany({
+      where: {
+        shipper: {
+          id: shipperId,
+        },
+      },
+    });
+    res.status(200).json(gettedLoads);
+  } catch (error) {
+    console.log(error);
+  }
+};
