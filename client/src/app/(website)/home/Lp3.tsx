@@ -5,7 +5,7 @@ import lorry from "../../../../public/Lorry1.png";
 
 export default function Lp3() {
   return (
-    <div style={{backgroundColor:"#2a004e"}}>
+    <div style={{backgroundColor:"#000"}}>
       <div className="main-layout">
       <div className="mx-auto grid grid-cols-2 gap-x-8 gap-y-16 py-6 lg:py-20">
         <div className="lg:pt-4 lg:pr-8 col-span-2 lg:col-span-1">

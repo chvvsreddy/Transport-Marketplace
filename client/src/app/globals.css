@@ -38,10 +38,11 @@ body, .ant-typography, .ant-upload-wrapper, .ant-col, .ant-btn, .ant-form{font-f
 
 hr{    border-color: #ccc;}
 .main-layout{max-width: 1400px;margin: 0 auto;padding: 0 20px;}
-.home-banner{background: url(../../public/banner-bg.webp) top center no-repeat;max-width: 1600px;margin: 0 auto;position: relative;}
+/* .home-banner{background: url(../../public/banner-bg.webp) top center no-repeat;max-width: 1600px;margin: 0 auto;position: relative;}
 .home-banner::after{background-color:#2A004E; opacity: 0.5; 
   position: absolute;  content: "";  top: 0px;  left:0px;  width:100%;bottom: 0;  
-}
+} */
+.top-banner{background: url(../../public/bg.png) bottom center no-repeat;background-size: 100%;}
 .login-left{background: url(../../public/banner-bg.webp) top center no-repeat;position: relative;overflow: hidden; background-size: cover;}
 .login-left::after{background-color:#2A004E; opacity: 0.9; 
   position: absolute;  content: "";  top: 0px;  left:0px;  width:100%;bottom: 0;  
@@ -50,7 +51,7 @@ hr{    border-color: #ccc;}
 .lp3-head-span {color: white; font-size:14px; font-weight: 400;}
 
 .lp5-banner{background:url('../../public/trafficls.png') top center no-repeat ;background-size: cover;padding: 50px;border-radius: 20px;position: relative;}
-.lp5-banner::after{background-color:#2a004e;
+.lp5-banner::after{background-color:#000;
   opacity: .7;border-radius: 20px;
   position: absolute;
   top: 0;content: "";
@@ -67,8 +68,8 @@ hr{    border-color: #ccc;}
 .button-primary{ background-color: #C62300;height: auto!important;
   @apply  rounded-md py-2 px-5 text-white font-semibold  shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 
  }
- .button-secondary{ background-color: rgba(198,35,0,0.1);height: auto!important;
-  @apply  rounded-md py-2 px-5 text-black font-semibold  shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2
+ .button-secondary{ background-color:#fff;height: auto!important;border:1px solid #C62300;color:#C62300;
+  @apply  rounded-md py-2 px-5 font-semibold  shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2
  }
 
 .upload-block { width: 100%; height: auto; padding: 15; border: 1px dashed #b0b0b0; border-radius: 5px;}
