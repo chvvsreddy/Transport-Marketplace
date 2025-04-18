@@ -2,24 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Button,
-  Col,
-  DatePicker,
-  Divider,
-  Flex,
-  Form,
-  Input,
-  Row,
-  Typography,
-  Radio,
-  Upload,
-} from "antd";
+import {Button, Col,DatePicker, Divider,Flex,Form,Input,Row,Typography,Radio,Upload, Checkbox,} from "antd";
 import { InboxOutlined } from "@ant-design/icons";
 import Image from "next/image";
-import Lorryimg1 from "../../../../public/Lp3.png";
+import OpenVan from "../../../../public/vehicles/miniOpenVan.png";
+import CloseVan from "../../../../public/vehicles/miniClosedVan.png";
+import tanker from "../../../../public/vehicles/tanker.png";
+import container from "../../../../public/vehicles/container.png";
 import "../../(styles)/Postload.css";
 import { getLoggedUserFromLS } from "@/app/util/getLoggedUserFromLS";
+import type { CheckboxProps } from 'antd';
+
 
 export default function PostLoad() {
   const router = useRouter();
@@ -34,6 +27,7 @@ export default function PostLoad() {
 
   const [activeGoodsType, setActiveGoodsType] = useState<number | null>(null);
   const [selectedTruck, setSelectedTruck] = useState<number | null>(null);
+
 
   useEffect(() => {
     const userObj = getLoggedUserFromLS();
@@ -54,51 +48,95 @@ export default function PostLoad() {
   if (!authorized) return null;
 
   const Goods_Types = [
-    { title: "Commodities - Lorry", example: "Ex: Grains, Coal, Cement" },
-    { title: "Container", example: "Ex: Electronics, Clothing" },
-    { title: "Liquid - Tanker", example: "Ex: Crude Oil, Chemicals" },
-    { title: "Gas - Tanker", example: "Ex: Natural Gas, Propane" },
-    {
-      title: "Roll-on/Roll-off - Flatbed",
-      example: "Ex: Cars, Heavy Machinery",
-    },
-    { title: "Project - Flatbed", example: "Ex: Complex Equipment" },
-    { title: "Hazardous - SP Truck", example: "Ex: Chemicals, Explosives" },
-    { title: "A/C Reefer", example: "Ex: Meats, Dairy" },
-    { title: "Box Truck", example: "Ex: Mixed Goods" },
+    { title: "17-24 FT" },
+    { title: "10 Wheel" },
+    { title: "12 Wheel"},
+    { title: "14 Wheel"},
+      //Container
+    { title: "20 Feet"},
+    { title: "22 Feet"},
+    { title: "24 Feet"},
+    { title: "32 Feet Single Axle"},
+    { title: "32 Feet Multi Axle" },
+    { title: "32 Feet Triple Axle" },
   ];
 
-  return (
-    <Flex vertical gap={20} style={{ padding: "24px" }}>
-      <Typography.Title level={3}>Post a Load</Typography.Title>
-      <Typography.Text className="sub-head">
-        Upload invoice to autofill load details
-      </Typography.Text>
+  const onChange: CheckboxProps['onChange'] = (e) => {
+    console.log(`checked = ${e.target.checked}`);
+  };
 
-      <Upload.Dragger
-        name="file"
-        multiple={false}
-        showUploadList={false}
-        className="upload-container"
-        maxCount={1}
-      >
+  return (
+    <Flex vertical gap={15} >
+      <Typography.Title level={3}>Post a Load</Typography.Title>
+      <div>
+      <h2 className="text-base/7 font-semibold text-gray-900 mb-3">Upload invoice to autofill load details</h2>
+
+      <Upload.Dragger  name="file"  multiple={false} showUploadList={false} className="upload-container" maxCount={1} >
         <p className="ant-upload-drag-icon">
           <InboxOutlined />
         </p>
-        <p className="upload-text">Click or drag file to this area to upload</p>
-        <p className="upload-subtext">PDF, Word, Image files. Max size: 10MB</p>
+        <div>
+          <p className="upload-text">Click or drag file to this area to upload</p>
+          <p className="upload-subtext">PDF, Word, Image files. Max size: 10MB</p>
+        </div>
+       
       </Upload.Dragger>
+      <div className="bg-amber-50 p-2 text-sm mt-2 flex gap-3 rounded">
+        <ul className="list-disc ml-4">
+            <li>Please enter accurate invoice details to claim insurance.</li>
+            <li>Total invoice amount should not exceed INR 50 lakhs.</li>
+        </ul>
+        <ul className="list-disc ml-4">
+            <li>Please note insurance applicable for shipments with invoices upto INR 20 lakhs.</li>
+            <li>Ceramic, Batteries, Chemicals items are not covered under insurance.</li>
+        </ul>
+    </div>
+      </div>
 
       <Form layout="vertical" style={{ marginTop: 32 }}>
-        <Row gutter={24}>
-          <Col lg={6}>
+      <h2 className="text-base/7 font-semibold text-gray-900 mb-3">Origin & Destination Details</h2>  
+      <Row gutter={24}>
+          <Col lg={12}>
             <Form.Item label="From">
               <Input placeholder="Hyderabad" />
+              <div className="mt-3">
+              <Checkbox onChange={onChange}>Miltiple Pickups</Checkbox>
+              </div>              
+            </Form.Item>
+            
+          </Col>
+          <Col lg={12}>
+            <Form.Item label="To">
+              <Input placeholder="Vishakapatnam" />
+              <div className="mt-3">
+              <Checkbox onChange={onChange}>Miltiple Drops</Checkbox>
+              </div>  
+            </Form.Item>
+            
+          </Col>
+
+        </Row>
+      <h2 className="text-base/7 font-semibold text-gray-900 mb-3 mt-3">Shipment Details</h2>
+        <Row gutter={24}>  
+          <Col lg={6}>
+            <Form.Item label="Date & Time">
+              <DatePicker showTime style={{ width: "100%" }} />
+            </Form.Item>
+          </Col>
+
+          <Col lg={6}>
+            <Form.Item label="Load Type">
+              <Input placeholder="Agriculture, Appearal etc" />
             </Form.Item>
           </Col>
           <Col lg={6}>
-            <Form.Item label="To">
-              <Input placeholder="Vishakapatnam" />
+            <Form.Item label="No. of Trucks">
+              <Input type="number" placeholder="1"/>
+            </Form.Item>
+          </Col>
+          <Col lg={6}>
+            <Form.Item label="Frequency (once in)">
+              <Input suffix="Week" placeholder="1" />
             </Form.Item>
           </Col>
           <Col lg={6}>
@@ -107,33 +145,9 @@ export default function PostLoad() {
             </Form.Item>
           </Col>
           <Col lg={6}>
-            <Form.Item label="Date & Time">
-              <DatePicker showTime style={{ width: "100%" }} />
-            </Form.Item>
-          </Col>
-        </Row>
-
-        <Row gutter={24}>
-          <Col lg={6}>
-            <Form.Item label="Truck Load Type">
-              <Input placeholder="Full/Part Truck Load" />
-            </Form.Item>
-          </Col>
-          <Col lg={6}>
-            <Form.Item label="No. of Trucks">
-              <Input type="number" />
-            </Form.Item>
-          </Col>
-          <Col lg={6}>
-            <Form.Item label="Frequency (once in)">
-              <Input suffix="Days" />
-            </Form.Item>
-          </Col>
-          <Col lg={6}>
             <Form.Item label="Price Type">
-              <Radio.Group className="radio-grp">
-                <Radio.Button value="spot">Spot Price</Radio.Button>
-                <Radio.Button value="your">Your Price</Radio.Button>
+              <Radio.Group className="radio-grp"  defaultValue="FixPrice" buttonStyle="solid">
+                <Radio.Button value="FixPrice" defaultChecked>Fix Price</Radio.Button>
                 <Radio.Button value="smart">Smart Bid</Radio.Button>
               </Radio.Group>
             </Form.Item>
@@ -141,50 +155,40 @@ export default function PostLoad() {
         </Row>
       </Form>
 
-      <Typography.Text className="section-title">
-        Suggested Trucks
-      </Typography.Text>
-      <Row gutter={[16, 16]} justify="start">
-        {["Open Truck", "Box Truck", "Refrigerator Truck"].map(
-          (truck, index) => (
-            <Col key={index} span={8}>
-              <Button
-                block
-                onClick={() => setSelectedTruck(index)}
-                className={`truck-suggestion-card ${
-                  selectedTruck === index ? "active" : ""
-                }`}
-              >
-                <div className="truck-suggestion-content">
-                  <Image src={Lorryimg1} alt="truck" width={50} height={50} />
-                  <Typography.Text className="truck-name">
-                    {truck}
-                  </Typography.Text>
-                  <div className="truck-details">
-                    <span>20T</span> <span>SXL</span> <span>20×8×8</span>
-                  </div>
-                </div>
-              </Button>
+      <h2 className="text-base/7 font-semibold text-gray-900 mb-3 mt-3">Truck Details</h2>
+      <Row gutter={24}>  
+          <Col lg={12}>
+          <Form.Item label="Truck Type">
+              <Radio.Group className="radio-grp"  defaultValue="Open">
+                <Radio.Button value="Open" ><Image src={OpenVan} alt="" height={40} />Open </Radio.Button>
+                <Radio.Button value="Closed"><Image src={CloseVan} alt="" height={40}/>Closed</Radio.Button> 
+                <Radio.Button value="Tanker"><Image src={tanker} alt="" height={40}/>Tanker</Radio.Button>
+                <Radio.Button value="Container"><Image src={container} alt="" height={40}/>Container</Radio.Button>
+              </Radio.Group>
+            </Form.Item>
             </Col>
-          )
-        )}
+          <Col lg={6}>
+          <Form.Item label="" >
+              <Radio.Group className="radio-grp"  defaultValue="AC" buttonStyle="solid" disabled>
+                <Radio.Button value="Non AC">Non AC</Radio.Button>
+                <Radio.Button value="AC">AC</Radio.Button>                
+              </Radio.Group>
+            </Form.Item></Col>
+          <Col lg={6}>
+          <Form.Item label="" >
+              <Radio.Group className="radio-grp"  defaultValue="With Trolly" buttonStyle="solid" disabled>
+                <Radio.Button value="With Trolly">With Trolly</Radio.Button>
+                <Radio.Button value="Without Trolly" >Without Trolly</Radio.Button>                
+              </Radio.Group>
+            </Form.Item>
+            </Col>
+          <Col lg={6}></Col>
       </Row>
-
-      <Typography.Text className="section-title">
-        Goods Type - Truck
-      </Typography.Text>
       <Flex wrap gap={15} style={{ marginBottom: 16 }}>
         {Goods_Types.map((g, i) => (
-          <Button
-            key={i}
-            className={`materials-btn ${activeGoodsType === i ? "active" : ""}`}
-            onClick={() => setActiveGoodsType(i)}
-          >
+          <Button key={i} className={`materials-btn ${activeGoodsType === i ? "active" : ""}`} onClick={() => setActiveGoodsType(i)} >
             <Typography.Text strong style={{ fontSize: "14px" }}>
               {g.title}
-            </Typography.Text>
-            <Typography.Text type="secondary" style={{ fontSize: "12px" }}>
-              {g.example}
             </Typography.Text>
           </Button>
         ))}
@@ -194,12 +198,10 @@ export default function PostLoad() {
 
       <Row justify="end" gutter={16}>
         <Col>
-          <Button id="saveAsDraftBtn">Save as Draft</Button>
+          <Button className="button-secondary">Save as Draft</Button>
         </Col>
         <Col>
-          <Button id="postBtn" type="primary">
-            Post
-          </Button>
+          <Button type="primary" className="button-primary">Post</Button>
         </Col>
       </Row>
     </Flex>

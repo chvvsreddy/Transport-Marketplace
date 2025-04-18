@@ -32,8 +32,10 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  
 }
+body, .ant-typography, .ant-upload-wrapper, .ant-col, .ant-btn, .ant-form{font-family: Arial, Helvetica, sans-serif;}
+
 hr{    border-color: #ccc;}
 .main-layout{max-width: 1400px;margin: 0 auto;padding: 0 20px;}
 .home-banner{background: url(../../public/banner-bg.webp) top center no-repeat;max-width: 1600px;margin: 0 auto;position: relative;}
@@ -62,11 +64,11 @@ hr{    border-color: #ccc;}
 .button-white{ 
  @apply  rounded-md bg-white py-3 px-5 text-xl font-semibold  shadow-xs hover:bg-amber-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600
 }
-.button-primary{ background-color: #C62300;
-  @apply  rounded-md py-3 px-5 text-white font-semibold  shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 
+.button-primary{ background-color: #C62300;height: auto!important;
+  @apply  rounded-md py-2 px-5 text-white font-semibold  shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 
  }
- .button-secondary{ background-color: rgba(198,35,0,0.1);
-  @apply  rounded-md py-3 px-5 text-black font-semibold  shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2
+ .button-secondary{ background-color: rgba(198,35,0,0.1);height: auto!important;
+  @apply  rounded-md py-2 px-5 text-black font-semibold  shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2
  }
 
 .upload-block { width: 100%; height: auto; padding: 15; border: 1px dashed #b0b0b0; border-radius: 5px;}
@@ -79,3 +81,14 @@ hr{    border-color: #ccc;}
   @apply flex w-full p-2.5 px-4 items-center rounded-md bg-white pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-indigo-600
 }
 .disabled{opacity: 0.5;pointer-events: none;}
+.ant-radio-group-solid :where(.css-dev-only-do-not-override-1d4w9r2).ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled) {
+  color: #fff;
+  background: #000;
+  border-color: #000;
+}
+.ant-radio-group-solid :where(.css-dev-only-do-not-override-1d4w9r2).ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled):hover {
+  color: #fff;
+  background: #444;
+  border-color: #000;
+}
+:where(.css-dev-only-do-not-override-1d4w9r2).ant-radio-button-wrapper{height: auto;text-align: center;}

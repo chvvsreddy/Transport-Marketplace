@@ -1,17 +1,13 @@
-.sub-head {
-  font-size: 16px;
-  font-weight: 500;
-}
 
-.upload-container {
-  border: 1px dashed #b0b0b0 !important;
-  border-radius: 8px !important;
-  background: #fafafa;
-  padding: 24px;
+.ant-upload-wrapper .ant-upload-drag{
+text-align:left!important;background-color: #fff;border: 2px dashed #d9d9d9;
 }
-
+.ant-upload-drag-container{display:flex!important;gap: 30px;align-items: center!important;}
+.ant-upload-wrapper .ant-upload-drag p.ant-upload-drag-icon {
+  margin-bottom:0; background:#2A004E; border-radius: 50%; padding: 10px; }
+  .ant-upload-wrapper .ant-upload-drag p.ant-upload-drag-icon svg {fill: #fff;}
 .upload-text {
-  font-size: 14px;
+  font-size: 14px; 
   font-weight: 500;
 }
 
@@ -59,7 +55,7 @@
   border: 1px solid #ccc;
   border-radius: 6px;
   width: 250px;
-  height: 100px;
+  height: auto;
   max-width: 100%;
   white-space: normal;
   text-align: left;
@@ -79,22 +75,3 @@
   color: #999;
 }
 
-#saveAsDraftBtn {
-  background-color: #fec6d1;
-  color: #7f1126;
-  transition: background-color 0.3s ease;
-}
-
-#saveAsDraftBtn:hover {
-  background-color: #f1a3b1; /* Lighter shade of pink */
-}
-
-#postBtn {
-  background-color: #7f1126;
-  color: #ffffff;
-  transition: background-color 0.3s ease;
-}
-
-#postBtn:hover {
-  background-color: #9f1636; /* Slightly darker shade */
-}
