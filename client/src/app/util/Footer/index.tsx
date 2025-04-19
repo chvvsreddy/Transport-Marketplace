@@ -8,16 +8,15 @@ const Footer = () => {
   return (
     <div className="footer-main bg-neutral-100 py-12">
         <div className='main-layout'>
-        <div className="grid grid-cols-6 gap-4">
-            <div className="col-span-2">
+        <div className="flex flex-col md:flex-row space-y-4">
+            <div className="flex-1/2">
             <Link href="/"><img src="goodseva-logo.png"  alt="Goodseva"  className="h-12 w-auto"/></Link>
             <p className='mb-5'>
-                  Faucibus quis fringilla scelerisque dui. Amet parturient dui
-                  venenatis amet sagittis viverra vel tincidunt. Orci tincidunt.
+               Market place all transport needs.
                 </p>
                 <button className='button-secondary flex gap-2'><MessageCircle/>  Start Live Chat</button>
             </div>
-            <div className="col-span-1 col-start-4 flex flex-col gap-2" >
+            <div className="flex-1/4 flex flex-col gap-2" >
                  <p className='text-red-900 font-semibold'>Company </p>
                   <p>About Us
                   </p>
@@ -31,7 +30,7 @@ const Footer = () => {
                     Our Network
                   </p>
             </div>
-            <div className="col-span-1 flex flex-col gap-2">
+            <div className="flex-1/4 flex flex-col gap-2">
                 <p className='text-red-900 font-semibold'> Resources</p>
                   <p>
                     Packing Supplies
@@ -44,7 +43,7 @@ const Footer = () => {
                     Tips and Guides
                   </p>
             </div>
-            <div className="col-span-1 flex flex-col gap-2">
+            <div className="flex-1/4 flex flex-col gap-2">
             <p  className='text-red-900 font-semibold'>  Help </p>
                   <p>
                     Customer Support
@@ -59,12 +58,12 @@ const Footer = () => {
                     Privacy Policy
                   </p>
             </div>
-            <div className="col-span-6">
+           
+        </div>
+        <div className="flex-1/1">
                 <hr className='my-6'/>
             <p>Copyright &copy; 2024 Goodseva</p>
             </div>
-        </div>
-          
         </div>
       </div>
   )
