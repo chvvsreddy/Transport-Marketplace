@@ -38,6 +38,7 @@ body,
   font-family: Arial, Helvetica, sans-serif;
 }
 
+<<<<<<< HEAD
 hr {
   border-color: #ccc;
 }
@@ -55,6 +56,25 @@ hr {
 .home-banner::after {
   background-color: #2a004e;
   opacity: 0.5;
+=======
+hr{    border-color: #ccc;}
+.main-layout{max-width: 1400px;margin: 0 auto;padding: 0 20px;}
+/* .home-banner{background: url(../../public/banner-bg.webp) top center no-repeat;max-width: 1600px;margin: 0 auto;position: relative;}
+.home-banner::after{background-color:#2A004E; opacity: 0.5; 
+  position: absolute;  content: "";  top: 0px;  left:0px;  width:100%;bottom: 0;  
+} */
+.top-banner{background: url(../../public/bg.png) bottom center no-repeat;background-size: 100%;}
+.login-left{background: url(../../public/banner-bg.webp) top center no-repeat;position: relative;overflow: hidden; background-size: cover;}
+.login-left::after{background-color:#2A004E; opacity: 0.9; 
+  position: absolute;  content: "";  top: 0px;  left:0px;  width:100%;bottom: 0;  
+}
+.lp3-head-text { margin-bottom: 0;}
+.lp3-head-span {color: white; font-size:14px; font-weight: 400;}
+
+.lp5-banner{background:url('../../public/trafficls.png') top center no-repeat ;background-size: cover;padding: 50px;border-radius: 20px;position: relative;}
+.lp5-banner::after{background-color:#000;
+  opacity: .7;border-radius: 20px;
+>>>>>>> 9b265a0c2bc82c83cafaf9e6a030ba5c61f780df
   position: absolute;
   content: "";
   top: 0px;
@@ -105,9 +125,27 @@ hr {
   width: 100%;
   bottom: 0;
 }
+<<<<<<< HEAD
 .lp5-banner .banner {
   position: relative;
   z-index: 999;
+=======
+.button-primary{ background-color: #C62300;height: auto!important;
+  @apply  rounded-md py-2 px-5 text-white font-semibold  shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 
+ }
+ .button-secondary{ background-color:#fff;height: auto!important;border:1px solid #C62300;color:#C62300;
+  @apply  rounded-md py-2 px-5 font-semibold  shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2
+ }
+
+.upload-block { width: 100%; height: auto; padding: 15; border: 1px dashed #b0b0b0; border-radius: 5px;}
+.drag-text1 { font-size: 14px;font-weight: 400;}
+.drag-text2 {font-size: 14px;font-weight: 400; color: #848080;}
+.file-upload-btn {border: 1px solid white;width: fit-content;height: fit-content; padding: 10;border-radius: 30;  background-color: #7f1126;
+  text-align: center;}
+
+.input{
+  @apply flex w-full p-2.5 px-4 items-center rounded-md bg-white pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-indigo-600
+>>>>>>> 9b265a0c2bc82c83cafaf9e6a030ba5c61f780df
 }
 .lp5-banner .banner h2 {
   color: #c62300;

@@ -58,17 +58,12 @@ const Header = () => {
                   <div className="navbar-icon">
                     <PhoneOutlined />
                   </div>
-                  <h4 className="mobile-number">+91 864 6444 2222</h4>
+                  <h4 className="mobile-number hidden md:block">+91 864 6444 2222</h4>
                   <div className="navbar-mail">
-                    <MailOutlined
-                      style={{
-                        fontSize: "larger",
-                        borderLeft: "1px solid white",
-                        paddingLeft: "15px",
-                      }}
-                    />
-                    info@goodseva.com
+                    <MailOutlined />
+                    
                   </div>
+                  <span className="hidden md:block">info@goodseva.com</span>
                 </div>
               </div>
             </div>
