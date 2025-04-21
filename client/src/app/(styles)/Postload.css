@@ -74,4 +74,22 @@ text-align:left!important;background-color: #fff;border: 2px dashed #d9d9d9;
   font-size: 11px;
   color: #999;
 }
+.materials-btn {
+  border: 1px solid #d9d9d9;
+  background-color: white;
+  color: black;
+  padding: 8px 16px;
+  transition: all 0.3s ease;
+}
+
+.materials-btn:hover {
+  border-color: #1890ff;
+}
+
+.materials-btn.active {
+  border-color: #1890ff !important;
+  color: #1890ff;
+  font-weight: 600;
+}
+
 

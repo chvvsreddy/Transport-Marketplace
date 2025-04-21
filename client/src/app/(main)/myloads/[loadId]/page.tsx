@@ -2,6 +2,6 @@
 
 import SingleLoad from "../../(components)/SingleLoad";
 
-export default function EachLoad() {
+export default function ParticularLoad() {
   return <SingleLoad />;
 }

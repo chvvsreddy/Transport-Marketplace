@@ -183,4 +183,42 @@ export const getLoadsById = async (obj: any) => {
   }
 };
 
+export const getLoadByLoadId = async (loadId: any) => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/myLoads/${loadId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("load getting By LoadId, got error:", error);
+  }
+};
+
+export const getLoadByLoadIdForAdmin = async (loadId: any) => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/myLoads/${loadId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("load getting By LoadId for admin, got error:", error);
+  }
+};
+
 export const { useGetAllLoadsQuery } = api;

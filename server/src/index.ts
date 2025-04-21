@@ -11,6 +11,9 @@ import allUsersRoute from "./routes/allUsersRoutes";
 import loginRoutes from "./routes/loginRoutes";
 import profileRoutes from "./routes/profileRoutes";
 import signupRoutes from "./routes/signupRoutes";
+import loadsRoutes from "./routes/loadsRoutes";
+import adminLoadRoutes from "./routes/adminLoads";
+import postLoadRoutes from "./routes/postLoadRoutes";
 
 // CONFIGURATIONS
 dotenv.config();
@@ -29,7 +32,9 @@ app.use("/allUsers", allUsersRoute);
 app.use("/login", loginRoutes);
 app.use("/profile", profileRoutes);
 app.use("/Register", signupRoutes);
-
+app.use("/myloads", loadsRoutes);
+app.use("/loadmanagement", adminLoadRoutes);
+app.use("/postload", postLoadRoutes);
 /* SERVER */
 const port = Number(process.env.PORT) || 8000;
 app.listen(port, "0.0.0.0", () => {

@@ -235,6 +235,7 @@ export default function Posted() {
                       <Typography.Text style={labelStyle}>
                         Equipment Type
                       </Typography.Text>
+                      <br />
                       <Typography.Text style={valueStyle}>
                         {load.specialRequirements}
                       </Typography.Text>
@@ -244,6 +245,7 @@ export default function Posted() {
                       <Typography.Text style={labelStyle}>
                         Shipment Type
                       </Typography.Text>
+                      <br />
                       <Typography.Text style={valueStyle}>
                         {load.cargoType}
                       </Typography.Text>
