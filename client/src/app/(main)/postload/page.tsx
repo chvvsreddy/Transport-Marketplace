@@ -15,6 +15,7 @@ import {
   Upload,
   Checkbox,
   message,
+  Divider,
 } from "antd";
 import { InboxOutlined } from "@ant-design/icons";
 import Image from "next/image";
@@ -25,6 +26,7 @@ import container from "../../../../public/vehicles/container.png";
 import "../../(styles)/Postload.css";
 import { getLoggedUserFromLS } from "@/app/util/getLoggedUserFromLS";
 import { useWatch } from "antd/es/form/Form";
+import { createLoad } from "@/state/api";
 
 export default function PostLoad() {
   const router = useRouter();
@@ -33,6 +35,7 @@ export default function PostLoad() {
 
   const [activeGoodsType, setActiveGoodsType] = useState<number | null>(null);
   const [selectedTruckType, setSelectedTruckType] = useState<string>("Open");
+  const [postStatus, setPostStatus] = useState<string | null>(null);
 
   const Goods_Types: any = {
     Open: [
@@ -79,7 +82,7 @@ export default function PostLoad() {
   const acOptionValue = useWatch("acOption", form);
   const trollyOptionValue = useWatch("trollyOption", form);
 
-  const handlePost = (values: any) => {
+  const handlePost = async (values: any) => {
     let selectedGoods;
 
     if (
@@ -105,17 +108,21 @@ export default function PostLoad() {
         postalCode: "",
       },
       destination: {
-        address: values.to,
+        city: values.to,
         lat: "",
         lng: "",
+        state: "",
+        address: "",
+        country: "India",
+        postalCode: "",
       },
       weight: values.weight,
       dimensions: {},
       cargoType: values.loadType,
       specialRequirements: [
         ...(values.specialRequirements || []),
-        selectedGoods,
-        selectedTruckType,
+        selectedGoods ?? "",
+        selectedTruckType ?? "",
         acOptionValue ?? "NO",
         trollyOptionValue ?? "NO",
       ],
@@ -125,16 +132,29 @@ export default function PostLoad() {
       pickupWindowEnd: values.datetime,
       deliveryWindowStart: values.datetime,
       deliveryWindowEnd: values.datetime,
-      // isBulkLoad: false, // Default value
-      // isFragile: false, // Default value
-      // requiresColdStorage: false, // Default value
     };
 
-    // Log the payload for testing
-    console.log("Post Load Data:", payload);
-
-    message.success("Load posted successfully!");
+    callCreateLoad(payload);
   };
+
+  async function callCreateLoad(payload: any) {
+    try {
+      const load = await createLoad(payload);
+      if (load.id) {
+        message.success("Load posted successfully!");
+        setPostStatus("✅ Load posted successfully!");
+        form.resetFields();
+        setActiveGoodsType(null);
+        setSelectedTruckType("Open");
+        setTimeout(() => setPostStatus(null), 4000);
+      }
+    } catch (error) {
+      console.log(error);
+      message.error("Something went wrong while posting the load.");
+      setPostStatus("❌ Failed to post load.");
+      setTimeout(() => setPostStatus(null), 4000);
+    }
+  }
 
   if (!authorized) return null;
 
@@ -142,6 +162,7 @@ export default function PostLoad() {
     <Flex vertical gap={15}>
       <Typography.Title level={3}>Post a Load</Typography.Title>
 
+      {/* Upload Section */}
       <div>
         <h2 className="text-base/7 font-semibold text-gray-900 mb-3">
           Upload invoice to autofill load details
@@ -185,20 +206,28 @@ export default function PostLoad() {
         </div>
       </div>
 
+      {/* Form Starts Here */}
       <Form
         layout="vertical"
         form={form}
         onFinish={handlePost}
         initialValues={{
           priceType: "FixPrice",
+          acOption: "Non AC",
+          trollyOption: "Without Trolly",
         }}
       >
+        {/* Origin & Destination */}
         <h2 className="text-base/7 font-semibold text-gray-900 mb-3">
           Origin & Destination Details
         </h2>
         <Row gutter={24}>
           <Col lg={12}>
-            <Form.Item label="From" name="from">
+            <Form.Item
+              label="From"
+              name="from"
+              rules={[{ required: true, message: "Please enter origin" }]}
+            >
               <Input placeholder="Hyderabad" />
             </Form.Item>
             <Form.Item name="multiplePickups" valuePropName="checked">
@@ -206,7 +235,11 @@ export default function PostLoad() {
             </Form.Item>
           </Col>
           <Col lg={12}>
-            <Form.Item label="To" name="to">
+            <Form.Item
+              label="To"
+              name="to"
+              rules={[{ required: true, message: "Please enter destination" }]}
+            >
               <Input placeholder="Vishakapatnam" />
             </Form.Item>
             <Form.Item name="multipleDrops" valuePropName="checked">
@@ -215,32 +248,55 @@ export default function PostLoad() {
           </Col>
         </Row>
 
+        {/* Shipment Details */}
         <h2 className="text-base/7 font-semibold text-gray-900 mb-3 mt-3">
           Shipment Details
         </h2>
         <Row gutter={24}>
           <Col lg={6}>
-            <Form.Item label="Date & Time" name="datetime">
+            <Form.Item
+              label="Date & Time"
+              name="datetime"
+              rules={[{ required: true, message: "Please select a date/time" }]}
+            >
               <DatePicker showTime style={{ width: "100%" }} />
             </Form.Item>
           </Col>
           <Col lg={6}>
-            <Form.Item label="Load Type" name="loadType">
+            <Form.Item
+              label="Load Type"
+              name="loadType"
+              rules={[{ required: true, message: "Please enter load type" }]}
+            >
               <Input placeholder="Agriculture, Apparel etc" />
             </Form.Item>
           </Col>
           <Col lg={6}>
-            <Form.Item label="No. of Trucks" name="noOfTrucks">
+            <Form.Item
+              label="No. of Trucks"
+              name="noOfTrucks"
+              rules={[
+                { required: true, message: "Please enter no. of trucks" },
+              ]}
+            >
               <Input type="number" placeholder="1" />
             </Form.Item>
           </Col>
           <Col lg={6}>
-            <Form.Item label="Weight" name="weight">
+            <Form.Item
+              label="Weight"
+              name="weight"
+              rules={[{ required: true, message: "Please enter weight" }]}
+            >
               <Input suffix="Tons" />
             </Form.Item>
           </Col>
           <Col lg={6}>
-            <Form.Item label="Price" name="price">
+            <Form.Item
+              label="Price"
+              name="price"
+              rules={[{ required: true, message: "Please enter price" }]}
+            >
               <Input type="number" placeholder="Enter price" />
             </Form.Item>
           </Col>
@@ -254,18 +310,22 @@ export default function PostLoad() {
           </Col>
         </Row>
 
+        {/* Truck Details */}
         <h2 className="text-base/7 font-semibold text-gray-900 mb-3 mt-3">
           Truck Details
         </h2>
         <Row gutter={24}>
           <Col lg={12}>
-            <Form.Item label="Truck Type" name="truckType">
+            <Form.Item
+              label="Truck Type"
+              name="truckType"
+              rules={[{ required: true, message: "Please select truck type" }]}
+            >
               <Radio.Group
-                className="radio-grp"
-                value={selectedTruckType}
                 onChange={(e) => {
                   setSelectedTruckType(e.target.value);
                   setActiveGoodsType(null);
+                  form.setFieldValue("truckType", e.target.value);
                 }}
               >
                 <Radio.Button value="Open">
@@ -313,7 +373,7 @@ export default function PostLoad() {
           </Col>
         </Row>
 
-        {/*  Buttons for Open, Closed */}
+        {/* Goods Types */}
         {["Open", "Closed"].includes(selectedTruckType) &&
           Goods_Types[selectedTruckType].length > 0 && (
             <Flex wrap gap={15} style={{ marginBottom: 16 }}>
@@ -337,7 +397,6 @@ export default function PostLoad() {
             </Flex>
           )}
 
-        {/* Size Buttons for Container With Trolly */}
         {selectedTruckType === "Container" &&
           trollyOptionValue === "With Trolly" && (
             <Flex wrap gap={15} style={{ marginBottom: 16 }}>
@@ -361,9 +420,28 @@ export default function PostLoad() {
             </Flex>
           )}
 
-        <Button type="primary" htmlType="submit">
-          Post
-        </Button>
+        {/* Status Message */}
+        {postStatus && (
+          <Typography.Text
+            type={postStatus.includes("Failed") ? "danger" : "success"}
+            style={{ display: "block", marginBottom: 16, textAlign: "center" }}
+          >
+            {postStatus}
+          </Typography.Text>
+        )}
+
+        <Divider />
+
+        <Row justify="end" gutter={16}>
+          <Col>
+            <Button className="button-secondary">Save as Draft</Button>
+          </Col>
+          <Col>
+            <Button type="primary" htmlType="submit" className="button-primary">
+              Post
+            </Button>
+          </Col>
+        </Row>
       </Form>
     </Flex>
   );

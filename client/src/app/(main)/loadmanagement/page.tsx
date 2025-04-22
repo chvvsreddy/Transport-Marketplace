@@ -109,11 +109,11 @@ export default function Posted() {
 
   useEffect(() => {
     const filteredLoads = loads.filter((load) => {
-      const matchesOrigin = load.origin.city
+      const matchesOrigin = (load.origin?.city ?? "")
         .toLowerCase()
         .includes(debouncedOrigin.toLowerCase());
 
-      const matchesDestination = load.destination.city
+      const matchesDestination = (load.destination?.city ?? "")
         .toLowerCase()
         .includes(debouncedDestination.toLowerCase());
 

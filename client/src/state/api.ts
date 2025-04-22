@@ -183,6 +183,26 @@ export const getLoadsById = async (obj: any) => {
   }
 };
 
+export const createLoad = async (obj: any) => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/postload`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(obj),
+      }
+    );
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("creating load error", error);
+  }
+};
+
 export const getLoadByLoadId = async (loadId: any) => {
   try {
     const response = await fetch(

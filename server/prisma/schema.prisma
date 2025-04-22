@@ -25,6 +25,7 @@ model Users {
   passwordHash String
   type         UserType
   phone        String
+  profilePic   String?
   isVerified   Boolean  @default(false)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -251,6 +252,8 @@ model Vehicle {
   // Relationships
   trips   Trips[]
   devices Device[]
+
+  //Bid Bid[]
 }
 
 // Trip Management Module
