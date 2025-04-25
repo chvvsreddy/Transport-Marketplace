@@ -172,6 +172,7 @@ model Loads {
   specialRequirements String[]
   status              LoadStatus @default(AVAILABLE)
   price               Float
+  bidPrice            Float      @default(0)
   noOfTrucks          Int        @default(1)
   pickupWindowStart   DateTime
   pickupWindowEnd     DateTime

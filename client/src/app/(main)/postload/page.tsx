@@ -29,6 +29,8 @@ import { useWatch } from "antd/es/form/Form";
 import { createLoad } from "@/state/api";
 
 export default function PostLoad() {
+  const [priceType, setPriceType] = useState<string>("FixPrice");
+
   const router = useRouter();
   const [authorized, setAuthorized] = useState(false);
   const [form] = Form.useForm();
@@ -126,7 +128,8 @@ export default function PostLoad() {
         acOptionValue ?? "NO",
         trollyOptionValue ?? "NO",
       ],
-      price: values.price,
+      price: priceType === "FixPrice" ? values.price : 0,
+      bidPrice: priceType === "smart" ? values.price : 0,
       noOfTrucks: values.noOfTrucks,
       pickupWindowStart: values.datetime,
       pickupWindowEnd: values.datetime,
@@ -357,7 +360,15 @@ export default function PostLoad() {
           </Col>
           <Col lg={6}>
             <Form.Item label="Price Type" name="priceType">
-              <Radio.Group className="radio-grp" buttonStyle="solid">
+              <Radio.Group
+                className="radio-grp"
+                buttonStyle="solid"
+                value={priceType}
+                onChange={(e) => {
+                  setPriceType(e.target.value);
+                  form.setFieldValue("priceType", e.target.value);
+                }}
+              >
                 <Radio.Button value="FixPrice">Fix Price</Radio.Button>
                 <Radio.Button value="smart">Smart Bid</Radio.Button>
               </Radio.Group>
