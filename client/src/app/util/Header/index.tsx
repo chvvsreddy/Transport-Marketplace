@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { Menu } from "lucide-react";
@@ -58,10 +58,11 @@ const Header = () => {
                   <div className="navbar-icon">
                     <PhoneOutlined />
                   </div>
-                  <h4 className="mobile-number hidden md:block">+91 864 6444 2222</h4>
+                  <h4 className="mobile-number hidden md:block">
+                    +91 864 6444 2222
+                  </h4>
                   <div className="navbar-mail">
                     <MailOutlined />
-                    
                   </div>
                   <span className="hidden md:block">info@goodseva.com</span>
                 </div>
@@ -121,19 +122,27 @@ const Header = () => {
                     Logout
                     <span aria-hidden="true">&rarr;</span>
                   </button>
-                  <Link href={`/profile?userId=${loggedUser.userId}`}>
+                  <Link href={"/dashboard"}>
                     <button type="button" className="button-primary">
-                      Profile
+                      Dasboard
                     </button>
                   </Link>
                 </>
               ) : (
                 <>
-                  <Link href={"/login"} className="button-secondary mr-5" target="_blank">
+                  <Link
+                    href={"/login"}
+                    className="button-secondary mr-5"
+                    target="_blank"
+                  >
                     Login <span aria-hidden="true">&rarr;</span>
                   </Link>
-                  <Link href={"/Register"}  className="button-primary"  target="_blank">
-                        Get Started
+                  <Link
+                    href={"/Register"}
+                    className="button-primary"
+                    target="_blank"
+                  >
+                    Get Started
                   </Link>
                 </>
               )}

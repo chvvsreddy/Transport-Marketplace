@@ -15,6 +15,7 @@ import {
   Divider,
   Select,
   Tag,
+  Input,
 } from "antd";
 import { EyeOutlined } from "@ant-design/icons";
 
@@ -69,6 +70,12 @@ export default function MyLoads() {
     "ALL"
   );
   const [currentPage, setCurrentPage] = useState(1);
+  const [originSearchQuery, setOriginSearchQuery] = useState("");
+  const [destinationSearchQuery, setDestinationSearchQuery] = useState("");
+  const [debouncedOriginSearchQuery, setDebouncedOriginSearchQuery] =
+    useState("");
+  const [debouncedDestinationSearchQuery, setDebouncedDestinationSearchQuery] =
+    useState("");
   const ITEMS_PER_PAGE = 5;
 
   const router = useRouter();
@@ -94,6 +101,16 @@ export default function MyLoads() {
     fetchLoads();
   }, [loggedUser.userId]);
 
+  useEffect(() => {
+    // Debouncing search queries
+    const debounceTimeout = setTimeout(() => {
+      setDebouncedOriginSearchQuery(originSearchQuery);
+      setDebouncedDestinationSearchQuery(destinationSearchQuery);
+    }, 500);
+
+    return () => clearTimeout(debounceTimeout);
+  }, [originSearchQuery, destinationSearchQuery]);
+
   const handlePrev = () => {
     if (currentPage > 1) setCurrentPage((prev) => prev - 1);
   };
@@ -107,9 +124,23 @@ export default function MyLoads() {
       ? loads
       : loads.filter((l) => l.status === selectedStatus);
 
-  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  // Filter loads based on both origin and destination search queries
+  const searchedLoads =
+    debouncedOriginSearchQuery || debouncedDestinationSearchQuery
+      ? filtered.filter(
+          (load) =>
+            (load.origin.city?.toLowerCase() || "").includes(
+              debouncedOriginSearchQuery.toLowerCase()
+            ) &&
+            (load.destination.city?.toLowerCase() || "").includes(
+              debouncedDestinationSearchQuery.toLowerCase()
+            )
+        )
+      : filtered;
 
-  const paginatedLoads = filtered.slice(
+  const totalPages = Math.ceil(searchedLoads.length / ITEMS_PER_PAGE);
+
+  const paginatedLoads = searchedLoads.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
@@ -156,17 +187,33 @@ export default function MyLoads() {
         </Select>
       </Flex>
 
-      {filtered.length > 0 ? (
+      {/* Origin Search Input */}
+      <Input
+        placeholder="Search by origin city"
+        value={originSearchQuery}
+        onChange={(e) => setOriginSearchQuery(e.target.value)}
+        style={{ marginBottom: 16, width: 300 }}
+      />
+
+      {/* Destination Search Input */}
+      <Input
+        placeholder="Search by destination city"
+        value={destinationSearchQuery}
+        onChange={(e) => setDestinationSearchQuery(e.target.value)}
+        style={{ marginBottom: 16, width: 300 }}
+      />
+
+      {searchedLoads.length > 0 ? (
         <>
           <Flex vertical gap={16}>
             {paginatedLoads.map((load) => (
               <Card
                 key={load.id}
+                styles={{ body: { padding: 20 } }}
                 style={{
                   borderRadius: 12,
                   boxShadow: "0 1px 6px rgba(0,0,0,0.05)",
                 }}
-                bodyStyle={{ padding: 20 }}
               >
                 <Row gutter={[16, 12]} align="middle" justify="space-between">
                   <Col xs={24} md={5}>
@@ -255,21 +302,22 @@ export default function MyLoads() {
                       >
                         View
                       </Button>
-                      <Tag
-                        color={statusColors[load.status]}
-                        style={{ fontWeight: 600, textAlign: "right" }}
-                      >
-                        {load.status.replace("_", " ")}
-                      </Tag>
                     </Flex>
+                  </Col>
+                </Row>
+
+                {/* Status Tag */}
+                <Row justify="end" align="bottom" gutter={12}>
+                  <Col>
+                    <Tag color={statusColors[load.status]}>{load.status}</Tag>
                   </Col>
                 </Row>
               </Card>
             ))}
           </Flex>
 
-          {/* Custom Pagination */}
-          {filtered.length > ITEMS_PER_PAGE && (
+          {/* Pagination */}
+          {searchedLoads.length > ITEMS_PER_PAGE && (
             <Flex
               justify="center"
               align="center"
@@ -292,7 +340,14 @@ export default function MyLoads() {
           )}
         </>
       ) : (
-        <Typography.Text>No loads found.</Typography.Text>
+        <Flex
+          vertical
+          justify="center"
+          align="center"
+          style={{ height: "60vh", textAlign: "center" }}
+        >
+          <Typography.Text>No loads found.</Typography.Text>
+        </Flex>
       )}
     </div>
   );

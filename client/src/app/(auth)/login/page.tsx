@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { checkUser } from "@/state/api";
 import { useRouter } from "next/navigation";
-import { useUser } from "@/app/util/UserContext";
+
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -13,7 +13,6 @@ export default function LoginPage() {
   const [error, setError] = useState("");
 
   const router = useRouter();
- 
 
   useEffect(() => {
     localStorage.removeItem("token");
@@ -37,7 +36,11 @@ export default function LoginPage() {
         //   ADMIN: "/admin/dashboard",
         // };
         // router.push(routeMap[res.type] || "/");
-        router.push("/dashboard");
+        if (res.type === "INDIVIDUAL_DRIVER") {
+          router.push("/driver/loads");
+        } else {
+          router.push("/dashboard");
+        }
       } else {
         setError("Invalid credentials, please try again.");
       }

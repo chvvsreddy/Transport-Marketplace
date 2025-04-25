@@ -14,6 +14,7 @@ import signupRoutes from "./routes/signupRoutes";
 import loadsRoutes from "./routes/loadsRoutes";
 import adminLoadRoutes from "./routes/adminLoads";
 import postLoadRoutes from "./routes/postLoadRoutes";
+import driverRoutes from "./routes/driverRoutes";
 
 // CONFIGURATIONS
 dotenv.config();
@@ -35,6 +36,7 @@ app.use("/Register", signupRoutes);
 app.use("/myloads", loadsRoutes);
 app.use("/loadmanagement", adminLoadRoutes);
 app.use("/postload", postLoadRoutes);
+app.use("/driverLocation", driverRoutes);
 /* SERVER */
 const port = Number(process.env.PORT) || 8000;
 app.listen(port, "0.0.0.0", () => {

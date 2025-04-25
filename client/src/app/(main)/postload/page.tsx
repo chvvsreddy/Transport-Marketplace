@@ -102,19 +102,19 @@ export default function PostLoad() {
         city: values.from,
         lat: "",
         lng: "",
-        state: "",
-        address: "",
+        state: values.originState,
+        address: values.originAddress,
         country: "India",
-        postalCode: "",
+        postalCode: values.originPostalCode,
       },
       destination: {
         city: values.to,
         lat: "",
         lng: "",
-        state: "",
-        address: "",
+        state: values.destinationState,
+        address: values.destinationAddress,
         country: "India",
-        postalCode: "",
+        postalCode: values.destinationPostalCode,
       },
       weight: values.weight,
       dimensions: {},
@@ -230,6 +230,31 @@ export default function PostLoad() {
             >
               <Input placeholder="Hyderabad" />
             </Form.Item>
+            <Form.Item
+              label="Origin State"
+              name="originState"
+              rules={[{ required: true, message: "Please enter origin state" }]}
+            >
+              <Input placeholder="Telangana" />
+            </Form.Item>
+            <Form.Item
+              label="Origin Address"
+              name="originAddress"
+              rules={[
+                { required: true, message: "Please enter origin address" },
+              ]}
+            >
+              <Input placeholder="Street address" />
+            </Form.Item>
+            <Form.Item
+              label="Origin Postal Code"
+              name="originPostalCode"
+              rules={[
+                { required: true, message: "Please enter origin postal code" },
+              ]}
+            >
+              <Input placeholder="500001" />
+            </Form.Item>
             <Form.Item name="multiplePickups" valuePropName="checked">
               <Checkbox>Multiple Pickups</Checkbox>
             </Form.Item>
@@ -241,6 +266,36 @@ export default function PostLoad() {
               rules={[{ required: true, message: "Please enter destination" }]}
             >
               <Input placeholder="Vishakapatnam" />
+            </Form.Item>
+            <Form.Item
+              label="Destination State"
+              name="destinationState"
+              rules={[
+                { required: true, message: "Please enter destination state" },
+              ]}
+            >
+              <Input placeholder="Andhra Pradesh" />
+            </Form.Item>
+            <Form.Item
+              label="Destination Address"
+              name="destinationAddress"
+              rules={[
+                { required: true, message: "Please enter destination address" },
+              ]}
+            >
+              <Input placeholder="Street address" />
+            </Form.Item>
+            <Form.Item
+              label="Destination Postal Code"
+              name="destinationPostalCode"
+              rules={[
+                {
+                  required: true,
+                  message: "Please enter destination postal code",
+                },
+              ]}
+            >
+              <Input placeholder="530001" />
             </Form.Item>
             <Form.Item name="multipleDrops" valuePropName="checked">
               <Checkbox>Multiple Drops</Checkbox>
@@ -419,16 +474,6 @@ export default function PostLoad() {
               ))}
             </Flex>
           )}
-
-        {/* Status Message */}
-        {postStatus && (
-          <Typography.Text
-            type={postStatus.includes("Failed") ? "danger" : "success"}
-            style={{ display: "block", marginBottom: 16, textAlign: "center" }}
-          >
-            {postStatus}
-          </Typography.Text>
-        )}
 
         <Divider />
 

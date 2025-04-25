@@ -38,6 +38,7 @@ export interface AllLoads {
 export interface AllUsers {
   allLoads: allUsers[];
 }
+
 export const api = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL }),
   reducerPath: "api",
@@ -185,13 +186,49 @@ export const getLoadsById = async (obj: any) => {
 
 export const createLoad = async (obj: any) => {
   try {
+    const getLatLngFromAPI = async (location: any) => {
+      const query = `${location.city}+${location.state}+${location.postalCode}`;
+      const url = `${
+        process.env.NEXT_PUBLIC_OPEN_CAGE_MAP_API
+      }q=${encodeURIComponent(query)}&key=${
+        process.env.NEXT_PUBLIC_OPEN_CAGE_MAP_API_KEY
+      }`;
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (data?.results?.length > 0 && data.results[0].geometry) {
+        const { lat, lng } = data.results[0].geometry;
+        return { lat, lng };
+      } else {
+        console.warn("No geolocation results for:", location);
+        return { lat: "", lng: "" };
+      }
+    };
+
+    const { lat: originLat, lng: originLng } = await getLatLngFromAPI(
+      obj.origin
+    );
+    obj.origin = {
+      ...obj.origin,
+      lat: originLat,
+      lng: originLng,
+    };
+
+    const { lat: destLat, lng: destLng } = await getLatLngFromAPI(
+      obj.destination
+    );
+    obj.destination = {
+      ...obj.destination,
+      lat: destLat,
+      lng: destLng,
+    };
+
+    // submit the payload
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/postload`,
       {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(obj),
       }
     );
@@ -199,7 +236,8 @@ export const createLoad = async (obj: any) => {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("creating load error", error);
+    console.error("Creating load error:", error);
+    throw error;
   }
 };
 

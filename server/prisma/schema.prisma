@@ -113,10 +113,10 @@ model DriverDetails {
   insuranceDocUrl String // URL to insurance document
 
   // Additional driver information
-  yearsOfExperience Int?
-  preferredRoutes   String[] // Preferred operating routes
-  hasOwnVehicle     Boolean  @default(false)
-
+  yearsOfExperience     Int?
+  preferredRoutes       String[] // Preferred operating routes
+  hasOwnVehicle         Boolean  @default(false)
+  currentLocation       Json? // { address: String, lat: Float, lng: Float }
   // Emergency contact
   emergencyContactName  String
   emergencyContactPhone String
