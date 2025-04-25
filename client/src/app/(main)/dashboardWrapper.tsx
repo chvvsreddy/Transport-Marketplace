@@ -7,6 +7,8 @@ import { SearchProvider } from "../util/SearchContext";
 import { UserProvider } from "../util/UserContext";
 import Navbar from "@/app/util/Navbar/Navbar";
 import { useRouter } from "next/navigation";
+import BottomNav from "../util/BottomNav";
+import DriverHeader from "../util/DriverHeader";
 
 
 const AdminSidebar = dynamic(
@@ -51,6 +53,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const [isCompanyShipper, setIsCompanyShipper] = useState(false);
   const [isLogisticShipper, setIsLogisticShipper] = useState(false);
   const [isIndividualShipper, setIsIndividualShipper] = useState(false);
+  const [isDriver, setIsDriver] = useState(false);
 
   const router = useRouter();
 
@@ -86,7 +89,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         setIsLogisticShipper(true);
         break;
       default:
-        break;
+        setIsDriver(true);
     }
   }, [loggedUser]);
 
@@ -102,23 +105,22 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   }, [isDarkMode]);
 
   return (
-    <div
-      className={`flex bg-gray-50 text-gray-900 w-full min-h-screen ${
-        isDarkMode ? "dark" : "light"
-      }`}
+    <div className={`flex bg-gray-50 text-gray-900 w-full min-h-screen ${isDarkMode ? "dark" : "light"}`}
       id="fordash"
     >
       {isAdmin && <AdminSidebar />}
       {isIndividualShipper && <IndividualShipperSidebar />}
       {isLogisticShipper && <LogisticsShipperSidebar />}
       {isCompanyShipper && <CompanyShipperSidebar />}
+    
+      
       <main
         className={`flex flex-col w-full h-full bg-gray-50 py-3 pb-6 px-9 ${
-          isSidebarCollapsed ? "md:pl-24" : "md:pl-72"
-        }`}
-      >
-        <Navbar />
-        {children}
+          isDriver? "pl-0": isSidebarCollapsed ? "md:pl-24" : "md:pl-72"}`} >
+         
+        {isDriver ? <DriverHeader/> : <Navbar />}    
+                {children}
+        {isDriver && <BottomNav/>}
       </main>
     </div>
   );
