@@ -5,7 +5,6 @@ import Link from "next/link";
 import { checkUser } from "@/state/api";
 import { useRouter } from "next/navigation";
 
-
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

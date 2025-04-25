@@ -8,8 +8,6 @@ import { UserProvider } from "../util/UserContext";
 import Navbar from "@/app/util/Navbar/Navbar";
 import { useRouter } from "next/navigation";
 import BottomNav from "../util/BottomNav";
-import DriverHeader from "../util/DriverHeader";
-
 
 const AdminSidebar = dynamic(
   () => import("./(components)/admin/adminSidebar/adminsidebar"),
@@ -22,6 +20,10 @@ const IndividualShipperSidebar = dynamic(
     ),
   { ssr: false }
 );
+
+const DriverHeader = dynamic(() => import("../util/DriverHeader"), {
+  ssr: false,
+});
 const LogisticsShipperSidebar = dynamic(
   () =>
     import("./(components)/logisticshipper/logisticsSidebar/logisticsSidebar"),
@@ -57,7 +59,6 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
   const router = useRouter();
 
-
   useEffect(() => {
     const storedUser = localStorage.getItem("token");
     if (storedUser) {
@@ -73,7 +74,6 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     }
   }, [router]);
 
-
   useEffect(() => {
     switch (loggedUser.type) {
       case "ADMIN":
@@ -88,12 +88,14 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       case "LOGISTICS_COMPANY":
         setIsLogisticShipper(true);
         break;
-      default:
+      case "INDIVIDUAL_DRIVER":
         setIsDriver(true);
+        break;
+      default:
+        break;
     }
   }, [loggedUser]);
 
- 
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add("dark");
@@ -105,22 +107,25 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   }, [isDarkMode]);
 
   return (
-    <div className={`flex bg-gray-50 text-gray-900 w-full min-h-screen ${isDarkMode ? "dark" : "light"}`}
+    <div
+      className={`flex bg-gray-50 text-gray-900 w-full min-h-screen ${
+        isDarkMode ? "dark" : "light"
+      }`}
       id="fordash"
     >
       {isAdmin && <AdminSidebar />}
       {isIndividualShipper && <IndividualShipperSidebar />}
       {isLogisticShipper && <LogisticsShipperSidebar />}
       {isCompanyShipper && <CompanyShipperSidebar />}
-    
-      
+
       <main
         className={`flex flex-col w-full h-full bg-gray-50 py-3 pb-6 px-9 ${
-          isDriver? "pl-0": isSidebarCollapsed ? "md:pl-24" : "md:pl-72"}`} >
-         
-        {isDriver ? <DriverHeader/> : <Navbar />}    
-                {children}
-        {isDriver && <BottomNav/>}
+          isDriver ? "pl-0" : isSidebarCollapsed ? "md:pl-24" : "md:pl-72"
+        }`}
+      >
+        {isDriver ? <DriverHeader /> : <Navbar />}
+        {children}
+        {isDriver && <BottomNav />}
       </main>
     </div>
   );
