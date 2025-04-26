@@ -185,7 +185,7 @@ model Loads {
   updatedAt           DateTime   @updatedAt
 
   // Relationships
-  bids Bid[]
+  bids Bid[] 
 
   //trip              Trip?
   //order             Order?

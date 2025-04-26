@@ -82,7 +82,7 @@ const Loads = () => {
       (err) => {
         console.error("Geolocation error:", err.message);
       },
-      { enableHighAccuracy: true } // ✨ added for better accuracy
+      { enableHighAccuracy: true }
     );
   }, []);
 
@@ -101,12 +101,12 @@ const Loads = () => {
       <Heading name="Loads" />
 
       {location && (
-        <div className="text-sm text-gray-600 mb-2 px-2">
+        <div className="text-sm text-gray-600 mt-10 mb-2 px-2 ">
           <strong>Current Location:</strong> {location.address}
         </div>
       )}
 
-      <ul role="list" className="divide-y divide-gray-100">
+      <ul role="list" className="divide-y divide-gray-100 m-6">
         {allData.map((load) => {
           const { origin, destination, status } = load;
 

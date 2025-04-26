@@ -5,11 +5,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const navItems = [
-  { href: "/driver/loads", label: "Loads", icon: Map },
-  { href: "/driver/trips", label: "Trips", icon: Layout },
-  { href: "/driver/trucks", label: "Trucks", icon: TruckIcon },
-  { href: "/driver/chat", label: "Chat", icon: MessagesSquare },
-  { href: "/driver/profile", label: "Account", icon: User },
+  { href: "/loads", label: "Loads", icon: Map },
+  { href: "/trips", label: "Trips", icon: Layout },
+  { href: "/trucks", label: "Trucks", icon: TruckIcon },
+  { href: "/chat", label: "Chat", icon: MessagesSquare },
+  { href: "/profile", label: "Account", icon: User },
 ];
 
 const BottomNav = () => {

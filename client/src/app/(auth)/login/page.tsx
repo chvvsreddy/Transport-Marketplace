@@ -36,7 +36,7 @@ export default function LoginPage() {
         // };
         // router.push(routeMap[res.type] || "/");
         if (res.type === "INDIVIDUAL_DRIVER") {
-          router.push("/driver/loads");
+          router.push("/loads");
         } else {
           router.push("/dashboard");
         }
