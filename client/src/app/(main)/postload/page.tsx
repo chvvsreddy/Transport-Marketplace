@@ -143,7 +143,7 @@ export default function PostLoad() {
   async function callCreateLoad(payload: any) {
     try {
       const load = await createLoad(payload);
-      if (load.id) {
+      if (load) {
         message.success("Load posted successfully!");
         setPostStatus("✅ Load posted successfully!");
         form.resetFields();

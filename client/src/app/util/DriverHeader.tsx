@@ -5,6 +5,7 @@ import { useAppDispatch, useAppSelector } from "@/app/redux";
 import Image from "next/image";
 import { Settings } from "lucide-react";
 import Link from "next/link";
+import { message } from "antd";
 
 export default function DriverHeader() {
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -13,11 +14,10 @@ export default function DriverHeader() {
   const [loggedUser, setLoggedUser] = useState({
     message: "",
     userId: "",
-    type: "", // Add userType to loggedUser state
+    type: "",
     email: "",
   });
   const router = useRouter();
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -36,6 +36,7 @@ export default function DriverHeader() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     setLoggedUser({ message: "", userId: "", type: "", email: "" });
+    message.success("loggedout successful");
     router.push("/login");
   };
   const dispatch = useAppDispatch();

@@ -9,6 +9,7 @@ import {
   WhatsAppOutlined,
 } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
+import { message } from "antd";
 
 const navigation = [
   { name: "Find Loads", href: "/findloads" },
@@ -35,6 +36,7 @@ const Header = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    message.success("user loggedout sucessful");
     setLoggedUser({ message: "", userId: "" });
     router.push("/");
   };

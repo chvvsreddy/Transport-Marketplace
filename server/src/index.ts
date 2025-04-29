@@ -17,6 +17,7 @@ import loadsRoutes from "./routes/loadsRoutes";
 import adminLoadRoutes from "./routes/adminLoads";
 import postLoadRoutes from "./routes/postLoadRoutes";
 import driverRoutes from "./routes/driverRoutes";
+import allBidsRoutes from "./routes/allBidsRoutes";
 
 // CONFIGURATIONS
 dotenv.config();
@@ -40,6 +41,7 @@ app.use("/myloads", loadsRoutes);
 app.use("/loadmanagement", adminLoadRoutes);
 app.use("/postload", postLoadRoutes);
 app.use("/driverLocation", driverRoutes);
+app.use("/bids&orders", allBidsRoutes);
 /* SERVER */
 
 const onlineUsers = new Map();
@@ -56,6 +58,7 @@ io.on("connection", (socket) => {
   socket.on("register", (userId) => {
     onlineUsers.set(userId, socket.id);
     console.log("Registered user :", userId);
+    console.log("No of clients in live :" + io.engine.clientsCount);
   });
 
   socket.on("disconnect", () => {

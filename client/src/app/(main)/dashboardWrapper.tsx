@@ -7,6 +7,7 @@ import { SearchProvider } from "../util/SearchContext";
 import { UserProvider } from "../util/UserContext";
 import { SocketProvider } from "../util/SocketContext";
 import { useRouter } from "next/navigation";
+import "@ant-design/v5-patch-for-react-19";
 
 const AdminSidebar = dynamic(
   () => import("./(components)/admin/adminSidebar/adminsidebar"),

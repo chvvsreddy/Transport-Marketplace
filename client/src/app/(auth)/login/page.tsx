@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { checkUser } from "@/state/api";
 import { useRouter } from "next/navigation";
+import { message } from "antd";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -37,11 +38,14 @@ export default function LoginPage() {
         // router.push(routeMap[res.type] || "/");
         if (res.type === "INDIVIDUAL_DRIVER") {
           router.push("/loads");
+          message.success("Login success");
         } else {
           router.push("/dashboard");
+          message.success("Login success");
         }
       } else {
         setError("Invalid credentials, please try again.");
+        message.error("Invalid credentials, please try again.");
       }
     } catch {
       setError("An error occurred. Please try again later.");

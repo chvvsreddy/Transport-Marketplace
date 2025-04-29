@@ -7,6 +7,7 @@ import { useAppDispatch, useAppSelector } from "@/app/redux";
 import { setIsDarkmode, setIsSidebarCollapsed } from "@/state";
 import { useRouter } from "next/navigation";
 import { useSearch } from "../SearchContext";
+import { message } from "antd";
 
 const Navbar = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -49,6 +50,7 @@ const Navbar = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    message.success("User loggedOut Successful");
     setLoggedUser({ message: "", userId: "", type: "", email: "", phone: "" });
     router.push("/login");
   };
