@@ -1,12 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import {
-  CheckCircle,
-  Package,
-  Tag,
-  TrendingDown,
-  TrendingUp,
-} from "lucide-react";
+import { Package, Tag, TrendingDown, TrendingUp } from "lucide-react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useUser } from "@/app/util/UserContext";

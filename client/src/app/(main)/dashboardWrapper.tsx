@@ -5,9 +5,8 @@ import dynamic from "next/dynamic";
 import StoreProvider, { useAppSelector } from "@/app/redux";
 import { SearchProvider } from "../util/SearchContext";
 import { UserProvider } from "../util/UserContext";
-import Navbar from "@/app/util/Navbar/Navbar";
+import { SocketProvider } from "../util/SocketContext";
 import { useRouter } from "next/navigation";
-import BottomNav from "../util/BottomNav";
 
 const AdminSidebar = dynamic(
   () => import("./(components)/admin/adminSidebar/adminsidebar"),
@@ -21,6 +20,13 @@ const IndividualShipperSidebar = dynamic(
   { ssr: false }
 );
 
+const Navbar = dynamic(() => import("@/app/util/Navbar/Navbar"), {
+  ssr: false,
+});
+
+const BottomNav = dynamic(() => import("../util/BottomNav"), {
+  ssr: false,
+});
 const DriverHeader = dynamic(() => import("../util/DriverHeader"), {
   ssr: false,
 });
@@ -136,7 +142,9 @@ const DashboardWrapper = ({ children }: { children: React.ReactNode }) => {
     <StoreProvider>
       <SearchProvider>
         <UserProvider>
-          <DashboardLayout>{children}</DashboardLayout>
+          <SocketProvider>
+            <DashboardLayout>{children}</DashboardLayout>
+          </SocketProvider>
         </UserProvider>
       </SearchProvider>
     </StoreProvider>

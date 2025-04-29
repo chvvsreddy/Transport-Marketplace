@@ -4,6 +4,8 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
+import { Server } from "socket.io";
+import http from "http";
 
 // ROUTE IMPORTS
 import allLoadsRoute from "./routes/allLoadsRoutes";
@@ -19,6 +21,7 @@ import driverRoutes from "./routes/driverRoutes";
 // CONFIGURATIONS
 dotenv.config();
 const app = express();
+const server = http.createServer(app);
 app.use(express.json());
 app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
@@ -38,7 +41,35 @@ app.use("/loadmanagement", adminLoadRoutes);
 app.use("/postload", postLoadRoutes);
 app.use("/driverLocation", driverRoutes);
 /* SERVER */
+
+const onlineUsers = new Map();
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+  },
+});
+
+io.on("connection", (socket) => {
+  console.log("New client connected:", socket.id);
+
+  socket.on("register", (userId) => {
+    onlineUsers.set(userId, socket.id);
+    console.log("Registered user :", userId);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("client disconnected:", socket.id);
+
+    for (const [userId, sId] of onlineUsers.entries()) {
+      if (sId === socket.id) {
+        onlineUsers.delete(userId);
+        break;
+      }
+    }
+  });
+});
 const port = Number(process.env.PORT) || 8000;
-app.listen(port, "0.0.0.0", () => {
+server.listen(port, "0.0.0.0", () => {
   console.log(`Server running on port ${port}`);
 });

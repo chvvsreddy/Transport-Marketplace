@@ -30,7 +30,8 @@ const SidebarLink = ({
   icon: any;
 }) => {
   const pathname = usePathname();
-  const isActive = pathname === href;
+  const isActive = "/" + pathname.split("/")[1] === href;
+
 
   return (
     <Link href={href}>

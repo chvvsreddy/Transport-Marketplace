@@ -9,13 +9,12 @@ import { useRouter } from "next/navigation";
 import { useSearch } from "../SearchContext";
 
 const Navbar = () => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const settingsRef = useRef<HTMLDivElement>(null);
 
   const { setSearchTerm } = useSearch();
 
-  const [searchValue, setSearchValue] = useState(""); 
+  const [searchValue, setSearchValue] = useState("");
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
   const [loggedUser, setLoggedUser] = useState({
@@ -68,10 +67,9 @@ const Navbar = () => {
 
     debounceTimer.current = setTimeout(() => {
       setSearchTerm(searchValue);
-    }, 300); 
+    }, 300);
   }, [searchValue, setSearchTerm]);
 
- 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -125,7 +123,7 @@ const Navbar = () => {
           <div className="relative">
             <Bell className="cursor-pointer text-gray-500" size={24} />
             <span className="absolute -top-2 -right-2 inline-flex items-center justify-center px-[0.4rem] py-1 text-xs font-semibold leading-none text-red-100 bg-red-400 rounded-full">
-              3
+              0
             </span>
           </div>
 

@@ -36,15 +36,16 @@ model Users {
   driverDetails            DriverDetails?
 
   // Common relationships
-  ratingsReceived Ratings[] @relation("UserRatingsReceived")
-  ratingsGiven    Ratings[] @relation("UserRatingsGiven")
-  loads           Loads[]   @relation("ShipperLoads")
-  bids            Bid[]     @relation("CarrierBids")
+  ratingsReceived Ratings[]      @relation("UserRatingsReceived")
+  ratingsGiven    Ratings[]      @relation("UserRatingsGiven")
+  loads           Loads[]        @relation("ShipperLoads")
+  bids            Bid[]          @relation("CarrierBids")
   vehicles        Vehicle[]
   trips           Trips[]
   orders          Order[]
+  notifications   Notification[]
   //payments          Payment[]
-  isDeleted       Boolean   @default(false)
+  isDeleted       Boolean        @default(false)
   deletedAt       DateTime?
 }
 
@@ -185,7 +186,7 @@ model Loads {
   updatedAt           DateTime   @updatedAt
 
   // Relationships
-  bids Bid[] 
+  bids Bid[]
 
   //trip              Trip?
   //order             Order?
@@ -421,13 +422,15 @@ model Notification {
   id        String   @id @default(uuid())
   order     Order?   @relation(fields: [orderId], references: [id])
   orderId   String?
-  //user              User       @relation(fields: [userId], references: [id])
+  // user      Users  @relation(fields: [userId], references: [id])
   userId    String
   type      String // e.g., "ORDER_CREATED", "TRIP_UPDATE", etc.
   title     String
   message   String
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
+  Users     Users?   @relation(fields: [usersId], references: [id])
+  usersId   String?
 }
 
 // Analytics
