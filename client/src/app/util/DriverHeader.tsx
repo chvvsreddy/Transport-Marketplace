@@ -54,7 +54,7 @@ export default function DriverHeader() {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 bg-white px-4 py-3 shadow-md z-10 ">
-        <div className="flex justify-between max-w-[800px] mx-auto w-full">
+        <div className="flex justify-between max-w-[900px] mx-auto w-full">
           <Image
             src="/goodseva-logo.png"
             alt="Goodseva-logo"

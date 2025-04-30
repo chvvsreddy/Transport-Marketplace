@@ -76,7 +76,7 @@ interface Load {
   price: number;
 }
 
-const PAGE_SIZE = 3;
+const PAGE_SIZE = 10;
 
 const Loads = () => {
   const { data, isLoading, isError } = useGetAllLoadsQuery();
@@ -234,17 +234,18 @@ const Loads = () => {
 
   return (
     <>
-      <Heading name="Loads" />
+      
 
       {location && (
-        <div className="text-sm text-gray-600 mt-10 mb-2 px-2 ml-8 ">
+        <div className="text-md text-gray-600 mt-5 mb-3">
           <strong>Current Location:</strong> {location.address}
         </div>
       )}
 
-      <div className="p-4 m-6">
+      <div className="py-4">
         <Row justify="space-between" align="middle" className="mb-4">
-          <Title level={4}>Available Loads</Title>
+        <Heading name="Available Loads" />
+
           <Select
             placeholder="Filter by State"
             onChange={handleStateChange}
@@ -268,47 +269,46 @@ const Loads = () => {
             const showFixed = load.price > 0;
 
             return (
-              <Card key={load.id} className="mb-4 shadow" variant="outlined">
-                <Row justify="space-between" align="middle">
-                  <Col span={20}>
-                    <Title level={5}>
+        
+                <div className="grid grid-cols-3 md:grid-cols-7 gap-4 border rounded-md p-2 mb-2 border-neutral-300"  key={load.id}>
+                 
+           
+                    <div className="col-span-2 md:col-span-2">
+                      <div className="col-span-1 md:col-span-5 -mt-1">
+                        <Text className="bg-green-200 p-1 px-2 text-sm rounded-l-md">{load.status}</Text>
+                        <Text className="bg-blue-200 p-1 px-2 text-sm rounded-r-md">Posted: 12Hours back</Text>
+                      </div>
+                    <Title level={5} className="mt-1! mb-0!">                    
                       {load.origin.city} → {load.destination.city}
                     </Title>
-                    <Text>Type: {load.cargoType}</Text>
-                    <br />
-                    <Text>Weight: {load.weight} Tons</Text>
-                    <br />
-                    <Text>Status: {load.status}</Text>
-                    <br />
+                    </div> 
+                    <div className=" md:col-span-2">
+                    <Text>Type:<span className="font-semibold"><br/>{load.cargoType}</span></Text>
+                    </div>                
+                    
+                    
+                    <Text>Weight:<span className="font-semibold"><br/>{load.weight} Tons</span></Text>
+                    
+                   
+                   
                     {showBid ? (
-                      <Text strong>Bid Price: ₹{load.bidPrice}</Text>
+                      <Text>Bid Price:<span className="font-semibold"><br/>₹{load.bidPrice}</span> </Text>
                     ) : showFixed ? (
-                      <Text strong>Fixed Price: ₹{load.price}</Text>
+                      <Text>Fixed Price: <span className="font-semibold"><br/>₹{load.price}</span></Text>
                     ) : (
                       <Text type="secondary">No price available</Text>
                     )}
-                  </Col>
-                  <Col>
-                    <Button
-                      type="primary"
-                      onClick={() => handleAction("Accept", load.id)}
+                    <div className=" flex justify-end">
+                    <Button className="button-primary mr-2 max-h-10" onClick={() => handleAction("Accept", load.id)}
                     >
                       Accept
                     </Button>
                     {showBid && (
-                      <Button onClick={() => showBidModal(load)}>Bid</Button>
+                      <Button  className="button-secondary max-h-10" onClick={() => showBidModal(load)}>Bid</Button>
                     )}
-                    {showFixed && !showBid && (
-                      <Button
-                        danger
-                        onClick={() => handleAction("Decline", load.id)}
-                      >
-                        Decline
-                      </Button>
-                    )}
-                  </Col>
-                </Row>
-              </Card>
+                      </div>      
+                </div>
+         
             );
           })
         )}

@@ -127,7 +127,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
       <main
         className={`flex flex-col w-full h-full bg-gray-50 py-3 pb-6 px-9 ${
-          isDriver ? "pl-0" : isSidebarCollapsed ? "md:pl-24" : "md:pl-72"
+          isDriver ? "max-w-[900px] mx-auto py-14 pl-2 pr-2" : isSidebarCollapsed ? "md:pl-24" : "md:pl-72"
         }`}
       >
         {isDriver ? <DriverHeader /> : <Navbar />}
