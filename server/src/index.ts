@@ -18,6 +18,7 @@ import adminLoadRoutes from "./routes/adminLoads";
 import postLoadRoutes from "./routes/postLoadRoutes";
 import driverRoutes from "./routes/driverRoutes";
 import allBidsRoutes from "./routes/allBidsRoutes";
+import { PrismaClient } from "@prisma/client";
 
 // CONFIGURATIONS
 dotenv.config();
@@ -45,6 +46,7 @@ app.use("/bids&orders", allBidsRoutes);
 /* SERVER */
 
 const onlineUsers = new Map();
+const prisma = new PrismaClient();
 const io = new Server(server, {
   cors: {
     origin: "*",
@@ -59,6 +61,20 @@ io.on("connection", (socket) => {
     onlineUsers.set(userId, socket.id);
     console.log("Registered user :", userId);
     console.log("No of clients in live :" + io.engine.clientsCount);
+  });
+
+  socket.on("updateBidAmount", async ({ bidId, shipperId, price }) => {
+    const receiverSocketId = onlineUsers.get(shipperId);
+    const updatedBidAmount = await prisma.bid.update({
+      where: {
+        id: bidId,
+      },
+      data: {
+        price,
+      },
+    });
+
+    io.emit("receiveUpdatedBidPrice", updatedBidAmount);
   });
 
   socket.on("disconnect", () => {

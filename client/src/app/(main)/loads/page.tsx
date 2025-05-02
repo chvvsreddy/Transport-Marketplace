@@ -8,15 +8,15 @@ import {
   Button,
   Typography,
   Modal,
-  Input,
+  InputNumber,
   Form,
   Empty,
-  InputNumber,
 } from "antd";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import Heading from "@/app/util/Heading/index";
-import { useGetAllLoadsQuery } from "@/state/api";
+import { getBids, useGetAllLoadsQuery } from "@/state/api";
 import { getLoggedUserFromLS } from "@/app/util/getLoggedUserFromLS";
+import { SocketContext } from "@/app/util/SocketContext";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -54,6 +54,21 @@ const INDIAN_STATES = [
   "West Bengal",
 ];
 
+interface Bid {
+  id: string;
+  loadId: string;
+  load: Load;
+  carrierId: string;
+  price: number;
+  notes?: string;
+  status: string;
+  vehicleId?: string;
+  estimatedDuration: number;
+  isCompanyBid: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 interface Location {
   lat: number;
   lng: number;
@@ -74,6 +89,7 @@ interface Load {
   weight: number;
   bidPrice: number;
   price: number;
+  createdAt: string;
 }
 
 const PAGE_SIZE = 10;
@@ -84,7 +100,7 @@ const Loads = () => {
   const allData = allLoads || [];
 
   const [location, setLocation] = useState<Location | null>(null);
-  const [loads, setLoads] = useState<Load[]>([]);
+  const [Bids, setBids] = useState<Bid[]>([]);
   const [filteredLoads, setFilteredLoads] = useState<Load[]>([]);
   const [selectedState, setSelectedState] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -92,51 +108,53 @@ const Loads = () => {
   const [selectedLoad, setSelectedLoad] = useState<Load | null>(null);
   const [bidPrice, setBidPrice] = useState<string>("");
 
+  const { socket } = useContext(SocketContext) || {};
+
   useEffect(() => {
-    const fetchLocationAndLoads = async () => {
+    const fetchBidsAndSetInitialLoads = async () => {
+      const bids = await getBids();
+      setBids(bids);
+
+      const availableLoads = allData.filter(
+        (load) => load.status === "AVAILABLE"
+      );
+      setFilteredLoads(availableLoads);
+
       if (!navigator.geolocation) {
         console.error("Geolocation is not supported by this browser.");
-        setFilteredLoads(allData.filter((load) => load.status === "AVAILABLE"));
         return;
       }
 
       navigator.geolocation.getCurrentPosition(
-        async (position) => {
+        async ({ coords: { latitude: lat, longitude: lng } }) => {
           try {
-            const { latitude: lat, longitude: lng } = position.coords;
-
             const geoRes = await fetch(
               `${process.env.NEXT_PUBLIC_OPEN_CAGE_MAP_API}q=${lat}+${lng}&key=${process.env.NEXT_PUBLIC_OPEN_CAGE_MAP_API_KEY}`
             );
             const geoData = await geoRes.json();
-            const formattedAddress = geoData?.results?.[0]?.formatted || "";
             const stateName = geoData?.results?.[0]?.components?.state || "";
+            const address = geoData?.results?.[0]?.formatted || "";
 
             const updatedLocation: Location = {
               lat,
               lng,
-              address: formattedAddress,
+              address,
               state: stateName,
             };
-
             setLocation(updatedLocation);
 
-            const filteredByOriginState =
-              allData.filter(
-                (load) =>
-                  load.origin.state?.trim().toLowerCase() ===
-                    stateName.trim().toLowerCase() &&
-                  load.status === "AVAILABLE"
-              ) ?? [];
-
-            setFilteredLoads(filteredByOriginState);
+            const filteredByState = allData.filter(
+              (load) =>
+                load.origin.state?.trim().toLowerCase() ===
+                  stateName.trim().toLowerCase() && load.status === "AVAILABLE"
+            );
+            setFilteredLoads(filteredByState);
 
             const payload = {
               driverUserId: getLoggedUserFromLS().userId,
               coordinates: updatedLocation,
             };
-
-            const backendRes = await fetch(
+            await fetch(
               `${process.env.NEXT_PUBLIC_API_BASE_URL}/driverLocation`,
               {
                 method: "POST",
@@ -144,29 +162,41 @@ const Loads = () => {
                 body: JSON.stringify(payload),
               }
             );
-
-            if (!backendRes.ok) {
-              console.error("Failed to update location on the server.");
-            }
           } catch (err) {
-            console.error("Error during location update:", err);
+            console.error("Error updating location:", err);
           }
         },
         (err) => {
-          console.warn(
-            "User denied geolocation or error occurred:",
-            err.message
-          );
-          setFilteredLoads(
-            allData.filter((load) => load.status === "AVAILABLE")
-          );
+          console.warn("Geolocation error:", err.message);
         },
         { enableHighAccuracy: true }
       );
     };
 
-    fetchLocationAndLoads();
+    fetchBidsAndSetInitialLoads();
   }, [allData]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleUpdatedBid = (updatedBid: Bid) => {
+      setBids((prevBids) => {
+        const index = prevBids.findIndex((b) => b.id === updatedBid.id);
+        if (index !== -1) {
+          const updated = [...prevBids];
+          updated[index] = updatedBid;
+          return updated;
+        } else {
+          return [...prevBids, updatedBid];
+        }
+      });
+    };
+
+    socket.on("receiveUpdatedBidPrice", handleUpdatedBid);
+    return () => {
+      socket.off("receiveUpdatedBidPrice", handleUpdatedBid);
+    };
+  }, [socket]);
 
   const handleStateChange = (value: string) => {
     setSelectedState(value);
@@ -183,23 +213,16 @@ const Loads = () => {
     setCurrentPage(1);
   };
 
-  const handleAction = (action: string, loadId: string) => {
-    console.log(`${action} clicked for load ID: ${loadId}`);
-  };
-
   const totalPages = Math.ceil(filteredLoads.length / PAGE_SIZE);
   const paginatedLoads = filteredLoads.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE
   );
 
-  const handlePrev = () => {
-    if (currentPage > 1) setCurrentPage((prev) => prev - 1);
-  };
-
-  const handleNext = () => {
-    if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
-  };
+  const handlePrev = () =>
+    currentPage > 1 && setCurrentPage((prev) => prev - 1);
+  const handleNext = () =>
+    currentPage < totalPages && setCurrentPage((prev) => prev + 1);
 
   const showBidModal = (load: Load) => {
     setSelectedLoad(load);
@@ -207,35 +230,60 @@ const Loads = () => {
   };
 
   const handleBidSubmit = () => {
-    if (selectedLoad) {
-      console.log(
-        "Bid submitted for Load ID:",
-        selectedLoad.id,
-        "Bid Price:",
-        bidPrice
-      );
+    if (selectedLoad && socket) {
+      const userId = getLoggedUserFromLS()?.userId;
+      const bidData = {
+        loadId: selectedLoad.id,
+        userId,
+        price: Number(bidPrice),
+      };
+      const existingBid = Bids.find((bid) => bid.loadId === selectedLoad.id);
+      const bidId = existingBid?.id;
+
+      if (bidId) {
+        socket.emit("updateBidAmount", {
+          bidId,
+          shipperId: userId,
+          price: bidData.price,
+        });
+      }
+
       setIsModalVisible(false);
+      setBidPrice("");
     }
   };
 
-  const handleBidCancel = () => {
-    setIsModalVisible(false);
+  const timeSincePosted = (timestampStr: string): string => {
+    const timestamp = new Date(timestampStr);
+    const now = new Date();
+    const diffMs = now.getTime() - timestamp.getTime();
+    const seconds = Math.floor(diffMs / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+    const months = Math.floor(days / 30);
+    const years = Math.floor(days / 365);
+
+    if (seconds < 60) return "posted just now";
+    if (years) return `posted ${years} year${years > 1 ? "s" : ""} ago`;
+    if (months) return `posted ${months} month${months > 1 ? "s" : ""} ago`;
+    if (days) return `posted ${days} day${days > 1 ? "s" : ""} ago`;
+    if (hours) return `posted ${hours} hour${hours > 1 ? "s" : ""} ago`;
+    return `posted ${minutes} minute${minutes > 1 ? "s" : ""} ago`;
   };
 
-  if (isLoading) {
-    return <div className="py-4">Loading...</div>;
-  }
+  const getCurrentBidPrice = (loadId: string): number | null => {
+    return Bids.find((bid) => bid.loadId === loadId)?.price ?? null;
+  };
 
-  if (isError || !allData) {
+  if (isLoading) return <div className="py-4">Loading...</div>;
+  if (isError || !allData)
     return (
       <div className="text-center text-red-500 py-4">Failed to fetch Loads</div>
     );
-  }
 
   return (
     <>
-      
-
       {location && (
         <div className="text-md text-gray-600 mt-5 mb-3">
           <strong>Current Location:</strong> {location.address}
@@ -244,8 +292,7 @@ const Loads = () => {
 
       <div className="py-4">
         <Row justify="space-between" align="middle" className="mb-4">
-        <Heading name="Available Loads" />
-
+          <Heading name="Available Loads" />
           <Select
             placeholder="Filter by State"
             onChange={handleStateChange}
@@ -267,60 +314,88 @@ const Loads = () => {
           paginatedLoads.map((load) => {
             const showBid = load.bidPrice > 0;
             const showFixed = load.price > 0;
+            const bidPrice = getCurrentBidPrice(load.id);
 
             return (
-        
-                <div className="grid grid-cols-3 md:grid-cols-7 gap-4 border rounded-md p-2 mb-2 border-neutral-300"  key={load.id}>
-                 
-           
-                    <div className="col-span-2 md:col-span-2">
-                      <div className="col-span-1 md:col-span-5 -mt-1">
-                        <Text className="bg-green-200 p-1 px-2 text-sm rounded-l-md">{load.status}</Text>
-                        <Text className="bg-blue-200 p-1 px-2 text-sm rounded-r-md">Posted: 12Hours back</Text>
-                      </div>
-                    <Title level={5} className="mt-1! mb-0!">                    
-                      {load.origin.city} → {load.destination.city}
-                    </Title>
-                    </div> 
-                    <div className=" md:col-span-2">
-                    <Text>Type:<span className="font-semibold"><br/>{load.cargoType}</span></Text>
-                    </div>                
-                    
-                    
-                    <Text>Weight:<span className="font-semibold"><br/>{load.weight} Tons</span></Text>
-                    
-                   
-                   
-                    {showBid ? (
-                      <Text>Bid Price:<span className="font-semibold"><br/>₹{load.bidPrice}</span> </Text>
-                    ) : showFixed ? (
-                      <Text>Fixed Price: <span className="font-semibold"><br/>₹{load.price}</span></Text>
-                    ) : (
-                      <Text type="secondary">No price available</Text>
-                    )}
-                    <div className=" flex justify-end">
-                    <Button className="button-primary mr-2 max-h-10" onClick={() => handleAction("Accept", load.id)}
-                    >
-                      Accept
-                    </Button>
-                    {showBid && (
-                      <Button  className="button-secondary max-h-10" onClick={() => showBidModal(load)}>Bid</Button>
-                    )}
-                      </div>      
+              <div
+                className="grid grid-cols-3 md:grid-cols-7 gap-4 border rounded-md p-2 mb-2 border-neutral-300"
+                key={load.id}
+              >
+                <div className="col-span-2 md:col-span-2">
+                  <div className="col-span-1 md:col-span-5 -mt-1">
+                    <Text className="bg-green-200 p-1 px-2 text-sm rounded-l-md">
+                      {load.status}
+                    </Text>
+                    <Text className="bg-blue-200 p-1 px-2 text-sm rounded-r-md">
+                      {timeSincePosted(load.createdAt)}
+                    </Text>
+                  </div>
+                  <Title level={5} className="mt-1! mb-0!">
+                    {load.origin.city} → {load.destination.city}
+                  </Title>
                 </div>
-         
+                <div className="md:col-span-2">
+                  <Text>
+                    Type:
+                    <span className="font-semibold">
+                      <br />
+                      {load.cargoType}
+                    </span>
+                  </Text>
+                </div>
+                <Text>
+                  Weight:
+                  <span className="font-semibold">
+                    <br />
+                    {load.weight} Tons
+                  </span>
+                </Text>
+
+                {bidPrice !== null ? (
+                  <Text>
+                    Bid Price:
+                    <span className="font-semibold">
+                      <br />₹{bidPrice}
+                    </span>
+                  </Text>
+                ) : showFixed ? (
+                  <Text>
+                    Fixed Price:
+                    <span className="font-semibold">
+                      <br />₹{load.price}
+                    </span>
+                  </Text>
+                ) : (
+                  <Text type="secondary">No price available</Text>
+                )}
+
+                <div className="flex justify-end">
+                  <Button
+                    className="button-primary mr-2 max-h-10"
+                    onClick={() => {}}
+                  >
+                    Accept
+                  </Button>
+                  {showBid && (
+                    <Button
+                      className="button-secondary max-h-10"
+                      onClick={() => showBidModal(load)}
+                    >
+                      Bid
+                    </Button>
+                  )}
+                </div>
+              </div>
             );
           })
         )}
 
         {filteredLoads.length > PAGE_SIZE && (
-          <div
-            style={{ display: "flex", justifyContent: "center", marginTop: 24 }}
-          >
+          <div className="flex justify-center mt-6">
             <Button onClick={handlePrev} disabled={currentPage === 1}>
               Prev
             </Button>
-            <Text style={{ margin: "0 16px" }}>
+            <Text className="mx-4">
               Page {currentPage} of {totalPages}
             </Text>
             <Button onClick={handleNext} disabled={currentPage === totalPages}>
@@ -335,7 +410,7 @@ const Loads = () => {
         title="Place a Bid"
         open={isModalVisible}
         onOk={handleBidSubmit}
-        onCancel={handleBidCancel}
+        onCancel={() => setIsModalVisible(false)}
         okText="Submit Bid"
         cancelText="Cancel"
       >

@@ -1,11 +1,40 @@
 "use client";
 
 import { getLoggedUserFromLS } from "@/app/util/getLoggedUserFromLS";
-import { getLoadByLoadId, getLoadByLoadIdForAdmin } from "@/state/api";
+import { SocketContext } from "@/app/util/SocketContext";
+import { getBids, getLoadByLoadId, getLoadByLoadIdForAdmin } from "@/state/api";
 import { useRouter, useParams, usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+interface Bid {
+  id: string;
+  loadId: string;
+  load: Load;
+  carrierId: string;
+  price: number;
+  notes?: string;
+  status: string;
+  vehicleId?: string;
+  estimatedDuration: number;
+  isCompanyBid: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Load {
+  id: string;
+  origin: Location;
+  destination: Location;
+  shipperId: string;
+  status: string;
+  cargoType: string;
+  weight: number;
+  bidPrice: number;
+  price: number;
+  createdAt: string;
+}
 
 export default function SingleLoad() {
+  const [Bids, setBids] = useState<Bid[]>([]);
   const router = useRouter();
   const params = useParams();
   const pathname = usePathname();
@@ -15,8 +44,10 @@ export default function SingleLoad() {
   const [load, setLoad] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
+  const { socket } = useContext(SocketContext) || {};
   useEffect(() => {
     const userObj = getLoggedUserFromLS();
+
     if (userObj && userObj !== "no user found") {
       setLoggedUser(userObj);
     } else {
@@ -41,9 +72,36 @@ export default function SingleLoad() {
         setLoad(fetchedLoad || null);
         setLoading(false);
       }
+
+      const bids = await getBids();
+      setBids(bids);
     };
+
     fetchLoad();
   }, [loggedUser?.userId, loadId, pathname]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleUpdatedBid = (updatedBid: Bid) => {
+      setBids((prevBids) => {
+        const index = prevBids.findIndex((b) => b.id === updatedBid.id);
+        if (index !== -1) {
+          const updated = [...prevBids];
+          updated[index] = updatedBid;
+          return updated;
+        } else {
+          return [...prevBids, updatedBid];
+        }
+      });
+    };
+
+    socket.on("receiveUpdatedBidPrice", handleUpdatedBid);
+
+    return () => {
+      socket.off("receiveUpdatedBidPrice", handleUpdatedBid);
+    };
+  }, [socket]);
 
   if (loading) {
     return <div className="p-6 text-gray-500">Loading...</div>;
@@ -54,6 +112,10 @@ export default function SingleLoad() {
       <div className="p-6 text-red-600 font-semibold">Load not found.</div>
     );
   }
+
+  const getCurrentBidPrice = (): number | null => {
+    return Bids.find((bid) => bid.loadId === load.id)?.price ?? load.price;
+  };
 
   return (
     <div className="w-full p-6 space-y-6">
@@ -83,8 +145,7 @@ export default function SingleLoad() {
           <span className="font-semibold">Status:</span> {load.status}
         </p>
         <p>
-          <span className="font-semibold">Price:</span> ₹
-          {load.price.toLocaleString()}
+          <span className="font-semibold">Price:</span> ₹{getCurrentBidPrice()}
         </p>
       </div>
 

@@ -164,6 +164,25 @@ export const getLoads = async () => {
   }
 };
 
+export const getBids = async () => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/bids&orders`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("bids getting error:", error);
+  }
+};
+
 export const getLoadsById = async (obj: any) => {
   try {
     const response = await fetch(
