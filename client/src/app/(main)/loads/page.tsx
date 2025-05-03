@@ -11,12 +11,14 @@ import {
   InputNumber,
   Form,
   Empty,
+  message,
 } from "antd";
 import React, { useState, useEffect, useContext } from "react";
 import Heading from "@/app/util/Heading/index";
-import { getBids, useGetAllLoadsQuery } from "@/state/api";
+import { createBid, getBids, useGetAllLoadsQuery } from "@/state/api";
 import { getLoggedUserFromLS } from "@/app/util/getLoggedUserFromLS";
 import { SocketContext } from "@/app/util/SocketContext";
+import { useRouter } from "next/navigation";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -109,8 +111,14 @@ const Loads = () => {
   const [bidPrice, setBidPrice] = useState<string>("");
 
   const { socket } = useContext(SocketContext) || {};
+  const router = useRouter();
 
   useEffect(() => {
+    if (getLoggedUserFromLS().id) {
+      if (getLoggedUserFromLS().type !== "INDIVIDUAL_DRIVER") {
+        router.push("/login");
+      }
+    }
     const fetchBidsAndSetInitialLoads = async () => {
       const bids = await getBids();
       setBids(bids);
@@ -120,10 +128,7 @@ const Loads = () => {
       );
       setFilteredLoads(availableLoads);
 
-      if (!navigator.geolocation) {
-        console.error("Geolocation is not supported by this browser.");
-        return;
-      }
+      if (!navigator.geolocation) return;
 
       navigator.geolocation.getCurrentPosition(
         async ({ coords: { latitude: lat, longitude: lng } }) => {
@@ -150,25 +155,22 @@ const Loads = () => {
             );
             setFilteredLoads(filteredByState);
 
-            const payload = {
-              driverUserId: getLoggedUserFromLS().userId,
-              coordinates: updatedLocation,
-            };
             await fetch(
               `${process.env.NEXT_PUBLIC_API_BASE_URL}/driverLocation`,
               {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
+                body: JSON.stringify({
+                  driverUserId: getLoggedUserFromLS().userId,
+                  coordinates: updatedLocation,
+                }),
               }
             );
           } catch (err) {
-            console.error("Error updating location:", err);
+            console.error("Location fetch error:", err);
           }
         },
-        (err) => {
-          console.warn("Geolocation error:", err.message);
-        },
+        (err) => console.warn("Geolocation error:", err.message),
         { enableHighAccuracy: true }
       );
     };
@@ -177,9 +179,12 @@ const Loads = () => {
   }, [allData]);
 
   useEffect(() => {
-    if (!socket) return;
+    if (!socket) {
+      return;
+    }
 
     const handleUpdatedBid = (updatedBid: Bid) => {
+      message.success("new bid prices updated check it once");
       setBids((prevBids) => {
         const index = prevBids.findIndex((b) => b.id === updatedBid.id);
         if (index !== -1) {
@@ -193,6 +198,7 @@ const Loads = () => {
     };
 
     socket.on("receiveUpdatedBidPrice", handleUpdatedBid);
+
     return () => {
       socket.off("receiveUpdatedBidPrice", handleUpdatedBid);
     };
@@ -219,33 +225,40 @@ const Loads = () => {
     currentPage * PAGE_SIZE
   );
 
-  const handlePrev = () =>
-    currentPage > 1 && setCurrentPage((prev) => prev - 1);
+  const handlePrev = () => currentPage > 1 && setCurrentPage((p) => p - 1);
   const handleNext = () =>
-    currentPage < totalPages && setCurrentPage((prev) => prev + 1);
+    currentPage < totalPages && setCurrentPage((p) => p + 1);
 
   const showBidModal = (load: Load) => {
     setSelectedLoad(load);
     setIsModalVisible(true);
   };
 
-  const handleBidSubmit = () => {
+  const handleBidSubmit = async () => {
     if (selectedLoad && socket) {
       const userId = getLoggedUserFromLS()?.userId;
-      const bidData = {
-        loadId: selectedLoad.id,
-        userId,
-        price: Number(bidPrice),
-      };
-      const existingBid = Bids.find((bid) => bid.loadId === selectedLoad.id);
-      const bidId = existingBid?.id;
+      const priceNum = Number(bidPrice);
 
-      if (bidId) {
-        socket.emit("updateBidAmount", {
-          bidId,
-          shipperId: userId,
-          price: bidData.price,
-        });
+      const existingBid = Bids.find(
+        (bid) => bid.loadId === selectedLoad.id && bid.carrierId === userId
+      );
+
+      try {
+        if (existingBid) {
+          socket.emit("updateBidAmount", {
+            bidId: existingBid.id,
+            shipperId: userId,
+            price: priceNum,
+          });
+        } else {
+          await createBid({
+            loadId: selectedLoad.id,
+            userId,
+            price: priceNum,
+          });
+        }
+      } catch (error) {
+        console.error("Failed to submit bid:", error);
       }
 
       setIsModalVisible(false);
@@ -257,23 +270,30 @@ const Loads = () => {
     const timestamp = new Date(timestampStr);
     const now = new Date();
     const diffMs = now.getTime() - timestamp.getTime();
-    const seconds = Math.floor(diffMs / 1000);
-    const minutes = Math.floor(seconds / 60);
+    const minutes = Math.floor(diffMs / 60000);
     const hours = Math.floor(minutes / 60);
     const days = Math.floor(hours / 24);
-    const months = Math.floor(days / 30);
-    const years = Math.floor(days / 365);
 
-    if (seconds < 60) return "posted just now";
-    if (years) return `posted ${years} year${years > 1 ? "s" : ""} ago`;
-    if (months) return `posted ${months} month${months > 1 ? "s" : ""} ago`;
-    if (days) return `posted ${days} day${days > 1 ? "s" : ""} ago`;
-    if (hours) return `posted ${hours} hour${hours > 1 ? "s" : ""} ago`;
-    return `posted ${minutes} minute${minutes > 1 ? "s" : ""} ago`;
+    if (minutes < 1) return "Posted just now";
+    if (days >= 1) return `Posted ${days} day${days > 1 ? "s" : ""} ago`;
+    if (hours >= 1) return `Posted ${hours} hour${hours > 1 ? "s" : ""} ago`;
+    return `Posted ${minutes} minute${minutes > 1 ? "s" : ""} ago`;
   };
 
-  const getCurrentBidPrice = (loadId: string): number | null => {
-    return Bids.find((bid) => bid.loadId === loadId)?.price ?? null;
+  const getCurrentBidPrice = (
+    loadId: string,
+    shipperId: string
+  ): number | null => {
+    const userId = getLoggedUserFromLS().userId;
+
+    const relevantBids = Bids.filter(
+      (bid) => bid.loadId === loadId && bid.carrierId === userId
+    ).sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+
+    return relevantBids.length > 0 ? relevantBids[0].price : null;
   };
 
   if (isLoading) return <div className="py-4">Loading...</div>;
@@ -312,9 +332,10 @@ const Loads = () => {
           <Empty description="No loads available in this route" />
         ) : (
           paginatedLoads.map((load) => {
-            const showBid = load.bidPrice > 0;
-            const showFixed = load.price > 0;
-            const bidPrice = getCurrentBidPrice(load.id);
+            const bidPrice = getCurrentBidPrice(load.id, load.shipperId);
+
+            const showBoth = load.bidPrice > 0 && load.price > 0;
+            const showFixedOnly = load.bidPrice === 0 && load.price > 0;
 
             return (
               <div
@@ -322,7 +343,7 @@ const Loads = () => {
                 key={load.id}
               >
                 <div className="col-span-2 md:col-span-2">
-                  <div className="col-span-1 md:col-span-5 -mt-1">
+                  <div className="-mt-1">
                     <Text className="bg-green-200 p-1 px-2 text-sm rounded-l-md">
                       {load.status}
                     </Text>
@@ -334,6 +355,7 @@ const Loads = () => {
                     {load.origin.city} → {load.destination.city}
                   </Title>
                 </div>
+
                 <div className="md:col-span-2">
                   <Text>
                     Type:
@@ -343,6 +365,7 @@ const Loads = () => {
                     </span>
                   </Text>
                 </div>
+
                 <Text>
                   Weight:
                   <span className="font-semibold">
@@ -351,22 +374,27 @@ const Loads = () => {
                   </span>
                 </Text>
 
-                {bidPrice !== null ? (
-                  <Text>
-                    Bid Price:
+                {showBoth && (
+                  <Text className="mr-10">
+                    Shipper Price:
                     <span className="font-semibold">
-                      <br />₹{bidPrice}
+                      <br />₹{load.price}
+                    </span>
+                    <br />
+                    Current ongoing bidding price:
+                    <span className="font-semibold">
+                      <br />₹{bidPrice ?? "—"}
                     </span>
                   </Text>
-                ) : showFixed ? (
+                )}
+
+                {showFixedOnly && (
                   <Text>
                     Fixed Price:
                     <span className="font-semibold">
                       <br />₹{load.price}
                     </span>
                   </Text>
-                ) : (
-                  <Text type="secondary">No price available</Text>
                 )}
 
                 <div className="flex justify-end">
@@ -376,7 +404,7 @@ const Loads = () => {
                   >
                     Accept
                   </Button>
-                  {showBid && (
+                  {showBoth && (
                     <Button
                       className="button-secondary max-h-10"
                       onClick={() => showBidModal(load)}

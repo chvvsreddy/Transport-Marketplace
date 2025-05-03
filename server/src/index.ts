@@ -64,7 +64,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("updateBidAmount", async ({ bidId, shipperId, price }) => {
-    const receiverSocketId = onlineUsers.get(shipperId);
+    // const receiverSocketId = onlineUsers.get(shipperId);
     const updatedBidAmount = await prisma.bid.update({
       where: {
         id: bidId,

@@ -126,6 +126,34 @@ export const getUser = async (obj: string) => {
   }
 };
 
+export const createBid = async ({
+  loadId,
+  userId,
+  price,
+}: {
+  loadId: string;
+  userId: string;
+  price: number;
+}) => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/bids&orders`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ loadId, userId, price }),
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error("Failed to create bid");
+  }
+
+  return res.json();
+};
+
+
 export const getAllUsers = async () => {
   try {
     const response = await fetch(

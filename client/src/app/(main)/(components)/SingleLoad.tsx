@@ -5,20 +5,6 @@ import { SocketContext } from "@/app/util/SocketContext";
 import { getBids, getLoadByLoadId, getLoadByLoadIdForAdmin } from "@/state/api";
 import { useRouter, useParams, usePathname } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
-interface Bid {
-  id: string;
-  loadId: string;
-  load: Load;
-  carrierId: string;
-  price: number;
-  notes?: string;
-  status: string;
-  vehicleId?: string;
-  estimatedDuration: number;
-  isCompanyBid: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
 
 interface Load {
   id: string;
@@ -34,7 +20,6 @@ interface Load {
 }
 
 export default function SingleLoad() {
-  const [Bids, setBids] = useState<Bid[]>([]);
   const router = useRouter();
   const params = useParams();
   const pathname = usePathname();
@@ -72,36 +57,10 @@ export default function SingleLoad() {
         setLoad(fetchedLoad || null);
         setLoading(false);
       }
-
-      const bids = await getBids();
-      setBids(bids);
     };
 
     fetchLoad();
   }, [loggedUser?.userId, loadId, pathname]);
-
-  useEffect(() => {
-    if (!socket) return;
-
-    const handleUpdatedBid = (updatedBid: Bid) => {
-      setBids((prevBids) => {
-        const index = prevBids.findIndex((b) => b.id === updatedBid.id);
-        if (index !== -1) {
-          const updated = [...prevBids];
-          updated[index] = updatedBid;
-          return updated;
-        } else {
-          return [...prevBids, updatedBid];
-        }
-      });
-    };
-
-    socket.on("receiveUpdatedBidPrice", handleUpdatedBid);
-
-    return () => {
-      socket.off("receiveUpdatedBidPrice", handleUpdatedBid);
-    };
-  }, [socket]);
 
   if (loading) {
     return <div className="p-6 text-gray-500">Loading...</div>;
@@ -112,10 +71,6 @@ export default function SingleLoad() {
       <div className="p-6 text-red-600 font-semibold">Load not found.</div>
     );
   }
-
-  const getCurrentBidPrice = (): number | null => {
-    return Bids.find((bid) => bid.loadId === load.id)?.price ?? load.price;
-  };
 
   return (
     <div className="w-full p-6 space-y-6">
@@ -145,7 +100,10 @@ export default function SingleLoad() {
           <span className="font-semibold">Status:</span> {load.status}
         </p>
         <p>
-          <span className="font-semibold">Price:</span> ₹{getCurrentBidPrice()}
+          <span className="font-semibold">Load ID:</span> {load.id}
+        </p>
+        <p>
+          <span className="font-semibold">Your Price:</span> ₹{load.price}
         </p>
       </div>
 
@@ -176,7 +134,7 @@ export default function SingleLoad() {
       {/* Weight & Dimensions */}
       <div className="grid grid-cols-2 gap-4">
         <p>
-          <span className="font-semibold">Weight:</span> {load.weight} kg
+          <span className="font-semibold">Weight:</span> {load.weight} Tones
         </p>
         <p>
           <span className="font-semibold">Dimensions:</span>{" "}

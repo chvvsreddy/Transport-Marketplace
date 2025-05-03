@@ -44,21 +44,6 @@ export const createLoad = async (
       },
     });
 
-    if (bidPrice > 0) {
-      const createdBid = await prisma.bid.create({
-        data: {
-          loadId: load.id,
-          carrierId: shipperId,
-          price: parseFloat(bidPrice),
-          estimatedDuration: 0,
-        },
-      });
-
-      if (!createdBid.id) {
-        return;
-      }
-      res.status(201).json([load, createdBid]);
-    }
     res.status(201).json([load]);
   } catch (error) {
     console.error("Error creating load:", error);
