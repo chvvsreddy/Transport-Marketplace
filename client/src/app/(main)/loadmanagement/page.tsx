@@ -73,7 +73,11 @@ export default function Posted() {
 
   useEffect(() => {
     const userObj = getLoggedUserFromLS();
-    if (userObj && userObj !== "no user found" && userObj.type === "ADMIN") {
+    if (
+      userObj &&
+      userObj !== "no user found" &&
+      (userObj.type === "ADMIN" || userObj.type === "LOGISTICS_COMPANY")
+    ) {
       setLoggedUser(userObj);
     } else {
       router.push("/login");
