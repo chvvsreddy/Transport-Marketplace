@@ -528,9 +528,9 @@ const Loads = () => {
                   )}
                   {isBidLoad && (
                     <>
-                      {(currentUserBid &&
+                      {currentUserBid &&
                       currentUserBid.negotiateDriverPrice > 0 &&
-                      currentUserBid.negotiateShipperPrice > 0) ? (
+                      currentUserBid.negotiateShipperPrice > 0 ? (
                         <span className=" max-h-10 text-red-800 text-sm">
                           Waiting for shipper response
                         </span>
@@ -542,16 +542,14 @@ const Loads = () => {
                           Accept
                         </Button>
                       )}
-                      {(currentUserBid &&
-                        currentUserBid.negotiateDriverPrice == 0) ||
-                        (currentUserBid?.negotiateShipperPrice == 0 && (
-                          <Button
-                            className="button-secondary max-h-10"
-                            onClick={() => showBidModal(load)}
-                          >
-                            Bid
-                          </Button>
-                        ))}
+                      {!currentUserBid && (
+                        <Button
+                          className="button-secondary max-h-10"
+                          onClick={() => showBidModal(load)}
+                        >
+                          Bid
+                        </Button>
+                      )}
                     </>
                   )}
                 </div>
