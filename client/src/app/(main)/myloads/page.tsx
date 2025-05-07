@@ -14,7 +14,6 @@ import {
   Space,
   Divider,
   Select,
-  Tag,
   Input,
 } from "antd";
 import { EyeOutlined } from "@ant-design/icons";
@@ -45,16 +44,8 @@ interface Load {
   pickupWindowStart: string;
   deliveryWindowEnd: string;
   status: LoadStatus;
+  createdAt: string;
 }
-
-const statusColors: Record<LoadStatus, string> = {
-  AVAILABLE: "blue",
-  PENDING: "gold",
-  ASSIGNED: "purple",
-  IN_TRANSIT: "orange",
-  DELIVERED: "green",
-  CANCELLED: "red",
-};
 
 export default function MyLoads() {
   const [loggedUser, setLoggedUser] = useState({
@@ -64,6 +55,7 @@ export default function MyLoads() {
     phone: "",
     type: "",
   });
+  const { Text } = Typography;
 
   const [loads, setLoads] = useState<Load[]>([]);
   const [selectedStatus, setSelectedStatus] = useState<LoadStatus | "ALL">(
@@ -94,10 +86,15 @@ export default function MyLoads() {
       if (loggedUser.userId) {
         const allLoads = await getLoadsById({ shipperId: loggedUser.userId });
         if (allLoads) {
-          setLoads(allLoads);
+          const sortedLoads = allLoads.sort(
+            (a: Load, b: Load) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+          setLoads(sortedLoads);
         }
       }
     };
+
     fetchLoads();
   }, [loggedUser.userId]);
 
@@ -153,10 +150,36 @@ export default function MyLoads() {
       hour: "2-digit",
       minute: "2-digit",
     });
+  const timeSincePosted = (timestampStr: string): string => {
+    const timestamp = new Date(timestampStr);
+    const now = new Date();
+    const diffMs = now.getTime() - timestamp.getTime();
+    const minutes = Math.floor(diffMs / 60000);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (minutes < 1) return "Posted just now";
+    if (days >= 1) return `Posted ${days} day${days > 1 ? "s" : ""} ago`;
+    if (hours >= 1) return `Posted ${hours} hour${hours > 1 ? "s" : ""} ago`;
+    return `Posted ${minutes} minute${minutes > 1 ? "s" : ""} ago`;
+  };
 
   const labelStyle = { fontWeight: 500, fontSize: 13, color: "#888" };
   const valueStyle = { fontWeight: 600, fontSize: 14, color: "#000" };
-
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "AVAILABLE":
+        return "bg-green-200";
+      case "IN_PROGRESS":
+        return "bg-blue-200";
+      case "COMPLETED":
+        return "bg-gray-200";
+      case "CANCELLED":
+        return "bg-red-200";
+      default:
+        return "bg-yellow-200";
+    }
+  };
   return (
     <div style={{ padding: 24 }}>
       <Typography.Title level={3}>My Loads</Typography.Title>
@@ -215,6 +238,20 @@ export default function MyLoads() {
                   boxShadow: "0 1px 6px rgba(0,0,0,0.05)",
                 }}
               >
+                <div className="col-span-2 md:col-span-2">
+                  <div className="-mt-1">
+                    <Text
+                      className={`${getStatusColor(
+                        load.status
+                      )} p-1 px-2 text-sm rounded-l-md`}
+                    >
+                      {load.status}
+                    </Text>
+                    <Text className="bg-blue-200 p-1 px-2 text-sm rounded-r-md">
+                      {timeSincePosted(load.createdAt)}
+                    </Text>
+                  </div>
+                </div>
                 <Row gutter={[16, 12]} align="middle" justify="space-between">
                   <Col xs={24} md={5}>
                     <Space direction="vertical" size={2}>
@@ -260,7 +297,7 @@ export default function MyLoads() {
                     </Typography.Text>
                   </Col>
 
-                  <Col xs={12} md={3}>
+                  <Col xs={12} md={2}>
                     <Typography.Text style={labelStyle}>
                       Cargo Type
                     </Typography.Text>
@@ -270,7 +307,7 @@ export default function MyLoads() {
                     </Typography.Text>
                   </Col>
 
-                  <Col xs={12} md={4}>
+                  <Col xs={12} md={3}>
                     <Typography.Text style={labelStyle}>Pickup</Typography.Text>
                     <br />
                     <Typography.Text style={valueStyle}>
@@ -278,7 +315,7 @@ export default function MyLoads() {
                     </Typography.Text>
                   </Col>
 
-                  <Col xs={12} md={4}>
+                  <Col xs={12} md={2}>
                     <Typography.Text style={labelStyle}>
                       Delivery
                     </Typography.Text>
@@ -292,9 +329,8 @@ export default function MyLoads() {
                     <Flex align="center" gap={8}>
                       <Button
                         icon={<EyeOutlined />}
-                        type="primary"
+                        className="button-primary max-h-10"
                         style={{
-                          backgroundColor: "#8205AF",
                           borderRadius: 6,
                           width: "100%",
                         }}
@@ -303,13 +339,6 @@ export default function MyLoads() {
                         View
                       </Button>
                     </Flex>
-                  </Col>
-                </Row>
-
-                {/* Status Tag */}
-                <Row justify="end" align="bottom" gutter={12}>
-                  <Col>
-                    <Tag color={statusColors[load.status]}>{load.status}</Tag>
                   </Col>
                 </Row>
               </Card>

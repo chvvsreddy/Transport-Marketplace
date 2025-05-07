@@ -64,17 +64,39 @@ io.on("connection", (socket) => {
   });
 
   socket.on("updateBidAmount", async ({ bidId, shipperId, price }) => {
-    // const receiverSocketId = onlineUsers.get(shipperId);
-    const updatedBidAmount = await prisma.bid.update({
+    const receiverSocketId = onlineUsers.get(shipperId);
+    const findUser = await prisma.users.findUnique({
       where: {
-        id: bidId,
-      },
-      data: {
-        price,
+        id: shipperId,
       },
     });
 
-    io.emit("receiveUpdatedBidPrice", updatedBidAmount);
+    if (
+      findUser?.type == "INDIVIDUAL_SHIPPER" ||
+      findUser?.type == "SHIPPER_COMPANY"
+    ) {
+      const updatedBidAmount = await prisma.bid.update({
+        where: {
+          id: bidId,
+        },
+        data: {
+          negotiateShipperPrice: price,
+        },
+      });
+
+      io.to(receiverSocketId).emit("receiveUpdatedBidPrice", updatedBidAmount);
+    } else if (findUser?.type == "INDIVIDUAL_DRIVER") {
+      const updatedBidAmount = await prisma.bid.update({
+        where: {
+          id: bidId,
+        },
+        data: {
+          negotiateDriverPrice: price,
+        },
+      });
+
+      io.to(receiverSocketId).emit("receiveUpdatedBidPrice", updatedBidAmount);
+    }
   });
 
   socket.on("disconnect", () => {

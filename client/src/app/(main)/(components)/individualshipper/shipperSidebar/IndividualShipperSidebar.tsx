@@ -31,6 +31,7 @@ const SidebarLink = ({
 }) => {
   const pathname = usePathname();
   const isActive = "/" + pathname.split("/")[1] === href;
+  console.log(href);
 
   return (
     <Link href={href}>
@@ -133,7 +134,7 @@ const Sidebar = () => {
           isCollapsed={isSidebarCollapsed}
         />
         <SidebarLink
-          href="bids&orders"
+          href="/bids&orders"
           icon={BoxIcon}
           label="Bids & Orders"
           isCollapsed={isSidebarCollapsed}

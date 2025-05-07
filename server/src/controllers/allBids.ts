@@ -13,7 +13,7 @@ export const getAllBids = async (req: Request, res: Response) => {
 };
 
 export const createBid = async (req: Request, res: Response) => {
-  const { userId, loadId, price } = req.body;
+  const { userId, loadId, price, negotiateDriverPrice } = req.body;
   try {
     const createdBid = await prisma.bid.create({
       data: {
@@ -21,6 +21,7 @@ export const createBid = async (req: Request, res: Response) => {
         loadId,
         price,
         estimatedDuration: 0,
+        negotiateDriverPrice,
       },
     });
     res.status(200).json(createdBid);

@@ -7,7 +7,8 @@ import { useAppDispatch, useAppSelector } from "@/app/redux";
 import { setIsDarkmode, setIsSidebarCollapsed } from "@/state";
 import { useRouter } from "next/navigation";
 import { useSearch } from "../SearchContext";
-import { message } from "antd";
+import { Avatar, message } from "antd";
+import { UserOutlined } from "@ant-design/icons";
 
 const Navbar = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -86,6 +87,7 @@ const Navbar = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+  
 
   return (
     <div className="flex justify-between items-center gap-5 mb-5 pb-3 border-b border-neutral-300">
@@ -131,13 +133,18 @@ const Navbar = () => {
 
           <hr className="w-0 h-7 border border-solid border-l border-gray-300 mx-3" />
 
-          <div className="flex flex-col items-start gap-1 cursor-pointer">
-            <span className="font-semibold">
-              {loggedUser.email ? loggedUser.email.split("@")[0] : ""}
-            </span>
-            <span className="text-sm">
-              {loggedUser.type ? loggedUser.type.toLowerCase() : ""}
-            </span>
+          <div className="flex flex-row items-start gap-1  cursor-pointer">
+            <div>
+              <Avatar size={45} icon={<UserOutlined />} />
+            </div>
+            <div className="flex flex-col mt-1">
+              <span className="font-semibold">
+                {loggedUser.email ? loggedUser.email.split("@")[0] : ""}
+              </span>
+              <span className="text-sm">
+                {loggedUser.type ? loggedUser.type.toLowerCase() : ""}
+              </span>
+            </div>
           </div>
         </div>
 

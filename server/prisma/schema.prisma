@@ -197,14 +197,16 @@ model Loads {
 
 // Bid model
 model Bid {
-  id        String    @id @default(uuid())
-  load      Loads     @relation(fields: [loadId], references: [id])
-  loadId    String
-  carrier   Users     @relation("CarrierBids", fields: [carrierId], references: [id])
-  carrierId String
-  price     Float
-  notes     String?
-  status    BidStatus @default(PENDING)
+  id                    String    @id @default(uuid())
+  load                  Loads     @relation(fields: [loadId], references: [id])
+  loadId                String
+  carrier               Users     @relation("CarrierBids", fields: [carrierId], references: [id])
+  carrierId             String
+  price                 Float
+  notes                 String?
+  status                BidStatus @default(PENDING)
+  negotiateShipperPrice Float     @default(0)
+  negotiateDriverPrice  Float     @default(0)
 
   // Additional bid information
   //proposedVehicle   Vehicle?   @relation(fields: [vehicleId], references: [id])

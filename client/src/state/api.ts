@@ -130,10 +130,12 @@ export const createBid = async ({
   loadId,
   userId,
   price,
+  negotiateDriverPrice,
 }: {
   loadId: string;
   userId: string;
   price: number;
+  negotiateDriverPrice: number;
 }) => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_BASE_URL}/bids&orders`,
@@ -142,7 +144,7 @@ export const createBid = async ({
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ loadId, userId, price }),
+      body: JSON.stringify({ loadId, userId, price, negotiateDriverPrice }),
     }
   );
 
@@ -152,7 +154,6 @@ export const createBid = async ({
 
   return res.json();
 };
-
 
 export const getAllUsers = async () => {
   try {

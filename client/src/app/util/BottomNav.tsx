@@ -16,7 +16,7 @@ const BottomNav = () => {
   const pathname = usePathname();
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-inner ">
+    <div className="fixed bottom-0 left-0 right-0 bg-white  shadow-inner border-gray">
       <nav className="max-w-[900px] mx-auto w-full flex justify-around items-center py-2 z-50">
         {navItems.map((item) => {
           const isActive = pathname === item.href;

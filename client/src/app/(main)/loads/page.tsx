@@ -11,7 +11,6 @@ import {
   InputNumber,
   Form,
   Empty,
-  message,
 } from "antd";
 import React, { useState, useEffect, useContext } from "react";
 import Heading from "@/app/util/Heading/index";
@@ -69,6 +68,8 @@ interface Bid {
   isCompanyBid: boolean;
   createdAt: string;
   updatedAt: string;
+  negotiateShipperPrice: number;
+  negotiateDriverPrice: number;
 }
 
 interface Location {
@@ -94,12 +95,13 @@ interface Load {
   createdAt: string;
 }
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 5;
 
 const Loads = () => {
   const { data, isLoading, isError } = useGetAllLoadsQuery();
   const allLoads = data as Load[] | undefined;
   const allData = allLoads || [];
+  const [paginationHide, setPaginationHide] = useState(true);
 
   const [location, setLocation] = useState<Location | null>(null);
   const [Bids, setBids] = useState<Bid[]>([]);
@@ -114,11 +116,12 @@ const Loads = () => {
   const router = useRouter();
 
   useEffect(() => {
-    if (getLoggedUserFromLS().id) {
+    if (getLoggedUserFromLS().userId) {
       if (getLoggedUserFromLS().type !== "INDIVIDUAL_DRIVER") {
         router.push("/login");
       }
     }
+
     const fetchBidsAndSetInitialLoads = async () => {
       const bids = await getBids();
       setBids(bids);
@@ -179,21 +182,14 @@ const Loads = () => {
   }, [allData]);
 
   useEffect(() => {
-    if (!socket) {
-      return;
-    }
+    if (!socket) return;
 
     const handleUpdatedBid = (updatedBid: Bid) => {
-      message.success("new bid prices updated check it once");
       setBids((prevBids) => {
-        const index = prevBids.findIndex((b) => b.id === updatedBid.id);
-        if (index !== -1) {
-          const updated = [...prevBids];
-          updated[index] = updatedBid;
-          return updated;
-        } else {
-          return [...prevBids, updatedBid];
-        }
+        const updatedBids = prevBids.map((bid) =>
+          bid.id === updatedBid.id ? updatedBid : bid
+        );
+        return updatedBids;
       });
     };
 
@@ -255,6 +251,7 @@ const Loads = () => {
             loadId: selectedLoad.id,
             userId,
             price: priceNum,
+            negotiateDriverPrice: priceNum,
           });
         }
       } catch (error) {
@@ -280,28 +277,29 @@ const Loads = () => {
     return `Posted ${minutes} minute${minutes > 1 ? "s" : ""} ago`;
   };
 
-  const getCurrentBidPrice = (
-    loadId: string,
-    shipperId: string
-  ): number | null => {
-    const userId = getLoggedUserFromLS().userId;
-
-    const relevantBids = Bids.filter(
-      (bid) => bid.loadId === loadId && bid.carrierId === userId
-    ).sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-
-    return relevantBids.length > 0 ? relevantBids[0].price : null;
-  };
-
   if (isLoading) return <div className="py-4">Loading...</div>;
   if (isError || !allData)
     return (
       <div className="text-center text-red-500 py-4">Failed to fetch Loads</div>
     );
 
+  const countOfBid = Bids.filter(
+    (bid) => bid.carrierId === getLoggedUserFromLS().userId
+  );
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "AVAILABLE":
+        return "bg-green-200";
+      case "IN_PROGRESS":
+        return "bg-blue-200";
+      case "COMPLETED":
+        return "bg-gray-200";
+      case "CANCELLED":
+        return "bg-red-200";
+      default:
+        return "bg-yellow-200";
+    }
+  };
   return (
     <>
       {location && (
@@ -311,6 +309,137 @@ const Loads = () => {
       )}
 
       <div className="py-4">
+        <Row>
+          <Col span={24} md={12}>
+            <Heading name="All Loads" />
+          </Col>
+
+          <Col span={24} md={12}>
+            <div className="flex flex-wrap md:justify-end gap-2 mt-2 md:mt-0">
+              <div className="border border-neutral-300 px-3 py-2 rounded-md text-center">
+                <Title level={5} className="!mb-0 !text-base">
+                  {allData.length} All
+                </Title>
+              </div>
+              <div className="border border-neutral-300 px-3 py-2 rounded-md text-center">
+                <Title level={5} className="!mb-0 !text-base">
+                  {allData.length - countOfBid.length} Fixed Price
+                </Title>
+              </div>
+              <div className="border border-neutral-300 px-3 py-2 rounded-md text-center">
+                <Title level={5} className="!mb-0 !text-base">
+                  {countOfBid.length < 10
+                    ? `0${countOfBid.length}`
+                    : countOfBid.length}{" "}
+                  Bid Price
+                </Title>
+              </div>
+            </div>
+          </Col>
+        </Row>
+        <h1 className="text-xl font-semibold mt-2 text-gray-700">Your Bids</h1>
+        {countOfBid.length === 0 ? (
+          <Empty description="You have not placed any bids yet." />
+        ) : (
+          Bids.map((bid) => {
+            const load = allData.find((l) => l.id === bid.loadId);
+            if (!load) return null;
+            const isBidLoad =
+              load.bidPrice > 0 &&
+              bid.carrierId === getLoggedUserFromLS().userId;
+            return (
+              isBidLoad && (
+                <div
+                  className="grid grid-cols-4 md:grid-cols-7 gap-4 border rounded-md p-2 mt-2 mb-2 border-neutral-300"
+                  key={load.id}
+                >
+                  <div className="col-span-2 md:col-span-2">
+                    <div className="-mt-1">
+                      <Text
+                        className={`${getStatusColor(
+                          load.status
+                        )} p-1 px-2 text-sm rounded-l-md`}
+                      >
+                        {load.status}
+                      </Text>
+                      <Text className="bg-blue-200 p-1 px-2 text-sm rounded-r-md">
+                        {timeSincePosted(load.createdAt)}
+                      </Text>
+                    </div>
+                    <Title level={5} className="mt-1! mb-0!">
+                      {load.origin.city} → {load.destination.city}
+                    </Title>
+                  </div>
+
+                  <div className="md:col-span-1">
+                    <Text>
+                      Type:
+                      <span className="font-semibold">
+                        <br />
+                        {load.cargoType}
+                      </span>
+                    </Text>
+                  </div>
+
+                  <Text>
+                    Weight:
+                    <span className="font-semibold">
+                      <br />
+                      {load.weight} Tons
+                    </span>
+                  </Text>
+
+                  <Text>
+                    {isBidLoad ? "Bid Price" : "Fixed Price"}:
+                    <span className="font-semibold">
+                      <br />₹
+                      {bid.negotiateShipperPrice == 0
+                        ? load.bidPrice
+                        : bid.negotiateShipperPrice}
+                    </span>
+                  </Text>
+
+                  <Text className="col-span-2 md:col-span-1">
+                    Your price:
+                    <span className="font-semibold">
+                      <br />₹{bid.negotiateDriverPrice}
+                    </span>
+                  </Text>
+
+                  <div className="flex justify-end">
+                    {isBidLoad && (
+                      <>
+                        {bid.negotiateDriverPrice > 0 &&
+                        bid.negotiateShipperPrice > 0 ? (
+                          <span className=" max-h-10 text-red-800 text-sm">
+                            Waiting for shipper response
+                          </span>
+                        ) : (
+                          <Button
+                            className="button-primary max-h-10"
+                            onClick={() => {}}
+                          >
+                            Accept
+                          </Button>
+                        )}
+
+                        {bid.negotiateShipperPrice == 0 ||
+                          (bid.negotiateDriverPrice === 0 && (
+                            <Button
+                              className="button-secondary max-h-10"
+                              onClick={() => showBidModal(load)}
+                            >
+                              Bid
+                            </Button>
+                          ))}
+                      </>
+                    )}
+                  </div>
+                </div>
+              )
+            );
+          })
+        )}
         <Row justify="space-between" align="middle" className="mb-4">
           <Heading name="Available Loads" />
           <Select
@@ -329,13 +458,16 @@ const Loads = () => {
         </Row>
 
         {paginatedLoads.length === 0 ? (
-          <Empty description="No loads available in this route" />
+          <>
+            <Empty description="No loads available in this route" />
+          </>
         ) : (
           paginatedLoads.map((load) => {
-            const bidPrice = getCurrentBidPrice(load.id, load.shipperId);
-
-            const showBoth = load.bidPrice > 0 && load.price > 0;
-            const showFixedOnly = load.bidPrice === 0 && load.price > 0;
+            const isBidLoad = load.bidPrice > 0;
+            const isFixedLoad = load.bidPrice === 0 && load.price > 0;
+            const currentUserBid: Bid | undefined = Bids.find(
+              (bid) => bid.loadId === load.id
+            );
 
             return (
               <div
@@ -344,7 +476,11 @@ const Loads = () => {
               >
                 <div className="col-span-2 md:col-span-2">
                   <div className="-mt-1">
-                    <Text className="bg-green-200 p-1 px-2 text-sm rounded-l-md">
+                    <Text
+                      className={`${getStatusColor(
+                        load.status
+                      )} p-1 px-2 text-sm rounded-l-md`}
+                    >
                       {load.status}
                     </Text>
                     <Text className="bg-blue-200 p-1 px-2 text-sm rounded-r-md">
@@ -374,50 +510,55 @@ const Loads = () => {
                   </span>
                 </Text>
 
-                {showBoth && (
-                  <Text className="mr-10">
-                    Shipper Price:
-                    <span className="font-semibold">
-                      <br />₹{load.price}
-                    </span>
-                    <br />
-                    Current ongoing bidding price:
-                    <span className="font-semibold">
-                      <br />₹{bidPrice ?? "—"}
-                    </span>
-                  </Text>
-                )}
-
-                {showFixedOnly && (
-                  <Text>
-                    Fixed Price:
-                    <span className="font-semibold">
-                      <br />₹{load.price}
-                    </span>
-                  </Text>
-                )}
+                <Text>
+                  Price ({isBidLoad ? "Bid Price" : "Fixed Price"}):
+                  <span className="font-semibold">
+                    <br />₹{load.price}
+                  </span>
+                </Text>
 
                 <div className="flex justify-end">
-                  <Button
-                    className="button-primary mr-2 max-h-10"
-                    onClick={() => {}}
-                  >
-                    Accept
-                  </Button>
-                  {showBoth && (
+                  {isFixedLoad && (
                     <Button
-                      className="button-secondary max-h-10"
-                      onClick={() => showBidModal(load)}
+                      className="button-primary max-h-10"
+                      onClick={() => {}}
                     >
-                      Bid
+                      Accept
                     </Button>
+                  )}
+                  {isBidLoad && (
+                    <>
+                      {(currentUserBid &&
+                      currentUserBid.negotiateDriverPrice > 0 &&
+                      currentUserBid.negotiateShipperPrice > 0) ? (
+                        <span className=" max-h-10 text-red-800 text-sm">
+                          Waiting for shipper response
+                        </span>
+                      ) : (
+                        <Button
+                          className="button-primary max-h-10"
+                          onClick={() => {}}
+                        >
+                          Accept
+                        </Button>
+                      )}
+                      {(currentUserBid &&
+                        currentUserBid.negotiateDriverPrice == 0) ||
+                        (currentUserBid?.negotiateShipperPrice == 0 && (
+                          <Button
+                            className="button-secondary max-h-10"
+                            onClick={() => showBidModal(load)}
+                          >
+                            Bid
+                          </Button>
+                        ))}
+                    </>
                   )}
                 </div>
               </div>
             );
           })
         )}
-
         {filteredLoads.length > PAGE_SIZE && (
           <div className="flex justify-center mt-6">
             <Button onClick={handlePrev} disabled={currentPage === 1}>
@@ -433,7 +574,6 @@ const Loads = () => {
         )}
       </div>
 
-      {/* Bid Modal */}
       <Modal
         title="Place a Bid"
         open={isModalVisible}
