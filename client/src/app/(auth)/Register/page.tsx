@@ -6,8 +6,7 @@ import "../../(styles)/RegisterPage.css";
 
 import { createUser } from "@/state/api";
 import { useRouter } from "next/navigation";
-import { message ,Radio  } from "antd";
-
+import { message, Radio } from "antd";
 
 const UserType = {
   SHIPPER_COMPANY: "Shipper Company",
@@ -18,8 +17,8 @@ const UserType = {
 };
 
 export default function RegisterPage() {
-  const [userType, setUserType] = useState('ShipperCompany'); // default is 'ShipperCompany'
- 
+  const [userType1, setUserType1] = useState('Carriar')
+  const [userType2, setUserType2] = useState('Company')
   const [formData, setFormData] = useState({
     email: "",
     passwordHash: "",
@@ -132,20 +131,24 @@ export default function RegisterPage() {
                 Create new account
               </h2>
 
-              <div className="mt-10 mx-auto w-full sm:max-w-md">
+              <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
+                <div>
                 <label htmlFor="User Type"  className="block text-sm/6 font-medium text-gray-900 mb-2" >
                       User Type
                     </label>
-                <Radio.Group value={userType} onChange={(e) => setUserType(e.target.value)}>
-                  <Radio.Button value="ShipperCompany">Shipper Company</Radio.Button>
-                  <Radio.Button value="Shipper">Shipper</Radio.Button>
-                  <Radio.Button value="LogisticCompany">Logistic Company</Radio.Button>
-                  <Radio.Button value="Driver">Driver</Radio.Button>
+                    <div className="flex gap-3">
+                  <Radio.Group value={userType1} onChange={(e) => setUserType1(e.target.value)}>
+                    <Radio.Button value="Carriar">Carriar</Radio.Button>
+                    <Radio.Button value="Shipper">Shipper</Radio.Button>
+                  </Radio.Group>
+                  <Radio.Group value={userType2} onChange={(e) => setUserType2(e.target.value)}>
+                    <Radio.Button value="Company">Company</Radio.Button>
+                    <Radio.Button value="Individual">Individual</Radio.Button>
                 </Radio.Group>
                 </div>
-                  <div className="mt-8"> 
+                </div>
+                  <div> 
                     <label htmlFor="email"  className="block text-sm/6 font-medium text-gray-900" >
                       Email address
                     </label>
