@@ -6,7 +6,8 @@ import "../../(styles)/RegisterPage.css";
 
 import { createUser } from "@/state/api";
 import { useRouter } from "next/navigation";
-import { message } from "antd";
+import { message ,Radio  } from "antd";
+
 
 const UserType = {
   SHIPPER_COMPANY: "Shipper Company",
@@ -17,6 +18,8 @@ const UserType = {
 };
 
 export default function RegisterPage() {
+  const [userType, setUserType] = useState('ShipperCompany'); // default is 'ShipperCompany'
+ 
   const [formData, setFormData] = useState({
     email: "",
     passwordHash: "",
@@ -129,13 +132,21 @@ export default function RegisterPage() {
                 Create new account
               </h2>
 
-              <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-                <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="mt-10 mx-auto w-full sm:max-w-md">
+                <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
-                    <label
-                      htmlFor="email"
-                      className="block text-sm/6 font-medium text-gray-900"
-                    >
+                <label htmlFor="User Type"  className="block text-sm/6 font-medium text-gray-900 mb-2" >
+                      User Type
+                    </label>
+                <Radio.Group value={userType} onChange={(e) => setUserType(e.target.value)}>
+                  <Radio.Button value="ShipperCompany">Shipper Company</Radio.Button>
+                  <Radio.Button value="Shipper">Shipper</Radio.Button>
+                  <Radio.Button value="LogisticCompany">Logistic Company</Radio.Button>
+                  <Radio.Button value="Driver">Driver</Radio.Button>
+                </Radio.Group>
+                </div>
+                  <div className="mt-8"> 
+                    <label htmlFor="email"  className="block text-sm/6 font-medium text-gray-900" >
                       Email address
                     </label>
                     <div className="mt-2">
@@ -151,16 +162,22 @@ export default function RegisterPage() {
                       />
                     </div>
                   </div>
-
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <label
-                        htmlFor="password"
-                        className="block text-sm/6 font-medium text-gray-900"
-                      >
-                        Password
-                      </label>
+                  <div> 
+                    <label htmlFor="mobile" className="block text-sm/6 font-medium text-gray-900" >
+                        Mobile No </label>            
+                    <div className="mt-2">
+                      <input id="mobile" name="phone" type="text" required
+                        value={formData.phone}
+                        onChange={handleChange}
+                        className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+                      />
                     </div>
+
+
+                  </div>
+                  <div>
+                      <label htmlFor="password" className="block text-sm/6 font-medium text-gray-900" > Password
+                      </label>
                     <div className="mt-2">
                       <input
                         id="password"
@@ -174,26 +191,7 @@ export default function RegisterPage() {
                       />
                     </div>
 
-                    <div className="flex items-center justify-between">
-                      <label
-                        htmlFor="mobile"
-                        className="block text-sm/6 font-medium text-gray-900 pt-6"
-                      >
-                        Mobile No
-                      </label>
-                    </div>
-                    <div className="mt-2">
-                      <input
-                        id="mobile"
-                        name="phone"
-                        type="text"
-                        required
-                        value={formData.phone}
-                        onChange={handleChange}
-                        className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-                      />
-                    </div>
-
+                   
                     <div className="flex items-center justify-between">
                       <label
                         htmlFor="userType"

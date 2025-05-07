@@ -77,6 +77,7 @@ export default function SingleLoad() {
     <div className="w-full p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Load Details</h2>
+        
         {pathname.includes("/myloads") && (
           <button
             className="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
@@ -93,9 +94,13 @@ export default function SingleLoad() {
       </div>
 
       {/* Status and Price */}
-      <div className="grid grid-cols-4 gap-8">
+      <div className="grid grid-cols-4 gap-8 ">
         <div className="grid gap-4 grid-rows p-6 border-neutral-200 border-2 rounded-md">
-          <p> Status:<br/><span className="font-semibold"> {load.status} </span> </p>
+        <div className="text-sm text-gray-500">
+        <p>Created at: {new Date(load.createdAt).toLocaleString()}</p>
+        <p>Updated at: {new Date(load.updatedAt).toLocaleString()}</p>
+      </div>
+          <p className="text-md"> Status:<br/><span className="font-semibold"> {load.status} </span> </p>
           <p> Load ID:<br/><span className="font-semibold">{load.id}</span>  </p>
           <p>Your Price:<br/><span className="font-semibold"> ₹{load.price} </span></p>
 
@@ -127,7 +132,7 @@ export default function SingleLoad() {
             {/* Origin & Destination */}
             <div className="grid grid-cols-2 gap-4 p-6">
               <div>
-                <h3 className="font-semibold text-lg mb-1">Origin</h3>
+                <h3 className="font-semibold mb-1">Origin</h3>
                 <p>{load.origin.address}</p>
                 <p>
                   {load.origin.city}, {load.origin.state}
@@ -144,7 +149,7 @@ export default function SingleLoad() {
                 </div>
               </div>
               <div>
-                <h3 className="font-semibold text-lg mb-1">Destination</h3>
+                <h3 className="font-semibold mb-1">Destination</h3>
                 <p>{load.destination.address}</p>
                 <p>
                   {load.destination.city}, {load.destination.state}
@@ -176,23 +181,9 @@ export default function SingleLoad() {
        
       </div>
 
-     
+
 
       
-
-      <div className="grid grid-cols-3 gap-4">
-        
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        
-       
-      </div>
-
-      <div className="text-sm text-gray-500">
-        <p>Created at: {new Date(load.createdAt).toLocaleString()}</p>
-        <p>Updated at: {new Date(load.updatedAt).toLocaleString()}</p>
-      </div>
     </div>
   );
 }

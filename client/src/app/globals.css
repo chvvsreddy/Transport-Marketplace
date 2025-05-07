@@ -184,3 +184,13 @@ hr {
 }
 
 .text-sm{font-size: 10px;}
+
+.ant-radio-group {
+  @apply  rounded-md p-1 bg-red-100
+}
+.ant-radio-button-wrapper{background-color: transparent;border: 0px solid red;}
+.ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled) {
+  color: #000;
+  border:0px solid red;border-radius: 5px;font-weight: 600;
+}
+.ant-radio-button-wrapper:not(:first-child)::before{display: none;}
