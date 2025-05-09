@@ -18,6 +18,8 @@ import {
 } from "antd";
 import { DownOutlined, UpOutlined } from "@ant-design/icons";
 import { SocketContext } from "@/app/util/SocketContext";
+import Header from "@/app/util/Header";
+import Heading from "@/app/util/Heading";
 
 const { Title, Paragraph, Text } = Typography;
 const { Option } = Select;
@@ -272,7 +274,7 @@ export default function BidsAndOthers() {
     <div style={{ padding: "10px" }}>
       <Row>
         <Col span={24} md={12}>
-          <Title level={2}>Bids and Orders</Title>
+          <Heading name="Bids and Orders" />
         </Col>
 
         <Col span={24} md={12}>
@@ -302,14 +304,7 @@ export default function BidsAndOthers() {
       </Row>
 
       <Divider />
-      <div
-        style={{
-          marginBottom: "20px",
-          display: "flex",
-          gap: "16px",
-          flexWrap: "wrap",
-        }}
-      >
+      <div className="flex gap-4">
         <DatePicker.RangePicker onChange={handleDateChange} />
         <Select
           defaultValue="PENDING"
@@ -357,16 +352,8 @@ export default function BidsAndOthers() {
         else if (daysLeft <= 5) color = "orange";
 
         return (
-          <Card key={load.id} style={{ marginBottom: "20px" }}>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                flexWrap: "wrap",
-              }}
-              className=" bg-gray-200 rounded-md text-center p-2"
-            >
+          <div key={load.id} className="!mt-4 rounded-md border-1 border-neutral-300">
+            <div className=" text-center p-2 px-4 flex justify-between items-center" >
               <Title level={5}>
                 {load.origin.city} ➝ {load.destination.city}
               </Title>
@@ -395,13 +382,7 @@ export default function BidsAndOthers() {
 
             {expandedLoadIds.includes(load.id) &&
               relatedBids.map((bid) => (
-                <Card
-                  key={bid.id}
-                  type="inner"
-                  style={{
-                    background: "#fafafa",
-                  }}
-                >
+                <Card  key={bid.id} type="inner" className="!bg-neutral-100 !rounded-0">
                   <div className="flex flex-wrap justify-between">
                     <Paragraph>
                       Driver Mail ID:
@@ -454,7 +435,7 @@ export default function BidsAndOthers() {
                   </div>
                 </Card>
               ))}
-          </Card>
+          </div>
         );
       })}
 

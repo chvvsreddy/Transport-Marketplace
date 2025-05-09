@@ -100,7 +100,7 @@ export default function SingleLoad() {
     );
 
   return (
-    <div className="w-full p-6 space-y-6">
+    <div className="w-full p-3 space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Load Details</h2>
         {pathname.includes("/myloads") && (

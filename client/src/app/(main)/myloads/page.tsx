@@ -18,6 +18,7 @@ import {
 } from "antd";
 import { EyeOutlined } from "@ant-design/icons";
 import { getStatusColor } from "@/app/util/statusColorLoads";
+import Heading from "@/app/util/Heading";
 
 const { Option } = Select;
 
@@ -169,11 +170,12 @@ export default function MyLoads() {
   const valueStyle = { fontWeight: 600, fontSize: 14, color: "#000" };
 
   return (
-    <div style={{ padding: 24 }}>
-      <Typography.Title level={3}>My Loads</Typography.Title>
-      <Typography.Text type="secondary">
+    <div>
+      <Heading name="My Loads" />
+
+      {/* <Typography.Text type="secondary">
         Logged in as: <strong>{loggedUser.email}</strong>
-      </Typography.Text>
+      </Typography.Text> */}
 
       <Divider />
 
@@ -199,6 +201,8 @@ export default function MyLoads() {
       </Flex>
 
       {/* Origin Search Input */}
+      <div className="flex gap-4">
+
       <Input
         placeholder="Search by origin city"
         value={originSearchQuery}
@@ -213,6 +217,8 @@ export default function MyLoads() {
         onChange={(e) => setDestinationSearchQuery(e.target.value)}
         style={{ marginBottom: 16, width: 300 }}
       />
+      </div>
+      
 
       {searchedLoads.length > 0 ? (
         <>
@@ -274,7 +280,7 @@ export default function MyLoads() {
                       </Typography.Text>
                     </Space>
                   </Col>
-
+{/* 
                   <Col xs={12} md={3}>
                     <Typography.Text style={labelStyle}>
                       Equipment
@@ -283,7 +289,7 @@ export default function MyLoads() {
                     <Typography.Text style={valueStyle}>
                       {load.specialRequirements}
                     </Typography.Text>
-                  </Col>
+                  </Col> */}
 
                   <Col xs={12} md={2}>
                     <Typography.Text style={labelStyle}>

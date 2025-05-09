@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { Table, Typography } from "antd";
+import Heading from "@/app/util/Heading";
 
 const { Title } = Typography;
 
@@ -118,7 +119,8 @@ export default function Trips() {
 
   return (
     <div style={{ padding: "20px" }}>
-      <Title level={3}>Trip Details</Title>
+      <Heading name="Trip Details"/>
+
       <Table columns={columns} dataSource={tripsData} rowKey="id" />
     </div>
   );

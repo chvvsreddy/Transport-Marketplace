@@ -46,6 +46,7 @@ hr {
   margin: 0 auto;
   padding: 0 20px;
 }
+main{min-height: 100vh;}
 .home-banner {
   background: url(../../public/banner-bg.webp) top center no-repeat;
   max-width: 1600px;
@@ -127,6 +128,9 @@ hr {
   @apply rounded-md py-2 px-5 text-black font-semibold  shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2;
 }
 
+.nav-subhead{ font-size: 14px;
+  @apply font-normal p-2 text-neutral-400
+}
 .upload-block {
   width: 100%;
   height: auto;
@@ -186,7 +190,7 @@ hr {
 .text-sm{font-size: 10px;}
 
 .ant-radio-group {
-  @apply  rounded-md p-1 bg-red-100
+  @apply  rounded-md p-1 bg-neutral-100
 }
 .ant-radio-button-wrapper{background-color: transparent;border: 0px solid red;}
 .ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled) {
