@@ -71,45 +71,79 @@ io.on("connection", (socket) => {
       },
     });
 
-    if (
-      findUser?.type == "INDIVIDUAL_SHIPPER" ||
-      findUser?.type == "SHIPPER_COMPANY"
-    ) {
-      const updatedBidAmount = await prisma.bid.update({
-        where: {
-          id: bidId,
-        },
-        data: {
-          negotiateShipperPrice: price,
-        },
-      });
+    if (receiverSocketId) {
+      if (
+        findUser?.type == "INDIVIDUAL_SHIPPER" ||
+        findUser?.type == "SHIPPER_COMPANY"
+      ) {
+        const updatedBidAmount = await prisma.bid.update({
+          where: {
+            id: bidId,
+          },
+          data: {
+            negotiateShipperPrice: price,
+          },
+        });
 
-      io.to(receiverSocketId).emit("receiveUpdatedBidPrice", updatedBidAmount);
-    } else if (findUser?.type == "INDIVIDUAL_DRIVER") {
-      const updatedBidAmount = await prisma.bid.update({
-        where: {
-          id: bidId,
-        },
-        data: {
-          negotiateDriverPrice: price,
-        },
-      });
+        io.to(receiverSocketId).emit(
+          "receiveUpdatedBidPrice",
+          updatedBidAmount
+        );
+      } else if (findUser?.type == "INDIVIDUAL_DRIVER") {
+        const updatedBidAmount = await prisma.bid.update({
+          where: {
+            id: bidId,
+          },
+          data: {
+            negotiateDriverPrice: price,
+          },
+        });
 
-      io.to(receiverSocketId).emit("receiveUpdatedBidPrice", updatedBidAmount);
-    }
-  });
-
-  socket.on("disconnect", () => {
-    console.log("client disconnected:", socket.id);
-
-    for (const [userId, sId] of onlineUsers.entries()) {
-      if (sId === socket.id) {
-        onlineUsers.delete(userId);
-        break;
+        io.to(receiverSocketId).emit(
+          "receiveUpdatedBidPrice",
+          updatedBidAmount
+        );
+      }
+    } else {
+      if (
+        findUser?.type == "INDIVIDUAL_SHIPPER" ||
+        findUser?.type == "SHIPPER_COMPANY"
+      ) {
+        const updatedBidAmount = await prisma.bid.update({
+          where: {
+            id: bidId,
+          },
+          data: {
+            negotiateShipperPrice: price,
+          },
+        });
+        io.emit("receiveUpdatedBidPrice", updatedBidAmount);
+      } else if (findUser?.type == "INDIVIDUAL_DRIVER") {
+        const updatedBidAmount = await prisma.bid.update({
+          where: {
+            id: bidId,
+          },
+          data: {
+            negotiateDriverPrice: price,
+          },
+        });
+        io.emit("receiveUpdatedBidPrice", updatedBidAmount);
       }
     }
+
+    socket.on("disconnect", () => {
+      console.log("client disconnected:", socket.id);
+
+      for (const [userId, sId] of onlineUsers.entries()) {
+        if (sId === socket.id) {
+          onlineUsers.delete(userId);
+          break;
+        }
+      }
+    });
   });
 });
+
 const port = Number(process.env.PORT) || 8000;
 server.listen(port, "0.0.0.0", () => {
   console.log(`Server running on port ${port}`);

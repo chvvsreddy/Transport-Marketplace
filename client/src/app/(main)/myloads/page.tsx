@@ -17,6 +17,7 @@ import {
   Input,
 } from "antd";
 import { EyeOutlined } from "@ant-design/icons";
+import { getStatusColor } from "@/app/util/statusColorLoads";
 
 const { Option } = Select;
 
@@ -166,20 +167,7 @@ export default function MyLoads() {
 
   const labelStyle = { fontWeight: 500, fontSize: 13, color: "#888" };
   const valueStyle = { fontWeight: 600, fontSize: 14, color: "#000" };
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "AVAILABLE":
-        return "bg-green-200";
-      case "IN_PROGRESS":
-        return "bg-blue-200";
-      case "COMPLETED":
-        return "bg-gray-200";
-      case "CANCELLED":
-        return "bg-red-200";
-      default:
-        return "bg-yellow-200";
-    }
-  };
+
   return (
     <div style={{ padding: 24 }}>
       <Typography.Title level={3}>My Loads</Typography.Title>

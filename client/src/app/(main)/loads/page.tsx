@@ -11,6 +11,7 @@ import {
   InputNumber,
   Form,
   Empty,
+  message,
 } from "antd";
 import React, { useState, useEffect, useContext } from "react";
 import Heading from "@/app/util/Heading/index";
@@ -18,6 +19,8 @@ import { createBid, getBids, useGetAllLoadsQuery } from "@/state/api";
 import { getLoggedUserFromLS } from "@/app/util/getLoggedUserFromLS";
 import { SocketContext } from "@/app/util/SocketContext";
 import { useRouter } from "next/navigation";
+import { timeSincePosted } from "@/app/util/timeSincePosted";
+import { getStatusColor } from "@/app/util/statusColorLoads";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -186,10 +189,24 @@ const Loads = () => {
 
     const handleUpdatedBid = (updatedBid: Bid) => {
       setBids((prevBids) => {
-        const updatedBids = prevBids.map((bid) =>
-          bid.id === updatedBid.id ? updatedBid : bid
-        );
-        return updatedBids;
+        const index = prevBids.findIndex((b) => b.id === updatedBid.id);
+
+        if (index !== -1) {
+          const newBids = [...prevBids];
+          newBids[index] = updatedBid;
+          return newBids;
+        } else {
+          return [...prevBids, updatedBid];
+        }
+      });
+
+      setFilteredLoads((prevLoads) => {
+        return prevLoads.map((load) => {
+          if (load.id === updatedBid.loadId) {
+            return { ...load };
+          }
+          return load;
+        });
       });
     };
 
@@ -261,20 +278,8 @@ const Loads = () => {
       setIsModalVisible(false);
       setBidPrice("");
     }
-  };
-
-  const timeSincePosted = (timestampStr: string): string => {
-    const timestamp = new Date(timestampStr);
-    const now = new Date();
-    const diffMs = now.getTime() - timestamp.getTime();
-    const minutes = Math.floor(diffMs / 60000);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
-
-    if (minutes < 1) return "Posted just now";
-    if (days >= 1) return `Posted ${days} day${days > 1 ? "s" : ""} ago`;
-    if (hours >= 1) return `Posted ${hours} hour${hours > 1 ? "s" : ""} ago`;
-    return `Posted ${minutes} minute${minutes > 1 ? "s" : ""} ago`;
+    message.success("bid updated success");
+    window.location.reload();
   };
 
   if (isLoading) return <div className="py-4">Loading...</div>;
@@ -286,20 +291,7 @@ const Loads = () => {
   const countOfBid = Bids.filter(
     (bid) => bid.carrierId === getLoggedUserFromLS().userId
   );
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "AVAILABLE":
-        return "bg-green-200";
-      case "IN_PROGRESS":
-        return "bg-blue-200";
-      case "COMPLETED":
-        return "bg-gray-200";
-      case "CANCELLED":
-        return "bg-red-200";
-      default:
-        return "bg-yellow-200";
-    }
-  };
+  
   return (
     <>
       {location && (
