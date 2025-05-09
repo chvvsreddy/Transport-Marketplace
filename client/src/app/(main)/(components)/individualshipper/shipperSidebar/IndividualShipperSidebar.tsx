@@ -71,7 +71,8 @@ const Sidebar = () => {
   return (
     <div className={sidebarClassNames}>
       {/* Header */}
-      <div className="flex justify-between items-center px-4 py-3 border-b border-gray-300">
+      <div className="flex justify-between items-center px-4 py-3 border-b border-gray-300" >
+        <div  style={{height:"37px"}}>
         {!isSidebarCollapsed && (
           <Image
             src="/goodseva-logo.png"
@@ -81,6 +82,7 @@ const Sidebar = () => {
             className="rounded"
           />
         )}
+        </div>
 
         {/* Toggle Button (Mobile) */}
         <button

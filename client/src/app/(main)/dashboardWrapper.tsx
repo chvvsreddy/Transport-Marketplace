@@ -127,11 +127,11 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
       <main
         className={`flex flex-col w-full h-full bg-gray-100 pb-6 pr-2 ${
-          isDriver ? "max-w-[900px] mx-auto py-14 pl-2 pr-2" : isSidebarCollapsed ? "md:pl-24" : "md:pl-64"
+          isDriver ? "max-w-[900px] mx-auto py-14 pl-2 pr-2" : isSidebarCollapsed ? "md:pl-16" : "md:pl-64"
         }`}
       >
         {isDriver ? <DriverHeader /> : <Navbar />}
-        <div className="bg-white p-4 m-4 mt-0 rounded-xl shadow-md">
+        <div className={`bg-white p-4 m-4 rounded-xl shadow-md ${ isDriver ? "mt-8" : "mt-0" }`}>
          {children}
         </div>       
         {isDriver && <BottomNav />}
