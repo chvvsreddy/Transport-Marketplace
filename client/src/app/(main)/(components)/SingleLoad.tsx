@@ -100,8 +100,8 @@ export default function SingleLoad() {
     );
 
   return (
-    <div className="w-full p-3 space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="-m-4">
+      <div className="flex justify-between items-center p-4 border-neutral-200 border-b-2">
         <h2 className="text-2xl font-bold">Load Details</h2>
         {pathname.includes("/myloads") && (
           <button
@@ -121,9 +121,9 @@ export default function SingleLoad() {
         )}
       </div>
 
-      <div className="grid grid-cols-4 gap-8">
+      <div className="grid grid-cols-4">
         {/* Left column */}
-        <div className="grid gap-4 p-6 border-neutral-200 border-2 rounded-md">
+        <div className="grid gap-4 p-6 border-neutral-200 border-r-2 col-span-4 md:col-span-1">
           <div className="text-sm text-gray-500">
             <p>Created at: {new Date(load.createdAt).toLocaleString()}</p>
             <p>Updated at: {new Date(load.updatedAt).toLocaleString()}</p>
@@ -191,10 +191,9 @@ export default function SingleLoad() {
           </p>
         </div>
 
-        <div className="col-span-3 border-neutral-200 border-2 rounded-md">
+        <div className="col-span-4 md:col-span-3">
           <div>
-            <p
-              onClick={() => toggleSection("route")}
+            <p onClick={() => toggleSection("route")}
               className="cursor-pointer text-md font-semibold p-3 border-b-2 border-neutral-200 flex justify-between items-center"
             >
               Origin - Destination
@@ -205,7 +204,7 @@ export default function SingleLoad() {
               />
             </p>
             {openSections.route && (
-              <div className="grid grid-cols-2 gap-4 p-6">
+              <div className="grid md:grid-cols-2 gap-4 p-6">
                 <div>
                   <h3 className="font-semibold mb-1">Origin</h3>
                   <p>{load.origin.address}</p>
