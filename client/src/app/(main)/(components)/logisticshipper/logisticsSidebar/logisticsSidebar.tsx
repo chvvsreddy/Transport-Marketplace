@@ -1,6 +1,7 @@
 "use client";
 
 import { useAppDispatch, useAppSelector } from "@/app/redux";
+import { getLoggedUserFromLS } from "@/app/util/getLoggedUserFromLS";
 import { setIsSidebarCollapsed } from "@/state";
 import {
   BoxIcon,
@@ -118,7 +119,7 @@ const Sidebar = () => {
           Management
         </h6>
         <SidebarLink
-          href="/loadmanagement"
+          href="/myloads"
           icon={TruckIcon}
           label="Load Management"
           isCollapsed={isSidebarCollapsed}
@@ -130,7 +131,7 @@ const Sidebar = () => {
           isCollapsed={isSidebarCollapsed}
         />
         <SidebarLink
-          href="/triptracking"
+          href="/trips"
           icon={ChartBar}
           label="Trip Tracking"
           isCollapsed={isSidebarCollapsed}
@@ -142,7 +143,7 @@ const Sidebar = () => {
           isCollapsed={isSidebarCollapsed}
         />
         <SidebarLink
-          href="/user"
+          href={`/profile?userId=${getLoggedUserFromLS().userId}`}
           icon={User}
           label="Profile & Settings"
           isCollapsed={isSidebarCollapsed}

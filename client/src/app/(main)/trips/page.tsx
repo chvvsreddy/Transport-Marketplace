@@ -4,7 +4,6 @@ import { Table, Typography } from "antd";
 
 const { Title } = Typography;
 
-
 const tripsData = [
   {
     id: "trp_1a2b",
@@ -61,65 +60,9 @@ const tripsData = [
 ];
 
 export default function Trips() {
-  const columns = [
-    {
-      title: "Trip ID",
-      dataIndex: "id",
-      key: "id",
-    },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-    },
-    {
-      title: "Start Time",
-      dataIndex: "startTime",
-      key: "startTime",
-      render: (text: any) =>
-        text ? new Date(text).toLocaleString() : "Not Started",
-    },
-    {
-      title: "End Time",
-      dataIndex: "endTime",
-      key: "endTime",
-      render: (text: any) =>
-        text ? new Date(text).toLocaleString() : "Not Completed",
-    },
-    {
-      title: "Distance (km)",
-      dataIndex: "plannedRoute",
-      key: "distance",
-      render: (plannedRoute: any) =>
-        plannedRoute ? plannedRoute.distance.toFixed(1) : "N/A",
-    },
-    {
-      title: "Waypoints",
-      dataIndex: "plannedRoute",
-      key: "waypoints",
-      render: (plannedRoute: any) => {
-        if (plannedRoute && plannedRoute.waypoints.length > 0) {
-          return plannedRoute.waypoints
-            .map(
-              (wp: any, index: any) =>
-                `(${wp.lat.toFixed(2)}, ${wp.lng.toFixed(2)})`
-            )
-            .join(", ");
-        }
-        return "No Waypoints";
-      },
-    },
-    {
-      title: "Vehicle ID",
-      dataIndex: "vehicleId",
-      key: "vehicleId",
-    },
-  ];
-
   return (
     <div style={{ padding: "20px" }}>
-      <Title level={3}>Trip Details</Title>
-      <Table columns={columns} dataSource={tripsData} rowKey="id" />
+      <h1>Trips page is in progress....</h1>
     </div>
   );
 }

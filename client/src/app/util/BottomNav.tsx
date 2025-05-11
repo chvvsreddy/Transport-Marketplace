@@ -3,13 +3,18 @@
 import { TruckIcon, Layout, MessagesSquare, User, Map } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { getLoggedUserFromLS } from "./getLoggedUserFromLS";
 
 const navItems = [
   { href: "/loads", label: "Loads", icon: Map },
   { href: "/trips", label: "Trips", icon: Layout },
   { href: "/trucks", label: "Trucks", icon: TruckIcon },
   { href: "/chat", label: "Chat", icon: MessagesSquare },
-  { href: "/profile", label: "Account", icon: User },
+  {
+    href: `/profile?userId=${getLoggedUserFromLS().userId}`,
+    label: "Profile",
+    icon: User,
+  },
 ];
 
 const BottomNav = () => {

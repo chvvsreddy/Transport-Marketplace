@@ -1,6 +1,7 @@
 "use client";
 
 import { getLoggedUserFromLS } from "@/app/util/getLoggedUserFromLS";
+import { getStatusColor } from "@/app/util/statusColorLoads";
 import { getLoadByLoadId, getLoadByLoadIdForAdmin } from "@/state/api";
 import { ArrowDownCircle, Edit } from "lucide-react";
 import { useRouter, useParams, usePathname } from "next/navigation";
@@ -77,7 +78,7 @@ export default function SingleLoad() {
         let fetchedLoad;
         if (pathname.includes("/myloads")) {
           fetchedLoad = await getLoadByLoadId(loadId);
-          if (!fetchedLoad || fetchedLoad.shipperId !== loggedUser.userId) {
+          if (!fetchedLoad) {
             router.push("/login");
             return;
           }
@@ -131,7 +132,9 @@ export default function SingleLoad() {
           <p>
             Status:
             <br />
-            <span className="font-semibold">{load.status}</span>
+            <span className={`font-semibold ${getStatusColor(load.status)}`}>
+              {load.status}
+            </span>
           </p>
           <p>
             Load ID:

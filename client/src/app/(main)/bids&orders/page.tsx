@@ -1,6 +1,12 @@
 "use client";
 import { getLoggedUserFromLS } from "@/app/util/getLoggedUserFromLS";
-import { getAllUsers, getBids, getLoads } from "@/state/api";
+import {
+  getAllUsers,
+  getBids,
+  getLoads,
+  updateBid,
+  updateBidStatus,
+} from "@/state/api";
 import { useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -38,6 +44,8 @@ interface Bid {
   updatedAt: string;
   negotiateShipperPrice: number;
   negotiateDriverPrice: number;
+  isDriverAccepted: boolean;
+  isShipperAccepted: boolean;
 }
 
 interface Load {
@@ -78,7 +86,7 @@ export default function BidsAndOthers() {
   >("PENDING");
   const [originInput, setOriginInput] = useState("");
   const [destinationInput, setDestinationInput] = useState("");
-
+  const [isAdmin, setIsAdmin] = useState(false);
   const [expandedLoadIds, setExpandedLoadIds] = useState<string[]>([]);
 
   const [originSearch, setOriginSearch] = useState("");
@@ -86,13 +94,16 @@ export default function BidsAndOthers() {
 
   const pageSize = 3;
   const router = useRouter();
-  const { socket } = useContext(SocketContext) || {};
+  const { socket, isConnected } = useContext(SocketContext) || {};
 
   useEffect(() => {
     const user = getLoggedUserFromLS();
     setLoggedUser(user);
+    if (user.type === "ADMIN") {
+      setIsAdmin(true);
+    }
 
-    if (!user || user.type === "INDIVIDUAL_DRIVER" || user.type === "ADMIN") {
+    if (!user || user.type === "INDIVIDUAL_DRIVER") {
       router.push("/login");
       return;
     }
@@ -108,8 +119,13 @@ export default function BidsAndOthers() {
     }
 
     fetchData();
+  }, []);
+  useEffect(() => {
+    if (!socket) return;
 
-    socket?.on("receiveUpdatedBidPrice", (updatedBid: Bid) => {
+    const handleBidPrice = (updatedBid: Bid) => {
+      message.success("Price updated by driver");
+
       setBids((prevBids) => {
         const index = prevBids.findIndex((b) => b.id === updatedBid.id);
         if (index !== -1) {
@@ -120,12 +136,24 @@ export default function BidsAndOthers() {
           return [...prevBids, updatedBid];
         }
       });
-    });
+
+      setLoads((prevLoads) =>
+        prevLoads.map((load) =>
+          load.id === updatedBid.loadId
+            ? { ...load, bidPrice: updatedBid.price }
+            : load
+        )
+      );
+    };
+
+    const events = ["receiveUpdatedBidPrice", "receiveUpdatedBidStatus"];
+    events.forEach((event) => socket.on(event, handleBidPrice));
 
     return () => {
-      socket?.disconnect();
+      events.forEach((event) => socket.off(event, handleBidPrice));
     };
-  }, []);
+  }, [socket]);
+
   function getTimeAgo(timestamp: string): string {
     const now = new Date();
     const updated = new Date(timestamp);
@@ -151,9 +179,28 @@ export default function BidsAndOthers() {
     return "just now";
   }
 
-  const handleAcceptBid = (bidId: string) => {
+  const handleAcceptBid = async (bidId: string) => {
     console.log("Accepting bid:", bidId);
-    // Backend API call
+    const currentBid = bids.find((bid) => bid.id === bidId);
+    const findUserIdByLoad = loads?.find(
+      (load) => load.id === currentBid?.loadId
+    );
+    if (socket?.id) {
+      socket?.emit("updateBidStatus", {
+        bidId,
+        shipperId: getLoggedUserFromLS().userId,
+        toUser:
+          getLoggedUserFromLS().type === "INDIVIDUAL_DRIVER"
+            ? findUserIdByLoad?.shipperId
+            : currentBid?.carrierId,
+      });
+    } else {
+      const updatedBid = await updateBidStatus({
+        bidId,
+        shipperId: getLoggedUserFromLS().userId,
+      });
+      message.success("status updated");
+    }
   };
 
   const handleNegotiateBid = (bid: Bid, load: Load) => {
@@ -165,14 +212,34 @@ export default function BidsAndOthers() {
 
   const handleSubmitNegotiation = () => {
     if (!selectedBid || !loggedUser || negotiatedPrice == null) return;
+    const findUserIdByLoad = loads.find(
+      (load) => load.id === selectedBid.loadId
+    );
+    if (socket?.id) {
+      socket?.emit("updateBidAmount", {
+        bidId: selectedBid.id,
+        shipperId: loggedUser.userId,
+        price: negotiatedPrice,
+        toUser:
+          loggedUser.type === "INDIVIDUAL_DRIVER"
+            ? findUserIdByLoad?.shipperId
+            : selectedBid.carrierId,
+      });
 
-    socket?.emit("updateBidAmount", {
-      bidId: selectedBid.id,
-      shipperId: loggedUser.userId,
-      price: negotiatedPrice,
-    });
+      message.success("Bid updated successfully");
+    } else {
+      offlineUserBidUpdate({
+        bidId: selectedBid.id,
+        shipperId: loggedUser.userId,
+        price: negotiatedPrice,
+      });
+    }
 
-    message.success("Bid updated successfully");
+    async function offlineUserBidUpdate(obj: any) {
+      const updateBidAmount = await updateBid(obj);
+      message.success("Bid updated successfully ");
+    }
+
     setIsModalVisible(false);
   };
 
@@ -268,7 +335,11 @@ export default function BidsAndOthers() {
     );
   });
 
-  return (
+  return isAdmin ? (
+    <>
+      <h1>Admin bids page is in progress......</h1>
+    </>
+  ) : (
     <div style={{ padding: "10px" }}>
       <Row>
         <Col span={24} md={12}>
@@ -428,28 +499,49 @@ export default function BidsAndOthers() {
                         marginTop: "10px",
                       }}
                     >
-                      {bid.status === "PENDING" ? (
+                      {bid.status === "PENDING" && (
                         <>
+                          {bid &&
+                            bid.negotiateDriverPrice > 0 &&
+                            bid.negotiateShipperPrice === 0 && (
+                              <>
+                                <Button
+                                  className="max-h-10"
+                                  onClick={() => handleNegotiateBid(bid, load)}
+                                >
+                                  Negotiate
+                                </Button>
+                                <Button
+                                  className="button-primary max-h-10"
+                                  onClick={() => handleAcceptBid(bid.id)}
+                                >
+                                  Accept
+                                </Button>
+                              </>
+                            )}
                           {bid.negotiateDriverPrice > 0 &&
-                            bid.negotiateShipperPrice === 0 &&
-                            bid.status === "PENDING" && (
+                            bid.negotiateShipperPrice > 0 &&
+                            bid.isDriverAccepted &&
+                            bid.isShipperAccepted === false && (
                               <Button
-                                className="max-h-10"
-                                onClick={() => handleNegotiateBid(bid, load)}
+                                className="button-primary max-h-10"
+                                onClick={() => handleAcceptBid(bid.id)}
                               >
-                                Negotiate
+                                Accept
                               </Button>
                             )}
-                          <Button
-                            className="button-primary max-h-10"
-                            onClick={() => handleAcceptBid(bid.id)}
-                          >
-                            Accept
-                          </Button>
                         </>
-                      ) : (
+                      )}
+                      {bid && bid.isDriverAccepted && bid.isShipperAccepted && (
                         <Text type="secondary">Status: {bid.status}</Text>
                       )}
+                      {bid.isDriverAccepted === false &&
+                        bid.negotiateDriverPrice > 0 &&
+                        bid.negotiateShipperPrice > 0 && (
+                          <span className=" max-h-10 text-red-800 text-sm">
+                            Waiting for driver response
+                          </span>
+                        )}
                     </div>
                   </div>
                 </Card>

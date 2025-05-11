@@ -6,8 +6,9 @@ import helmet from "helmet";
 import morgan from "morgan";
 import { Server } from "socket.io";
 import http from "http";
+import { PrismaClient } from "@prisma/client";
 
-// ROUTE IMPORTS
+// Route Imports
 import allLoadsRoute from "./routes/allLoadsRoutes";
 import allUsersRoute from "./routes/allUsersRoutes";
 import loginRoutes from "./routes/loginRoutes";
@@ -18,12 +19,15 @@ import adminLoadRoutes from "./routes/adminLoads";
 import postLoadRoutes from "./routes/postLoadRoutes";
 import driverRoutes from "./routes/driverRoutes";
 import allBidsRoutes from "./routes/allBidsRoutes";
-import { PrismaClient } from "@prisma/client";
 
-// CONFIGURATIONS
+// Configurations
 dotenv.config();
 const app = express();
 const server = http.createServer(app);
+const prisma = new PrismaClient();
+const onlineUsers = new Map();
+
+// Middleware
 app.use(express.json());
 app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
@@ -32,21 +36,19 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cors());
 
-/* ROUTES */
-app.use("/allLoads", allLoadsRoute); // http://localhost:8000/allLoads
+// Routes
+app.use("/allLoads", allLoadsRoute);
 app.use("/allUsers", allUsersRoute);
 app.use("/login", loginRoutes);
 app.use("/profile", profileRoutes);
-app.use("/Register", signupRoutes);
+app.use("/register", signupRoutes);
 app.use("/myloads", loadsRoutes);
 app.use("/loadmanagement", adminLoadRoutes);
 app.use("/postload", postLoadRoutes);
 app.use("/driverLocation", driverRoutes);
 app.use("/bids&orders", allBidsRoutes);
-/* SERVER */
 
-const onlineUsers = new Map();
-const prisma = new PrismaClient();
+// Socket.IO Configuration
 const io = new Server(server, {
   cors: {
     origin: "*",
@@ -54,97 +56,82 @@ const io = new Server(server, {
   },
 });
 
+// Socket Event Handling
 io.on("connection", (socket) => {
   console.log("New client connected:", socket.id);
 
+  
   socket.on("register", (userId) => {
     onlineUsers.set(userId, socket.id);
-    console.log("Registered user :", userId);
-    console.log("No of clients in live :" + io.engine.clientsCount);
+    console.log(
+      `Registered user: ${userId} | Active clients: ${io.engine.clientsCount}`
+    );
   });
 
-  socket.on("updateBidAmount", async ({ bidId, shipperId, price }) => {
-    const receiverSocketId = onlineUsers.get(shipperId);
-    const findUser = await prisma.users.findUnique({
-      where: {
-        id: shipperId,
-      },
-    });
+  socket.on("updateBidAmount", async ({ bidId, shipperId, price, toUser }) => {
+    try {
+      const receiverSocketId = onlineUsers.get(shipperId);
+      const findUser: any = await prisma.users.findUnique({
+        where: { id: shipperId },
+      });
+      console.log("event triggered");
+      if (!receiverSocketId) return;
 
-    if (receiverSocketId) {
-      if (
-        findUser?.type == "INDIVIDUAL_SHIPPER" ||
-        findUser?.type == "SHIPPER_COMPANY"
-      ) {
-        const updatedBidAmount = await prisma.bid.update({
-          where: {
-            id: bidId,
-          },
-          data: {
-            negotiateShipperPrice: price,
-          },
-        });
+      const isShipper = ["INDIVIDUAL_SHIPPER", "SHIPPER_COMPANY"].includes(
+        findUser?.type
+      );
+      const priceField = isShipper
+        ? "negotiateShipperPrice"
+        : "negotiateDriverPrice";
 
-        io.to(receiverSocketId).emit(
-          "receiveUpdatedBidPrice",
-          updatedBidAmount
-        );
-      } else if (findUser?.type == "INDIVIDUAL_DRIVER") {
-        const updatedBidAmount = await prisma.bid.update({
-          where: {
-            id: bidId,
-          },
-          data: {
-            negotiateDriverPrice: price,
-          },
-        });
+      const updatedBidAmount = await prisma.bid.update({
+        where: { id: bidId },
+        data: { [priceField]: price },
+      });
+      console.log(`socket id :${receiverSocketId} for this user ${toUser}`);
+      io.to(receiverSocketId).emit("receiveUpdatedBidPrice", updatedBidAmount);
+    } catch (error) {
+      console.error("Error updating bid amount:", error);
+    }
+  });
 
-        io.to(receiverSocketId).emit(
-          "receiveUpdatedBidPrice",
-          updatedBidAmount
-        );
-      }
-    } else {
-      if (
-        findUser?.type == "INDIVIDUAL_SHIPPER" ||
-        findUser?.type == "SHIPPER_COMPANY"
-      ) {
-        const updatedBidAmount = await prisma.bid.update({
-          where: {
-            id: bidId,
-          },
-          data: {
-            negotiateShipperPrice: price,
-          },
-        });
-        io.emit("receiveUpdatedBidPrice", updatedBidAmount);
-      } else if (findUser?.type == "INDIVIDUAL_DRIVER") {
-        const updatedBidAmount = await prisma.bid.update({
-          where: {
-            id: bidId,
-          },
-          data: {
-            negotiateDriverPrice: price,
-          },
-        });
-        io.emit("receiveUpdatedBidPrice", updatedBidAmount);
+
+  socket.on("updateBidStatus", async ({ bidId, shipperId, toUser }) => {
+    try {
+      const receiverSocketId = onlineUsers.get(toUser);
+      const findUser = await prisma.users.findUnique({
+        where: { id: shipperId },
+      });
+
+      if (!receiverSocketId) return;
+
+      const isShipper = findUser?.type === "SHIPPER_COMPANY";
+      const statusField = isShipper ? "isShipperAccepted" : "isDriverAccepted";
+
+      const updatedBidStatus = await prisma.bid.update({
+        where: { id: bidId },
+        data: { [statusField]: true },
+      });
+
+      io.to(receiverSocketId).emit("receiveUpdatedBidStatus", updatedBidStatus);
+    } catch (error) {
+      console.error("Error updating bid status:", error);
+    }
+  });
+
+  socket.on("disconnect", () => {
+    console.log("Client disconnected:", socket.id);
+    for (const [userId, sId] of onlineUsers.entries()) {
+      if (sId === socket.id) {
+        onlineUsers.delete(userId);
+        break;
       }
     }
-
-    socket.on("disconnect", () => {
-      console.log("client disconnected:", socket.id);
-
-      for (const [userId, sId] of onlineUsers.entries()) {
-        if (sId === socket.id) {
-          onlineUsers.delete(userId);
-          break;
-        }
-      }
-    });
   });
 });
 
+// Server Setup
 const port = Number(process.env.PORT) || 8000;
-server.listen(port, "0.0.0.0", () => {
+server.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });

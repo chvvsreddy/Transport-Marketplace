@@ -207,6 +207,8 @@ model Bid {
   status                BidStatus @default(PENDING)
   negotiateShipperPrice Float     @default(0)
   negotiateDriverPrice  Float     @default(0)
+  isDriverAccepted      Boolean   @default(false)
+  isShipperAccepted     Boolean   @default(false)
 
   // Additional bid information
   //proposedVehicle   Vehicle?   @relation(fields: [vehicleId], references: [id])

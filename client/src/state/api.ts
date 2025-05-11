@@ -211,7 +211,44 @@ export const getBids = async () => {
     console.error("bids getting error:", error);
   }
 };
+export const updateBid = async (obj: any) => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/bids&orders`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(obj),
+      }
+    );
 
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("error on updating bid", error);
+  }
+};
+export const updateBidStatus = async (obj: any) => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/bids&orders`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(obj),
+      }
+    );
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("error on updating bid", error);
+  }
+};
 export const getLoadsById = async (obj: any) => {
   try {
     const response = await fetch(
