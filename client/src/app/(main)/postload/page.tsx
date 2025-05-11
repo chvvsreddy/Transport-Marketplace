@@ -27,6 +27,8 @@ import "../../(styles)/Postload.css";
 import { getLoggedUserFromLS } from "@/app/util/getLoggedUserFromLS";
 import { useWatch } from "antd/es/form/Form";
 import { createLoad } from "@/state/api";
+import Heading from "@/app/util/Heading";
+import TextArea from "antd/es/input/TextArea";
 
 export default function PostLoad() {
   const [priceType, setPriceType] = useState<string>("FixPrice");
@@ -163,7 +165,7 @@ export default function PostLoad() {
 
   return (
     <Flex vertical gap={15}>
-      <Typography.Title level={3}>Post a Load</Typography.Title>
+      <Heading name="Post a Load"/>
 
       {/* Upload Section */}
       <div>
@@ -226,20 +228,18 @@ export default function PostLoad() {
         </h2>
         <Row gutter={24}>
           <Col lg={12}>
-            <Form.Item
-              label="From"
-              name="from"
-              rules={[{ required: true, message: "Please enter origin" }]}
-            >
-              <Input placeholder="Hyderabad" />
+            <Form.Item label="From" name="from" rules={[{ required: true, message: "Please enter origin" }]} >
+              <div className="flex gap-4">
+                <Input placeholder="Postal Code" />
+                <Input placeholder="City Name" />              
+              </div>              
             </Form.Item>
-            <Form.Item
-              label="Origin State"
+            {/* <Form.Item label="Origin State"
               name="originState"
               rules={[{ required: true, message: "Please enter origin state" }]}
             >
               <Input placeholder="Telangana" />
-            </Form.Item>
+            </Form.Item> */}
             <Form.Item
               label="Origin Address"
               name="originAddress"
@@ -247,9 +247,9 @@ export default function PostLoad() {
                 { required: true, message: "Please enter origin address" },
               ]}
             >
-              <Input placeholder="Street address" />
+              <TextArea placeholder="Street address"/>
             </Form.Item>
-            <Form.Item
+            {/* <Form.Item
               label="Origin Postal Code"
               name="originPostalCode"
               rules={[
@@ -257,7 +257,7 @@ export default function PostLoad() {
               ]}
             >
               <Input placeholder="500001" />
-            </Form.Item>
+            </Form.Item> */}
             <Form.Item name="multiplePickups" valuePropName="checked">
               <Checkbox>Multiple Pickups</Checkbox>
             </Form.Item>
@@ -268,9 +268,12 @@ export default function PostLoad() {
               name="to"
               rules={[{ required: true, message: "Please enter destination" }]}
             >
-              <Input placeholder="Vishakapatnam" />
+              <div className="flex gap-4">
+                <Input placeholder="Postal Code" />
+              <Input placeholder="City Name" />              
+              </div>
             </Form.Item>
-            <Form.Item
+            {/* <Form.Item
               label="Destination State"
               name="destinationState"
               rules={[
@@ -278,7 +281,7 @@ export default function PostLoad() {
               ]}
             >
               <Input placeholder="Andhra Pradesh" />
-            </Form.Item>
+            </Form.Item> */}
             <Form.Item
               label="Destination Address"
               name="destinationAddress"
@@ -286,9 +289,9 @@ export default function PostLoad() {
                 { required: true, message: "Please enter destination address" },
               ]}
             >
-              <Input placeholder="Street address" />
+              <TextArea placeholder="Street address"/>
             </Form.Item>
-            <Form.Item
+            {/* <Form.Item
               label="Destination Postal Code"
               name="destinationPostalCode"
               rules={[
@@ -299,7 +302,7 @@ export default function PostLoad() {
               ]}
             >
               <Input placeholder="530001" />
-            </Form.Item>
+            </Form.Item> */}
             <Form.Item name="multipleDrops" valuePropName="checked">
               <Checkbox>Multiple Drops</Checkbox>
             </Form.Item>

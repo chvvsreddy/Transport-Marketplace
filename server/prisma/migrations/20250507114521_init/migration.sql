@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Bid" ADD COLUMN     "negotiateDriverPrice" DOUBLE PRECISION NOT NULL DEFAULT 0,
+ADD COLUMN     "negotiateShipperPrice" DOUBLE PRECISION NOT NULL DEFAULT 0;

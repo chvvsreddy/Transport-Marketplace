@@ -40,14 +40,12 @@ const SidebarLink = ({
         className={`cursor-pointer flex items-center ${
           isCollapsed ? "justify-center py-3" : "justify-start p-3"
         } hover:text-blue-500 hover:bg-white gap-3 mb-2 rounded-md transition-colors ${
-          isActive ? "bg-white text-white" : ""
+          isActive ? "bg-violet-100" : ""
         }`}
       >
         <Icon className="w-6 h-6 text-gray-700" />
         <span
-          className={`${
-            isCollapsed ? "hidden" : "block"
-          } font-medium text-gray-700`}
+          className={`${isCollapsed ? "hidden" : "block"} `}
         >
           {label}
         </span>
@@ -69,12 +67,13 @@ const Sidebar = () => {
 
   const sidebarClassNames = `fixed flex flex-col ${
     isSidebarCollapsed ? "w-0 md:w-16" : "w-72 md:w-64"
-  } transition-all duration-300 overflow-hidden h-full shadow-md z-40 bg-gray-200`;
+  } transition-all duration-300 overflow-hidden h-full shadow-md z-40 bg-white`;
 
   return (
     <div className={sidebarClassNames}>
       {/* Header */}
-      <div className="flex justify-between items-center px-4 py-3 border-b border-gray-300">
+      <div className="flex justify-between items-center px-4 py-3 border-b border-gray-300" >
+        <div  style={{height:"37px"}}>
         {!isSidebarCollapsed && (
           <Image
             src="/goodseva-logo.png"
@@ -84,6 +83,7 @@ const Sidebar = () => {
             className="rounded"
           />
         )}
+        </div>
 
         {/* Toggle Button (Mobile) */}
         <button
@@ -101,11 +101,8 @@ const Sidebar = () => {
       {/* Links */}
       <div className="flex-grow mt-8 px-4 overflow-y-auto max-h-[calc(100vh-100px)] scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100 pr-2">
         <h6
-          className={`${
-            isSidebarCollapsed ? "hidden" : "block"
-          } font-normal text-sm p-2 text-neutral-500`}
-        >
-          Main
+          className={`${ isSidebarCollapsed ? "hidden" : "block" }  nav-subhead`} >
+         Overview
         </h6>
 
         <SidebarLink
@@ -116,16 +113,13 @@ const Sidebar = () => {
         />
 
         <h6
-          className={`${
-            isSidebarCollapsed ? "hidden" : "block"
-          } font-normal text-sm p-2 text-neutral-500`}
-        >
+          className={`${ isSidebarCollapsed ? "hidden" : "block" }  nav-subhead`} >
           Management
         </h6>
         <SidebarLink
           href="/myloads"
           icon={TruckIcon}
-          label="My Loads"
+          label="Loads"
           isCollapsed={isSidebarCollapsed}
         />
         <SidebarLink

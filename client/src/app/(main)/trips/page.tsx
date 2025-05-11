@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { Table, Typography } from "antd";
+import Heading from "@/app/util/Heading";
 
 const { Title } = Typography;
 

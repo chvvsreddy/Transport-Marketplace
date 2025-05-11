@@ -15,6 +15,7 @@ import { getLoads } from "@/state/api";
 import Link from "next/link";
 import { getLoggedUserFromLS } from "@/app/util/getLoggedUserFromLS";
 import { useRouter } from "next/navigation";
+import Heading from "@/app/util/Heading";
 
 const { Option } = Select;
 
@@ -157,10 +158,8 @@ export default function Posted() {
     <>
       <Row gutter={[16, 16]}>
         <Col span={24}>
-          <Typography.Title level={3} style={{ marginBottom: 0 }}>
-            Loads
-          </Typography.Title>
-        </Col>
+        <Heading name="Loads"/>
+             </Col>
 
         {/* Filters */}
         <Col span={24}>

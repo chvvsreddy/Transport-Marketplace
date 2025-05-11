@@ -4,6 +4,7 @@ import React from "react";
 import { Col, Row, Tabs, Typography } from "antd";
 import type { TabsProps } from "antd";
 import Header from "@/app/util/Header";
+import Heading from "@/app/util/Heading";
 
 const UserProfile = dynamic(() => import("../../util/Profile/ProfileDetails"));
 
@@ -37,9 +38,7 @@ export default function Profile() {
   return (
     <div>
       <div style={{ margin: 10 }}>
-        <Typography.Text style={{ fontSize: 40, fontWeight: 600 }}>
-          Profile
-        </Typography.Text>
+        <Heading name="Profile" />
 
         <Row>
           <Col lg={20}>

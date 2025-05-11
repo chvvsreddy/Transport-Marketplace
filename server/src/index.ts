@@ -60,7 +60,7 @@ const io = new Server(server, {
 io.on("connection", (socket) => {
   console.log("New client connected:", socket.id);
 
-  
+  // Registering user with their socket ID
   socket.on("register", (userId) => {
     onlineUsers.set(userId, socket.id);
     console.log(
@@ -71,6 +71,7 @@ io.on("connection", (socket) => {
   socket.on("updateBidAmount", async ({ bidId, shipperId, price, toUser }) => {
     try {
       const receiverSocketId = onlineUsers.get(shipperId);
+
       const findUser: any = await prisma.users.findUnique({
         where: { id: shipperId },
       });
@@ -88,17 +89,17 @@ io.on("connection", (socket) => {
         where: { id: bidId },
         data: { [priceField]: price },
       });
-      console.log(`socket id :${receiverSocketId} for this user ${toUser}`);
-      io.to(receiverSocketId).emit("receiveUpdatedBidPrice", updatedBidAmount);
+      // console.log(`socket id :${receiverSocketId} for this user ${toUser}`);
     } catch (error) {
       console.error("Error updating bid amount:", error);
     }
   });
 
-
+  // Updating bid status
   socket.on("updateBidStatus", async ({ bidId, shipperId, toUser }) => {
     try {
       const receiverSocketId = onlineUsers.get(toUser);
+
       const findUser = await prisma.users.findUnique({
         where: { id: shipperId },
       });
@@ -112,8 +113,6 @@ io.on("connection", (socket) => {
         where: { id: bidId },
         data: { [statusField]: true },
       });
-
-      io.to(receiverSocketId).emit("receiveUpdatedBidStatus", updatedBidStatus);
     } catch (error) {
       console.error("Error updating bid status:", error);
     }
