@@ -35,7 +35,7 @@ body,
 .ant-col,
 .ant-btn,
 .ant-form {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: Arial, Helvetica, sans-serif;font-size: 14px;
 }
 
 hr {
