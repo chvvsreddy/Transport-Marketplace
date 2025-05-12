@@ -148,7 +148,12 @@ export default function BidsAndOthers() {
       );
     };
 
-    const events = ["receiveUpdatedBidPrice", "receiveUpdatedBidStatus"];
+    const events = [
+      "receiveUpdatedBidPrice",
+      "receiveUpdatedBidStatus",
+      "receiveNewBid",
+      "receiveAfterDriverBidViaSocket",
+    ];
     events.forEach((event) => socket.on(event, handleBidPrice));
 
     return () => {
@@ -337,6 +342,19 @@ export default function BidsAndOthers() {
     );
   });
 
+  const acceptAfterDriverBid = (
+    bidId: string,
+    bidCarrierId: string,
+    negotiateDriverPrice: number
+  ) => {
+    socket?.emit("acceptAfterDriverBidViaSocket", {
+      bidId,
+      shipperId: loggedUser?.userId,
+      toUser: bidCarrierId,
+      price: negotiateDriverPrice,
+    });
+  };
+
   return isAdmin ? (
     <>
       <h1>Admin bids page is in progress......</h1>
@@ -423,8 +441,11 @@ export default function BidsAndOthers() {
         else if (daysLeft <= 5) color = "orange";
 
         return (
-          <div key={load.id} className="!mt-4 rounded-md border-1 border-neutral-300">
-            <div className=" text-center p-2 px-4 flex justify-between items-center" >
+          <div
+            key={load.id}
+            className="!mt-4 rounded-md border-1 border-neutral-300"
+          >
+            <div className=" text-center p-2 px-4 flex justify-between items-center">
               <Title level={5}>
                 {load.origin.city} ➝ {load.destination.city}
               </Title>
@@ -453,7 +474,11 @@ export default function BidsAndOthers() {
 
             {expandedLoadIds.includes(load.id) &&
               relatedBids.map((bid) => (
-                <Card  key={bid.id} type="inner" className="!bg-neutral-100 !rounded-0">
+                <Card
+                  key={bid.id}
+                  type="inner"
+                  className="!bg-neutral-100 !rounded-0"
+                >
                   <div className="flex flex-wrap justify-between">
                     <Paragraph>
                       Driver Mail ID:
@@ -494,7 +519,13 @@ export default function BidsAndOthers() {
                                 </Button>
                                 <Button
                                   className="button-primary max-h-10"
-                                  onClick={() => handleAcceptBid(bid.id)}
+                                  onClick={() =>
+                                    acceptAfterDriverBid(
+                                      bid.id,
+                                      bid.carrierId,
+                                      bid.negotiateDriverPrice
+                                    )
+                                  }
                                 >
                                   Accept
                                 </Button>

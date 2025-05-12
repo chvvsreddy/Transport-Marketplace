@@ -208,7 +208,12 @@ const Loads = () => {
         });
       };
 
-      const events = ["receiveUpdatedBidPrice", "receiveUpdatedBidStatus"];
+      const events = [
+        "receiveUpdatedBidPrice",
+        "receiveUpdatedBidStatus",
+        "receiveNewBid",
+        "receiveAfterDriverBidViaSocket",
+      ];
       events.forEach((event) => socket.on(event, updateBidState));
 
       return () => {
@@ -271,12 +276,14 @@ const Loads = () => {
               : existingBid.carrierId,
         });
       } else {
-        await createBid({
+        const newBid = await createBid({
           loadId: selectedLoad.id,
           userId,
           price: priceNum,
           negotiateDriverPrice: priceNum,
         });
+
+        socket.emit("passNewBid", { newBid, toUser: selectedLoad.shipperId });
       }
 
       setIsModalVisible(false);
@@ -284,6 +291,10 @@ const Loads = () => {
     }
     message.success("bid updated success");
     // window.location.reload();
+  };
+
+  const acceptBidWithoutBid = (bidId: string) => {
+    //Directly create trip
   };
 
   //accept btn
@@ -460,7 +471,7 @@ const Loads = () => {
                             <>
                               <Button
                                 className="button-primary max-h-10"
-                                onClick={() => handleBidStatus(bid.id)}
+                                onClick={() => acceptBidWithoutBid(bid.id)}
                               >
                                 Accept
                               </Button>

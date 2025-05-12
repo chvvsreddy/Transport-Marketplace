@@ -70,26 +70,38 @@ io.on("connection", (socket) => {
 
   socket.on("updateBidAmount", async ({ bidId, shipperId, price, toUser }) => {
     try {
-      const receiverSocketId = onlineUsers.get(shipperId);
-
+      const receiverSocketId = onlineUsers.get(toUser);
+      const fromUserSocketId = onlineUsers.get(shipperId);
       const findUser: any = await prisma.users.findUnique({
         where: { id: shipperId },
       });
-      console.log("event triggered");
-      if (!receiverSocketId) return;
-
       const isShipper = ["INDIVIDUAL_SHIPPER", "SHIPPER_COMPANY"].includes(
         findUser?.type
       );
       const priceField = isShipper
         ? "negotiateShipperPrice"
         : "negotiateDriverPrice";
+      console.log("event triggered");
+      if (!receiverSocketId) {
+        const updatedBidAmount = await prisma.bid.update({
+          where: { id: bidId },
+          data: { [priceField]: price },
+        });
+        console.log("user offline , we updating in databse");
+        io.to(fromUserSocketId).emit(
+          "receiveUpdatedBidPrice",
+          updatedBidAmount
+        );
+        return;
+      }
 
       const updatedBidAmount = await prisma.bid.update({
         where: { id: bidId },
         data: { [priceField]: price },
       });
-      // console.log(`socket id :${receiverSocketId} for this user ${toUser}`);
+      console.log(`socket id :${receiverSocketId} for this user ${toUser}`);
+      io.to(receiverSocketId).emit("receiveUpdatedBidPrice", updatedBidAmount);
+      io.to(fromUserSocketId).emit("receiveUpdatedBidPrice", updatedBidAmount);
     } catch (error) {
       console.error("Error updating bid amount:", error);
     }
@@ -99,24 +111,85 @@ io.on("connection", (socket) => {
   socket.on("updateBidStatus", async ({ bidId, shipperId, toUser }) => {
     try {
       const receiverSocketId = onlineUsers.get(toUser);
-
+      const fromUserSocketId = onlineUsers.get(shipperId);
       const findUser = await prisma.users.findUnique({
         where: { id: shipperId },
       });
+      const isShipper =
+        findUser?.type === "SHIPPER_COMPANY" ||
+        findUser?.type === "INDIVIDUAL_SHIPPER";
 
-      if (!receiverSocketId) return;
-
-      const isShipper = findUser?.type === "SHIPPER_COMPANY";
       const statusField = isShipper ? "isShipperAccepted" : "isDriverAccepted";
+      if (!receiverSocketId) {
+        const updatedBidStatus = await prisma.bid.update({
+          where: { id: bidId },
+          data: { [statusField]: true },
+        });
+        io.to(fromUserSocketId).emit(
+          "receiveUpdatedBidPrice",
+          updatedBidStatus
+        );
+        return;
+      }
 
       const updatedBidStatus = await prisma.bid.update({
         where: { id: bidId },
         data: { [statusField]: true },
       });
+
+      io.to(receiverSocketId).emit("receiveUpdatedBidStatus", updatedBidStatus);
+      io.to(fromUserSocketId).emit("receiveUpdatedBidPrice", updatedBidStatus);
     } catch (error) {
       console.error("Error updating bid status:", error);
     }
   });
+
+  socket.on("passNewBid", async ({ newBid, toUser }) => {
+    const receiverSocketId = onlineUsers.get(toUser);
+    const fromUserId = newBid.carrierId;
+    const fromUserSocketId = onlineUsers.get(fromUserId);
+    io.to(receiverSocketId).emit("receiveNewBid", newBid);
+    io.to(fromUserSocketId).emit("receiveNewBid", newBid);
+  });
+
+  socket.on(
+    "acceptAfterDriverBidViaSocket",
+    async ({ bidId, shipperId, toUser, price }) => {
+      const receiverSocketId = onlineUsers.get(toUser);
+      const fromUserSocketId = onlineUsers.get(shipperId);
+      if (!receiverSocketId) {
+        const updateBid = await prisma.bid.update({
+          where: {
+            id: bidId,
+          },
+          data: {
+            isDriverAccepted: true,
+            isShipperAccepted: true,
+            negotiateShipperPrice: Number(price),
+          },
+        });
+        io.to(fromUserSocketId).emit(
+          "receiveAfterDriverBidViaSocket",
+          updateBid
+        );
+        return;
+      }
+
+      const updateBid = await prisma.bid.update({
+        where: {
+          id: bidId,
+        },
+        data: {
+          isDriverAccepted: true,
+          isShipperAccepted: true,
+          negotiateShipperPrice: Number(price),
+        },
+      });
+
+      io.to(receiverSocketId).emit("receiveAfterDriverBidViaSocket", updateBid);
+      io.to(fromUserSocketId).emit("receiveAfterDriverBidViaSocket", updateBid);
+    }
+  );
 
   socket.on("disconnect", () => {
     console.log("Client disconnected:", socket.id);

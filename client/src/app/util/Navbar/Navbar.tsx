@@ -87,7 +87,6 @@ const Navbar = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-  
 
   return (
     <div className="flex justify-between items-center gap-5 mb-5 p-2 px-5 border-b bg-white border-neutral-300">

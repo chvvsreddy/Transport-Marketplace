@@ -272,7 +272,7 @@ export const getLoadsById = async (obj: any) => {
 export const createLoad = async (obj: any) => {
   try {
     const getLatLngFromAPI = async (location: any) => {
-      const query = `${location.city}+${location.state}+${location.postalCode}`;
+      const query = `${location.city}+${location.postalCode}`;
       const url = `${
         process.env.NEXT_PUBLIC_OPEN_CAGE_MAP_API
       }q=${encodeURIComponent(query)}&key=${
