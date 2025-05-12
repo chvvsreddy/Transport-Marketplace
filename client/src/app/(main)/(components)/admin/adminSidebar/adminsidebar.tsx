@@ -41,7 +41,7 @@ const SidebarLink = ({
         className={`cursor-pointer flex items-center ${
           isCollapsed ? "justify-center py-3" : "justify-start p-3"
         } hover:text-blue-500 hover:bg-white gap-3 mb-2 rounded-md transition-colors ${
-          isActive ? "bg-white text-blue-500" : "text-gray-700"
+          isActive ? "bg-violet-100" : "text-gray-700"
         }`}
       >
         <Icon className="w-6 h-6" />
@@ -65,7 +65,7 @@ const Sidebar = () => {
 
   const sidebarClassNames = `fixed flex flex-col ${
     isSidebarCollapsed ? "w-0 md:w-16" : "w-72 md:w-64"
-  } transition-all duration-300 overflow-hidden h-full shadow-md z-40 bg-gray-200`;
+  } transition-all duration-300 overflow-hidden h-full shadow-md z-40 bg-white`;
 
   return (
     <div className={sidebarClassNames}>
@@ -91,11 +91,7 @@ const Sidebar = () => {
 
       {/* Links */}
       <div className="flex-grow mt-8 px-4 overflow-y-auto">
-        <h6
-          className={`${
-            isSidebarCollapsed ? "hidden" : "block"
-          } font-normal text-sm p-2 text-neutral-500`}
-        >
+        <h6 className={`${ isSidebarCollapsed ? "hidden" : "block" } nav-subhead`} >
           Overview
         </h6>
 

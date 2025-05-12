@@ -364,7 +364,7 @@ const Loads = () => {
             </div>
           </Col>
         </Row>
-        <h1 className="text-xl font-semibold mt-2 text-gray-700">Your Bids</h1>
+        <h3 className="text-xl font-semibold mt-2 text-gray-700">Your Bids</h3>
         {countOfBid.length === 0 ? (
           <Empty description="You have not placed any bids yet." />
         ) : (
@@ -517,7 +517,8 @@ const Loads = () => {
           })
         )}
         <Row justify="space-between" align="middle" className="mb-4">
-          <Heading name="Available Loads" />
+        <h3 className="text-xl font-semibold mt-2 text-gray-700">Available Loads</h3>
+          
           <Select
             placeholder="Filter by State"
             onChange={handleStateChange}
