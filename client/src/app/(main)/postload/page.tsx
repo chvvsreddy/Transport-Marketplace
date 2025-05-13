@@ -109,7 +109,7 @@ export default function PostLoad() {
         state: values.originState,
         address: values.originAddress,
         country: "India",
-        postalCode: values.originPostalCode,
+        postalCode: values.postalCodeFrom,
       },
       destination: {
         city: values.to,
@@ -118,7 +118,7 @@ export default function PostLoad() {
         state: values.destinationState,
         address: values.destinationAddress,
         country: "India",
-        postalCode: values.destinationPostalCode,
+        postalCode: values.postalCodeTo,
       },
       weight: values.weight,
       dimensions: {},
@@ -133,10 +133,10 @@ export default function PostLoad() {
       price: values.price,
       bidPrice: priceType === "FixPrice" ? 0 : values.price,
       noOfTrucks: values.noOfTrucks,
-      pickupWindowStart: values.datetime,
-      pickupWindowEnd: values.datetime,
-      deliveryWindowStart: values.datetime,
-      deliveryWindowEnd: values.datetime,
+      pickupWindowStart: values.pickupDate,
+      pickupWindowEnd: values.pickupDate,
+      deliveryWindowStart: values.deliveryDate,
+      deliveryWindowEnd: values.deliveryDate,
     };
 
     callCreateLoad(payload);
@@ -165,91 +165,107 @@ export default function PostLoad() {
 
   return (
     <>
-      <Heading name="Post a Load"/>
+      <Heading name="Post a Load" />
       <div className={`bg-white p-4 m-4 rounded-xl shadow-md mt-4`}>
-      {/* Upload Section */}
-      <div>
-        <h2 className="text-base/7 font-semibold text-gray-900 mb-3">
-          Upload invoice to autofill load details
-        </h2>
+        {/* Upload Section */}
+        <div>
+          <h2 className="text-base/7 font-semibold text-gray-900 mb-3">
+            Upload invoice to autofill load details
+          </h2>
 
-        <Upload.Dragger
-          name="file"
-          multiple={false}
-          showUploadList={false}
-          className="upload-container"
-          maxCount={1}
-        >
-          <p className="ant-upload-drag-icon">
-            <InboxOutlined />
-          </p>
-          <div>
-            <p className="upload-text">
-              Click or drag file to this area to upload
+          <Upload.Dragger
+            name="file"
+            multiple={false}
+            showUploadList={false}
+            className="upload-container"
+            maxCount={1}
+          >
+            <p className="ant-upload-drag-icon">
+              <InboxOutlined />
             </p>
-            <p className="upload-subtext">
-              PDF, Word, Image files. Max size: 10MB
-            </p>
+            <div>
+              <p className="upload-text">
+                Click or drag file to this area to upload
+              </p>
+              <p className="upload-subtext">
+                PDF, Word, Image files. Max size: 10MB
+              </p>
+            </div>
+          </Upload.Dragger>
+
+          <div className="bg-amber-50 p-2 text-sm mt-2 flex gap-3 rounded">
+            <ul className="list-disc ml-4">
+              <li>Please enter accurate invoice details to claim insurance.</li>
+              <li>Total invoice amount should not exceed INR 50 lakhs.</li>
+            </ul>
+            <ul className="list-disc ml-4">
+              <li>
+                Insurance applicable for shipments with invoices up to INR 20
+                lakhs.
+              </li>
+              <li>
+                Ceramic, Batteries, and Chemicals items are not covered under
+                insurance.
+              </li>
+            </ul>
           </div>
-        </Upload.Dragger>
-
-        <div className="bg-amber-50 p-2 text-sm mt-2 flex gap-3 rounded">
-          <ul className="list-disc ml-4">
-            <li>Please enter accurate invoice details to claim insurance.</li>
-            <li>Total invoice amount should not exceed INR 50 lakhs.</li>
-          </ul>
-          <ul className="list-disc ml-4">
-            <li>
-              Insurance applicable for shipments with invoices up to INR 20
-              lakhs.
-            </li>
-            <li>
-              Ceramic, Batteries, and Chemicals items are not covered under
-              insurance.
-            </li>
-          </ul>
         </div>
-      </div>
 
-      {/* Form Starts Here */}
-      <Form
-        layout="vertical"
-        form={form}
-        onFinish={handlePost}
-        initialValues={{
-          priceType: "FixPrice",
-          acOption: "Non AC",
-          trollyOption: "Without Trolly",
-        }}
-      >
-        {/* Origin & Destination */}
-        <h2 className="text-base/7 font-semibold text-gray-900 mb-3">
-          Origin & Destination Details
-        </h2>
-        <Row gutter={24}>
-          <Col lg={12}>
-            <Form.Item label="From" name="from" rules={[{ required: true, message: "Please enter origin" }]} >
-              <div className="flex gap-4">
-                <Input placeholder="Postal Code" />
-                <Input placeholder="City Name" />              
-              </div>              
-            </Form.Item>
-            {/* <Form.Item label="Origin State"
+        {/* Form Starts Here */}
+        <Form
+          layout="vertical"
+          form={form}
+          onFinish={handlePost}
+          initialValues={{
+            priceType: "FixPrice",
+            acOption: "Non AC",
+            trollyOption: "Without Trolly",
+          }}
+        >
+          {/* Origin & Destination */}
+          <h2 className="text-base/7 font-semibold text-gray-900 mb-3">
+            Origin & Destination Details
+          </h2>
+          <Row gutter={24}>
+            <Col lg={12}>
+              <Form.Item
+                label="From"
+                name="from"
+                rules={[
+                  { required: true, message: "Please enter origin city name" },
+                ]}
+              >
+                <div className="flex gap-4">
+                  <Input placeholder="City Name" />
+                </div>
+              </Form.Item>
+              <Form.Item
+                label="From postal code"
+                name="postalCodeFrom"
+                rules={[
+                  { required: true, message: "Please enter postal code" },
+                ]}
+              >
+                <div className="flex gap-4">
+                  <Input placeholder="Postal Code" />
+                </div>
+              </Form.Item>
+              {/* <Form.Item label="Origin State"
               name="originState"
               rules={[{ required: true, message: "Please enter origin state" }]}
             >
               <Input placeholder="Telangana" />
             </Form.Item> */}
-            <Form.Item
-              label="Origin Address"
-              name="originAddress"
-              rules={[
-                { required: true, message: "Please enter origin address" },
-              ]}
-            >
-              <TextArea placeholder="Street address"/>
-            </Form.Item>
-            {/* <Form.Item
+              <Form.Item
+                label="Origin Address"
+                name="originAddress"
+                rules={[
+                  { required: true, message: "Please enter origin address" },
+                ]}
+              >
+                <TextArea placeholder="Street address" />
+              </Form.Item>
+              {/* <Form.Item
               label="Origin Postal Code"
               name="originPostalCode"
               rules={[
@@ -258,22 +274,35 @@ export default function PostLoad() {
             >
               <Input placeholder="500001" />
             </Form.Item> */}
-            <Form.Item name="multiplePickups" valuePropName="checked">
-              <Checkbox>Multiple Pickups</Checkbox>
-            </Form.Item>
-          </Col>
-          <Col lg={12}>
-            <Form.Item
-              label="To"
-              name="to"
-              rules={[{ required: true, message: "Please enter destination" }]}
-            >
-              <div className="flex gap-4">
-                <Input placeholder="Postal Code" />
-              <Input placeholder="City Name" />              
-              </div>
-            </Form.Item>
-            {/* <Form.Item
+              <Form.Item name="multiplePickups" valuePropName="checked">
+                <Checkbox>Multiple Pickups</Checkbox>
+              </Form.Item>
+            </Col>
+            <Col lg={12}>
+              <Form.Item
+                label="To"
+                name="to"
+                rules={[
+                  { required: true, message: "Please enter destination city" },
+                ]}
+              >
+                <div className="flex gap-4">
+                  <Input placeholder="City Name" />
+                </div>
+              </Form.Item>
+              <Form.Item
+                label="To postal code"
+                name="postalCodeTo"
+                rules={[
+                  { required: true, message: "Please enter destination" },
+                ]}
+              >
+                <div className="flex gap-4">
+                  <Input placeholder="Postal Code"  />
+                  
+                </div>
+              </Form.Item>
+              {/* <Form.Item
               label="Destination State"
               name="destinationState"
               rules={[
@@ -282,16 +311,19 @@ export default function PostLoad() {
             >
               <Input placeholder="Andhra Pradesh" />
             </Form.Item> */}
-            <Form.Item
-              label="Destination Address"
-              name="destinationAddress"
-              rules={[
-                { required: true, message: "Please enter destination address" },
-              ]}
-            >
-              <TextArea placeholder="Street address"/>
-            </Form.Item>
-            {/* <Form.Item
+              <Form.Item
+                label="Destination Address"
+                name="destinationAddress"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please enter destination address",
+                  },
+                ]}
+              >
+                <TextArea placeholder="Street address" />
+              </Form.Item>
+              {/* <Form.Item
               label="Destination Postal Code"
               name="destinationPostalCode"
               rules={[
@@ -303,206 +335,235 @@ export default function PostLoad() {
             >
               <Input placeholder="530001" />
             </Form.Item> */}
-            <Form.Item name="multipleDrops" valuePropName="checked">
-              <Checkbox>Multiple Drops</Checkbox>
-            </Form.Item>
-          </Col>
-        </Row>
+              <Form.Item name="multipleDrops" valuePropName="checked">
+                <Checkbox>Multiple Drops</Checkbox>
+              </Form.Item>
+            </Col>
+          </Row>
 
-        {/* Shipment Details */}
-        <h2 className="text-base/7 font-semibold text-gray-900 mb-3 mt-3">
-          Shipment Details
-        </h2>
-        <Row gutter={24}>
-          <Col lg={6}>
-            <Form.Item
-              label="Date & Time"
-              name="datetime"
-              rules={[{ required: true, message: "Please select a date/time" }]}
-            >
-              <DatePicker showTime style={{ width: "100%" }} />
-            </Form.Item>
-          </Col>
-          <Col lg={6}>
-            <Form.Item
-              label="Load Type"
-              name="loadType"
-              rules={[{ required: true, message: "Please enter load type" }]}
-            >
-              <Input placeholder="Agriculture, Apparel etc" />
-            </Form.Item>
-          </Col>
-          <Col lg={6}>
-            <Form.Item
-              label="No. of Trucks"
-              name="noOfTrucks"
-              rules={[
-                { required: true, message: "Please enter no. of trucks" },
-              ]}
-            >
-              <Input type="number" placeholder="1" />
-            </Form.Item>
-          </Col>
-          <Col lg={6}>
-            <Form.Item
-              label="Weight"
-              name="weight"
-              rules={[{ required: true, message: "Please enter weight" }]}
-            >
-              <Input suffix="Tons" />
-            </Form.Item>
-          </Col>
-          <Col lg={6}>
-            <Form.Item
-              label="Price"
-              name="price"
-              rules={[{ required: true, message: "Please enter price" }]}
-            >
-              <Input type="number" placeholder="Enter price" />
-            </Form.Item>
-          </Col>
-          <Col lg={6}>
-            <Form.Item label="Price Type" name="priceType">
-              <Radio.Group
-                className="radio-grp"
-                buttonStyle="solid"
-                value={priceType}
-                onChange={(e) => {
-                  setPriceType(e.target.value);
-                  form.setFieldValue("priceType", e.target.value);
-                }}
+          {/* Shipment Details */}
+          <h2 className="text-base/7 font-semibold text-gray-900 mb-3 mt-3">
+            Shipment Details
+          </h2>
+          <Row gutter={24}>
+            <Col lg={6}>
+              <Form.Item
+                label="Select Pick up date"
+                name="pickupDate"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please select a Pickup date/time",
+                  },
+                ]}
               >
-                <Radio.Button value="FixPrice">Fix Price</Radio.Button>
-                <Radio.Button value="smart">Smart Bid</Radio.Button>
-              </Radio.Group>
-            </Form.Item>
-          </Col>
-        </Row>
-
-        {/* Truck Details */}
-        <h2 className="text-base/7 font-semibold text-gray-900 mb-3 mt-3">
-          Truck Details
-        </h2>
-        <Row gutter={24}>
-          <Col lg={12}>
-            <Form.Item
-              label="Truck Type"
-              name="truckType"
-              rules={[{ required: true, message: "Please select truck type" }]}
-            >
-              <Radio.Group
-                onChange={(e) => {
-                  setSelectedTruckType(e.target.value);
-                  setActiveGoodsType(null);
-                  form.setFieldValue("truckType", e.target.value);
-                }}
+                <DatePicker showTime style={{ width: "100%" }} />
+              </Form.Item>
+            </Col>
+            <Col lg={6}>
+              <Form.Item
+                label="Select Estimated delivey  date"
+                name="deliveryDate"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please select a Estimated delivery date/time",
+                  },
+                ]}
               >
-                <Radio.Button value="Open">
-                  <Image src={OpenVan} alt="" height={40} />
-                  Open
-                </Radio.Button>
-                <Radio.Button value="Closed">
-                  <Image src={CloseVan} alt="" height={40} />
-                  Closed
-                </Radio.Button>
-                <Radio.Button value="Tanker">
-                  <Image src={tanker} alt="" height={40} />
-                  Tanker
-                </Radio.Button>
-                <Radio.Button value="Container">
-                  <Image src={container} alt="" height={40} />
-                  Container
-                </Radio.Button>
-              </Radio.Group>
-            </Form.Item>
-          </Col>
-          <Col lg={6}>
-            <Form.Item label="AC / Non AC" name="acOption">
-              <Radio.Group
-                buttonStyle="solid"
-                disabled={selectedTruckType !== "Closed"}
+                <DatePicker showTime style={{ width: "100%" }} />
+              </Form.Item>
+            </Col>
+            <Col lg={6}>
+              <Form.Item
+                label="Load Type"
+                name="loadType"
+                rules={[{ required: true, message: "Please enter load type" }]}
               >
-                <Radio.Button value="Non AC">Non AC</Radio.Button>
-                <Radio.Button value="AC">AC</Radio.Button>
-              </Radio.Group>
-            </Form.Item>
-          </Col>
-          <Col lg={6}>
-            <Form.Item label="Trolly Option" name="trollyOption">
-              <Radio.Group
-                buttonStyle="solid"
-                disabled={selectedTruckType !== "Container"}
+                <Input placeholder="Agriculture, Apparel etc" />
+              </Form.Item>
+            </Col>
+            <Col lg={6}>
+              <Form.Item
+                label="No. of Trucks"
+                name="noOfTrucks"
+                rules={[
+                  { required: true, message: "Please enter no. of trucks" },
+                ]}
               >
-                <Radio.Button value="With Trolly">With Trolly</Radio.Button>
-                <Radio.Button value="Without Trolly">
-                  Without Trolly
-                </Radio.Button>
-              </Radio.Group>
-            </Form.Item>
-          </Col>
-        </Row>
-
-        {/* Goods Types */}
-        {["Open", "Closed"].includes(selectedTruckType) &&
-          Goods_Types[selectedTruckType].length > 0 && (
-            <Flex wrap gap={15} style={{ marginBottom: 16 }}>
-              {Goods_Types[selectedTruckType].map((g: any, i: number) => (
-                <Button
-                  key={i}
-                  className={`materials-btn ${
-                    activeGoodsType === i ? "active" : ""
-                  }`}
-                  onClick={() => setActiveGoodsType(i)}
-                  style={{
-                    border:
-                      activeGoodsType === i ? "2px solid #1677ff" : undefined,
+                <Input type="number" placeholder="1" />
+              </Form.Item>
+            </Col>
+            <Col lg={6}>
+              <Form.Item
+                label="Weight"
+                name="weight"
+                rules={[{ required: true, message: "Please enter weight" }]}
+              >
+                <Input suffix="Tons" />
+              </Form.Item>
+            </Col>
+            <Col lg={6}>
+              <Form.Item
+                label="Price"
+                name="price"
+                rules={[{ required: true, message: "Please enter price" }]}
+              >
+                <Input type="number" placeholder="Enter price" />
+              </Form.Item>
+            </Col>
+            <Col lg={6}>
+              <Form.Item label="Price Type" name="priceType">
+                <Radio.Group
+                  className="radio-grp"
+                  buttonStyle="solid"
+                  value={priceType}
+                  onChange={(e) => {
+                    setPriceType(e.target.value);
+                    form.setFieldValue("priceType", e.target.value);
                   }}
                 >
-                  <Typography.Text strong style={{ fontSize: "14px" }}>
-                    {g.title}
-                  </Typography.Text>
-                </Button>
-              ))}
-            </Flex>
-          )}
+                  <Radio.Button value="FixPrice">Fix Price</Radio.Button>
+                  <Radio.Button value="smart">Smart Bid</Radio.Button>
+                </Radio.Group>
+              </Form.Item>
+            </Col>
+          </Row>
 
-        {selectedTruckType === "Container" &&
-          trollyOptionValue === "With Trolly" && (
-            <Flex wrap gap={15} style={{ marginBottom: 16 }}>
-              {Goods_Types.Container["With Trolly"].map((g: any, i: number) => (
-                <Button
-                  key={i}
-                  className={`materials-btn ${
-                    activeGoodsType === i ? "active" : ""
-                  }`}
-                  onClick={() => setActiveGoodsType(i)}
-                  style={{
-                    border:
-                      activeGoodsType === i ? "2px solid #1677ff" : undefined,
+          {/* Truck Details */}
+          <h2 className="text-base/7 font-semibold text-gray-900 mb-3 mt-3">
+            Truck Details
+          </h2>
+          <Row gutter={24}>
+            <Col lg={12}>
+              <Form.Item
+                label="Truck Type"
+                name="truckType"
+                rules={[
+                  { required: true, message: "Please select truck type" },
+                ]}
+              >
+                <Radio.Group
+                  onChange={(e) => {
+                    setSelectedTruckType(e.target.value);
+                    setActiveGoodsType(null);
+                    form.setFieldValue("truckType", e.target.value);
                   }}
                 >
-                  <Typography.Text strong style={{ fontSize: "14px" }}>
-                    {g.title}
-                  </Typography.Text>
-                </Button>
-              ))}
-            </Flex>
-          )}
+                  <Radio.Button value="Open">
+                    <Image src={OpenVan} alt="" height={40} />
+                    Open
+                  </Radio.Button>
+                  <Radio.Button value="Closed">
+                    <Image src={CloseVan} alt="" height={40} />
+                    Closed
+                  </Radio.Button>
+                  <Radio.Button value="Tanker">
+                    <Image src={tanker} alt="" height={40} />
+                    Tanker
+                  </Radio.Button>
+                  <Radio.Button value="Container">
+                    <Image src={container} alt="" height={40} />
+                    Container
+                  </Radio.Button>
+                </Radio.Group>
+              </Form.Item>
+            </Col>
+            <Col lg={6}>
+              <Form.Item label="AC / Non AC" name="acOption">
+                <Radio.Group
+                  buttonStyle="solid"
+                  disabled={selectedTruckType !== "Closed"}
+                >
+                  <Radio.Button value="Non AC">Non AC</Radio.Button>
+                  <Radio.Button value="AC">AC</Radio.Button>
+                </Radio.Group>
+              </Form.Item>
+            </Col>
+            <Col lg={6}>
+              <Form.Item label="Trolly Option" name="trollyOption">
+                <Radio.Group
+                  buttonStyle="solid"
+                  disabled={selectedTruckType !== "Container"}
+                >
+                  <Radio.Button value="With Trolly">With Trolly</Radio.Button>
+                  <Radio.Button value="Without Trolly">
+                    Without Trolly
+                  </Radio.Button>
+                </Radio.Group>
+              </Form.Item>
+            </Col>
+          </Row>
 
-        <Divider />
+          {/* Goods Types */}
+          {["Open", "Closed"].includes(selectedTruckType) &&
+            Goods_Types[selectedTruckType].length > 0 && (
+              <Flex wrap gap={15} style={{ marginBottom: 16 }}>
+                {Goods_Types[selectedTruckType].map((g: any, i: number) => (
+                  <Button
+                    key={i}
+                    className={`materials-btn ${
+                      activeGoodsType === i ? "active" : ""
+                    }`}
+                    onClick={() => setActiveGoodsType(i)}
+                    style={{
+                      border:
+                        activeGoodsType === i ? "2px solid #1677ff" : undefined,
+                    }}
+                  >
+                    <Typography.Text strong style={{ fontSize: "14px" }}>
+                      {g.title}
+                    </Typography.Text>
+                  </Button>
+                ))}
+              </Flex>
+            )}
 
-        <Row justify="end" gutter={16}>
-          <Col>
-            <Button className="button-secondary">Save as Draft</Button>
-          </Col>
-          <Col>
-            <Button type="primary" htmlType="submit" className="button-primary">
-              Post
-            </Button>
-          </Col>
-        </Row>
-      </Form>
-     </div>
+          {selectedTruckType === "Container" &&
+            trollyOptionValue === "With Trolly" && (
+              <Flex wrap gap={15} style={{ marginBottom: 16 }}>
+                {Goods_Types.Container["With Trolly"].map(
+                  (g: any, i: number) => (
+                    <Button
+                      key={i}
+                      className={`materials-btn ${
+                        activeGoodsType === i ? "active" : ""
+                      }`}
+                      onClick={() => setActiveGoodsType(i)}
+                      style={{
+                        border:
+                          activeGoodsType === i
+                            ? "2px solid #1677ff"
+                            : undefined,
+                      }}
+                    >
+                      <Typography.Text strong style={{ fontSize: "14px" }}>
+                        {g.title}
+                      </Typography.Text>
+                    </Button>
+                  )
+                )}
+              </Flex>
+            )}
+
+          <Divider />
+
+          <Row justify="end" gutter={16}>
+            <Col>
+              <Button className="button-secondary">Save as Draft</Button>
+            </Col>
+            <Col>
+              <Button
+                type="primary"
+                htmlType="submit"
+                className="button-primary"
+              >
+                Post
+              </Button>
+            </Col>
+          </Row>
+        </Form>
+      </div>
     </>
   );
 }

@@ -119,6 +119,7 @@ const Loads = () => {
 
   const { socket } = useContext(SocketContext) || {};
   const router = useRouter();
+  
 
   useEffect(() => {
     if (getLoggedUserFromLS().userId) {
@@ -160,7 +161,8 @@ const Loads = () => {
                 const filtered = allData.filter(
                   (load) =>
                     load.origin.state?.trim().toLowerCase() ===
-                    selectedState.trim().toLowerCase()
+                      selectedState.trim().toLowerCase() &&
+                    load.status === "AVAILABLE"
                 );
                 setFilteredLoads(filtered);
               }
@@ -230,7 +232,9 @@ const Loads = () => {
       trimmedValue === "all"
         ? allData
         : allData.filter(
-            (load) => load.origin.state?.trim().toLowerCase() === trimmedValue
+            (load) =>
+              load.origin.state?.trim().toLowerCase() === trimmedValue &&
+              load.status === "AVAILABLE"
           );
 
     setFilteredLoads(filtered);
@@ -298,7 +302,7 @@ const Loads = () => {
   };
 
   //accept btn
-  const handleBidStatus = async (bidId: string) => {
+  const handleBidStatus = async (bidId: string, loadId: string) => {
     const currentBid = Bids.find((bid) => bid.id === bidId);
     const findUserIdByLoad = allLoads?.find(
       (load) => load.id === currentBid?.loadId
@@ -306,6 +310,7 @@ const Loads = () => {
     socket?.emit("updateBidStatus", {
       bidId,
       shipperId: getLoggedUserFromLS().userId,
+      loadId,
       toUser:
         getLoggedUserFromLS().type === "INDIVIDUAL_DRIVER"
           ? findUserIdByLoad?.shipperId
@@ -366,126 +371,128 @@ const Loads = () => {
           </Col>
         </Row>
         <div className={`bg-white p-4 m-4 rounded-xl shadow-md mt-4`}>
-        <h3 className="text-xl font-semibold mt-2 text-gray-700">Your Bids</h3>
-        {countOfBid.length === 0 ? (
-          <Empty description="You have not placed any bids yet." />
-        ) : (
-          Bids.map((bid) => {
-            const load = allData.find((l) => l.id === bid.loadId);
-            if (!load) return null;
-            const isBidLoad =
-              load.bidPrice > 0 &&
-              bid.carrierId === getLoggedUserFromLS().userId;
-            return (
-              isBidLoad && (
-                <div
-                  className="grid grid-cols-4 md:grid-cols-7 gap-4 border rounded-md p-2 mt-2 mb-2 border-neutral-300"
-                  key={load.id}
-                >
-                  <div className="col-span-2 md:col-span-2">
-                    <div className="-mt-1">
-                      <Text
-                        className={`${getStatusColor(
-                          load.status
-                        )} p-1 px-2 text-sm rounded-l-md`}
-                      >
-                        {load.status}
-                      </Text>
-                      <Text className="bg-blue-200 p-1 px-2 text-sm rounded-r-md">
-                        {timeSincePosted(load.createdAt)}
+          <h3 className="text-xl font-semibold mt-2 text-gray-700">
+            Your Bids
+          </h3>
+          {countOfBid.length === 0 ? (
+            <Empty description="You have not placed any bids yet." />
+          ) : (
+            Bids.map((bid) => {
+              const load = allData.find((l) => l.id === bid.loadId);
+              if (!load) return null;
+              const isBidLoad =
+                load.bidPrice > 0 &&
+                bid.carrierId === getLoggedUserFromLS().userId;
+              return (
+                isBidLoad && (
+                  <div
+                    className="grid grid-cols-4 md:grid-cols-7 gap-4 border rounded-md p-2 mt-2 mb-2 border-neutral-300"
+                    key={load.id}
+                  >
+                    <div className="col-span-2 md:col-span-2">
+                      <div className="-mt-1">
+                        <Text
+                          className={`${getStatusColor(
+                            load.status
+                          )} p-1 px-2 text-sm rounded-l-md`}
+                        >
+                          {load.status}
+                        </Text>
+                        <Text className="bg-blue-200 p-1 px-2 text-sm rounded-r-md">
+                          {timeSincePosted(load.createdAt)}
+                        </Text>
+                      </div>
+                      <Title level={5} className="mt-1! mb-0!">
+                        {load.origin.city} → {load.destination.city}
+                      </Title>
+                    </div>
+
+                    <div className="md:col-span-1">
+                      <Text>
+                        Type:
+                        <span className="font-semibold">
+                          <br />
+                          {load.cargoType}
+                        </span>
                       </Text>
                     </div>
-                    <Title level={5} className="mt-1! mb-0!">
-                      {load.origin.city} → {load.destination.city}
-                    </Title>
-                  </div>
 
-                  <div className="md:col-span-1">
                     <Text>
-                      Type:
+                      Weight:
                       <span className="font-semibold">
                         <br />
-                        {load.cargoType}
+                        {load.weight} Tons
                       </span>
                     </Text>
-                  </div>
 
-                  <Text>
-                    Weight:
-                    <span className="font-semibold">
-                      <br />
-                      {load.weight} Tons
-                    </span>
-                  </Text>
+                    <Text>
+                      {isBidLoad ? "Bid Price" : "Fixed Price"}:
+                      <span className="font-semibold">
+                        <br />₹{bid.negotiateShipperPrice}
+                      </span>
+                    </Text>
 
-                  <Text>
-                    {isBidLoad ? "Bid Price" : "Fixed Price"}:
-                    <span className="font-semibold">
-                      <br />₹{bid.negotiateShipperPrice}
-                    </span>
-                  </Text>
+                    <Text className="col-span-2 md:col-span-1">
+                      Your price:
+                      <span className="font-semibold">
+                        <br />₹{bid.negotiateDriverPrice}
+                      </span>
+                    </Text>
 
-                  <Text className="col-span-2 md:col-span-1">
-                    Your price:
-                    <span className="font-semibold">
-                      <br />₹{bid.negotiateDriverPrice}
-                    </span>
-                  </Text>
+                    <div className="flex justify-end">
+                      {isBidLoad && (
+                        <>
+                          {bid &&
+                            bid.negotiateDriverPrice > 0 &&
+                            bid.negotiateShipperPrice == 0 && (
+                              <span className="max-h-10 text-red-800 text-sm">
+                                Waiting for shipper response
+                              </span>
+                            )}
+                          {bid.isDriverAccepted &&
+                            bid.isShipperAccepted === false &&
+                            bid.negotiateDriverPrice > 0 &&
+                            bid.negotiateShipperPrice > 0 && (
+                              <span className="max-h-10 text-red-800 text-sm">
+                                Waiting for shipper response
+                              </span>
+                            )}
+                          {bid &&
+                            bid.isDriverAccepted &&
+                            bid.isShipperAccepted && (
+                              <span className="max-h-10 text-green-800 text-sm">
+                                Load accepted by shipper
+                              </span>
+                            )}
 
-                  <div className="flex justify-end">
-                    {isBidLoad && (
-                      <>
-                        {bid &&
-                          bid.negotiateDriverPrice > 0 &&
-                          bid.negotiateShipperPrice == 0 && (
-                            <span className="max-h-10 text-red-800 text-sm">
-                              Waiting for shipper response
-                            </span>
-                          )}
-                        {bid.isDriverAccepted &&
-                          bid.isShipperAccepted === false &&
-                          bid.negotiateDriverPrice > 0 &&
-                          bid.negotiateShipperPrice > 0 && (
-                            <span className="max-h-10 text-red-800 text-sm">
-                              Waiting for shipper response
-                            </span>
-                          )}
-                        {bid &&
-                          bid.isDriverAccepted &&
-                          bid.isShipperAccepted && (
-                            <span className="max-h-10 text-green-800 text-sm">
-                              Load accepted by shipper
-                            </span>
-                          )}
-
-                        {bid.isDriverAccepted === false &&
-                          bid.negotiateDriverPrice > 0 &&
-                          bid.negotiateShipperPrice > 0 && (
-                            <Button
-                              className="button-primary max-h-10"
-                              onClick={() => handleBidStatus(bid.id)}
-                            >
-                              Accept
-                            </Button>
-                          )}
-                        {bid.negotiateDriverPrice == 0 &&
-                          bid.negotiateShipperPrice == 0 && (
-                            <>
+                          {bid.isDriverAccepted === false &&
+                            bid.negotiateDriverPrice > 0 &&
+                            bid.negotiateShipperPrice > 0 && (
                               <Button
                                 className="button-primary max-h-10"
-                                onClick={() => acceptBidWithoutBid(bid.id)}
+                                onClick={() => handleBidStatus(bid.id, load.id)}
                               >
                                 Accept
                               </Button>
-                              <Button
-                                className="button-secondary max-h-10"
-                                onClick={() => showBidModal(load)}
-                              >
-                                Bid
-                              </Button>
-                            </>
-                          )}
-                        {/* {bid.isDriverAccepted ||
+                            )}
+                          {bid.negotiateDriverPrice == 0 &&
+                            bid.negotiateShipperPrice == 0 && (
+                              <>
+                                <Button
+                                  className="button-primary max-h-10"
+                                  onClick={() => acceptBidWithoutBid(bid.id)}
+                                >
+                                  Accept
+                                </Button>
+                                <Button
+                                  className="button-secondary max-h-10"
+                                  onClick={() => showBidModal(load)}
+                                >
+                                  Bid
+                                </Button>
+                              </>
+                            )}
+                          {/* {bid.isDriverAccepted ||
                           (bid.negotiateDriverPrice > 0 && (
                             <span className=" max-h-10 text-red-800 text-sm">
                               Waiting for shipper response
@@ -510,111 +517,113 @@ const Loads = () => {
                               Bid
                             </Button>
                           ))} */}
-                      </>
-                    )}
+                        </>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )
-            );
-          })
-        )}
-        <Row justify="space-between" align="middle" className="mb-4">
-        <h3 className="text-xl font-semibold mt-2 text-gray-700">Available Loads</h3>
-          
-          <Select
-            placeholder="Filter by State"
-            onChange={handleStateChange}
-            allowClear
-            style={{ width: 200 }}
-          >
-            <Option value="All">All</Option>
-            {INDIAN_STATES.map((state) => (
-              <Option key={state} value={state}>
-                {state}
-              </Option>
-            ))}
-          </Select>
-        </Row>
+                )
+              );
+            })
+          )}
+          <Row justify="space-between" align="middle" className="mb-4">
+            <h3 className="text-xl font-semibold mt-2 text-gray-700">
+              Available Loads
+            </h3>
 
-        {paginatedLoads.length === 0 ? (
-          <>
-            <Empty description="No loads available in this route" />
-          </>
-        ) : (
-          paginatedLoads.map((load) => {
-            const isBidLoad = load.bidPrice > 0;
-            const isFixedLoad = load.bidPrice === 0 && load.price > 0;
-            const currentUserBid: Bid | undefined = Bids.find(
-              (bid) => bid.loadId === load.id
-            );
+            <Select
+              placeholder="Filter by State"
+              onChange={handleStateChange}
+              allowClear
+              style={{ width: 200 }}
+            >
+              <Option value="All">All</Option>
+              {INDIAN_STATES.map((state) => (
+                <Option key={state} value={state}>
+                  {state}
+                </Option>
+              ))}
+            </Select>
+          </Row>
 
-            return (
-              <div
-                className="grid grid-cols-3 md:grid-cols-7 gap-4 border rounded-md p-2 mb-2 border-neutral-300"
-                key={load.id}
-              >
-                <div className="col-span-2 md:col-span-2">
-                  <div className="-mt-1">
-                    <Text
-                      className={`${getStatusColor(
-                        load.status
-                      )} p-1 px-2 text-sm rounded-l-md`}
-                    >
-                      {load.status}
-                    </Text>
-                    <Text className="bg-blue-200 p-1 px-2 text-sm rounded-r-md">
-                      {timeSincePosted(load.createdAt)}
+          {paginatedLoads.length === 0 ? (
+            <>
+              <Empty description="No loads available in this route" />
+            </>
+          ) : (
+            paginatedLoads.map((load) => {
+              const isBidLoad = load.bidPrice > 0;
+              const isFixedLoad = load.bidPrice === 0 && load.price > 0;
+              const currentUserBid: Bid | undefined = Bids.find(
+                (bid) => bid.loadId === load.id
+              );
+
+              return (
+                <div
+                  className="grid grid-cols-3 md:grid-cols-7 gap-4 border rounded-md p-2 mb-2 border-neutral-300"
+                  key={load.id}
+                >
+                  <div className="col-span-2 md:col-span-2">
+                    <div className="-mt-1">
+                      <Text
+                        className={`${getStatusColor(
+                          load.status
+                        )} p-1 px-2 text-sm rounded-l-md`}
+                      >
+                        {load.status}
+                      </Text>
+                      <Text className="bg-blue-200 p-1 px-2 text-sm rounded-r-md">
+                        {timeSincePosted(load.createdAt)}
+                      </Text>
+                    </div>
+                    <Title level={5} className="mt-1! mb-0!">
+                      {load.origin.city} → {load.destination.city}
+                    </Title>
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <Text>
+                      Type:
+                      <span className="font-semibold">
+                        <br />
+                        {load.cargoType}
+                      </span>
                     </Text>
                   </div>
-                  <Title level={5} className="mt-1! mb-0!">
-                    {load.origin.city} → {load.destination.city}
-                  </Title>
-                </div>
 
-                <div className="md:col-span-2">
                   <Text>
-                    Type:
+                    Weight:
                     <span className="font-semibold">
                       <br />
-                      {load.cargoType}
+                      {load.weight} Tons
                     </span>
                   </Text>
-                </div>
 
-                <Text>
-                  Weight:
-                  <span className="font-semibold">
-                    <br />
-                    {load.weight} Tons
-                  </span>
-                </Text>
+                  <Text>
+                    Price ({isBidLoad ? "Bid Price" : "Fixed Price"}):
+                    <span className="font-semibold">
+                      <br />₹{load.price}
+                    </span>
+                  </Text>
 
-                <Text>
-                  Price ({isBidLoad ? "Bid Price" : "Fixed Price"}):
-                  <span className="font-semibold">
-                    <br />₹{load.price}
-                  </span>
-                </Text>
-
-                <div className="flex justify-end">
-                  {isFixedLoad && (
-                    <Button
-                      className="button-primary max-h-10"
-                      onClick={() => {}}
-                    >
-                      Accept
-                    </Button>
-                  )}
-                  {isBidLoad && (
-                    <>
-                      {/* {(currentUserBid?.isDriverAccepted ||
+                  <div className="flex justify-end">
+                    {isFixedLoad && (
+                      <Button
+                        className="button-primary max-h-10"
+                        onClick={() => {}}
+                      >
+                        Accept
+                      </Button>
+                    )}
+                    {isBidLoad && (
+                      <>
+                        {/* {(currentUserBid?.isDriverAccepted ||
                         (currentUserBid?.negotiateDriverPrice ?? 0) > 0) && (
                         <span className="max-h-10 text-red-800 text-sm">
                           Waiting for shipper response
                         </span>
                       )} */}
 
-                      {/* {(!currentUserBid ||
+                        {/* {(!currentUserBid ||
                         (currentUserBid?.negotiateShipperPrice ?? 0) > 0) && (
                         <Button
                           className="button-primary max-h-10"
@@ -624,111 +633,116 @@ const Loads = () => {
                         </Button>
                       )} */}
 
-                      {currentUserBid &&
-                        currentUserBid.negotiateDriverPrice > 0 &&
-                        currentUserBid.negotiateShipperPrice == 0 && (
-                          <span className="max-h-10 text-red-800 text-sm">
-                            Waiting for shipper response
-                          </span>
+                        {currentUserBid &&
+                          currentUserBid.negotiateDriverPrice > 0 &&
+                          currentUserBid.negotiateShipperPrice == 0 && (
+                            <span className="max-h-10 text-red-800 text-sm">
+                              Waiting for shipper response
+                            </span>
+                          )}
+                        {currentUserBid?.isDriverAccepted &&
+                          currentUserBid.isShipperAccepted === false &&
+                          currentUserBid.negotiateDriverPrice > 0 &&
+                          currentUserBid.negotiateShipperPrice > 0 && (
+                            <span className="max-h-10 text-red-800 text-sm">
+                              Waiting for shipper response
+                            </span>
+                          )}
+                        {currentUserBid?.isDriverAccepted === false &&
+                          currentUserBid.negotiateDriverPrice > 0 &&
+                          currentUserBid.negotiateShipperPrice > 0 && (
+                            <Button
+                              className="button-primary max-h-10"
+                              onClick={() =>
+                                handleBidStatus(currentUserBid.id, load.id)
+                              }
+                            >
+                              Accept
+                            </Button>
+                          )}
+                        {!currentUserBid && (
+                          <>
+                            <Button
+                              className="button-primary max-h-10"
+                              onClick={() => acceptBidWithoutBid(load.id)}
+                            >
+                              Accept
+                            </Button>
+                            <Button
+                              className="button-secondary max-h-10"
+                              onClick={() => showBidModal(load)}
+                            >
+                              Bid
+                            </Button>
+                          </>
                         )}
-                      {currentUserBid?.isDriverAccepted &&
-                        currentUserBid.isShipperAccepted === false &&
-                        currentUserBid.negotiateDriverPrice > 0 &&
-                        currentUserBid.negotiateShipperPrice > 0 && (
-                          <span className="max-h-10 text-red-800 text-sm">
-                            Waiting for shipper response
-                          </span>
-                        )}
-                      {currentUserBid?.isDriverAccepted === false &&
-                        currentUserBid.negotiateDriverPrice > 0 &&
-                        currentUserBid.negotiateShipperPrice > 0 && (
-                          <Button
-                            className="button-primary max-h-10"
-                            onClick={() => handleBidStatus(currentUserBid.id)}
-                          >
-                            Accept
-                          </Button>
-                        )}
-                      {!currentUserBid && (
-                        <>
-                          <Button
-                            className="button-primary max-h-10"
-                            onClick={() => handleBidStatus(load.id)}
-                          >
-                            Accept
-                          </Button>
-                          <Button
-                            className="button-secondary max-h-10"
-                            onClick={() => showBidModal(load)}
-                          >
-                            Bid
-                          </Button>
-                        </>
-                      )}
-                      {currentUserBid &&
-                        currentUserBid.isDriverAccepted &&
-                        currentUserBid.isShipperAccepted && (
-                          <span className="max-h-10 text-green-800 text-sm">
-                            Load accepted by shipper
-                          </span>
-                        )}
-                    </>
-                  )}
+                        {currentUserBid &&
+                          currentUserBid.isDriverAccepted &&
+                          currentUserBid.isShipperAccepted && (
+                            <span className="max-h-10 text-green-800 text-sm">
+                              Load accepted by shipper
+                            </span>
+                          )}
+                      </>
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })
-        )}
-        {filteredLoads.length > PAGE_SIZE && (
-          <div className="flex justify-center mt-6">
-            <Button onClick={handlePrev} disabled={currentPage === 1}>
-              Prev
-            </Button>
-            <Text className="mx-4">
-              Page {currentPage} of {totalPages}
-            </Text>
-            <Button onClick={handleNext} disabled={currentPage === totalPages}>
-              Next
-            </Button>
-          </div>
-        )}
-      </div>
+              );
+            })
+          )}
+          {filteredLoads.length > PAGE_SIZE && (
+            <div className="flex justify-center mt-6">
+              <Button onClick={handlePrev} disabled={currentPage === 1}>
+                Prev
+              </Button>
+              <Text className="mx-4">
+                Page {currentPage} of {totalPages}
+              </Text>
+              <Button
+                onClick={handleNext}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </Button>
+            </div>
+          )}
+        </div>
 
-      <Modal
-        title="Place a Bid"
-        open={isModalVisible}
-        onOk={handleBidSubmit}
-        onCancel={() => setIsModalVisible(false)}
-        okText="Submit Bid"
-        cancelText="Cancel"
-      >
-        {selectedLoad && (
-          <>
-            <Text strong>
-              {selectedLoad.origin.city} → {selectedLoad.destination.city}
-            </Text>
-            <br />
-            <Text>Type: {selectedLoad.cargoType}</Text>
-            <br />
-            <Text>Weight: {selectedLoad.weight} Tons</Text>
-            <br />
-          </>
-        )}
-        <Form layout="vertical">
-          <Form.Item label="Enter your Bid Price">
-            <InputNumber
-              value={Number(bidPrice)}
-              onChange={(value) => setBidPrice(String(value))}
-              placeholder="Enter amount"
-              prefix="₹"
-              parser={(value?: any) =>
-                value ? value.replace(/₹\s?|(,)/g, "") : "0"
-              }
-              style={{ width: "100%" }}
-            />
-          </Form.Item>
-        </Form>
-      </Modal>
+        <Modal
+          title="Place a Bid"
+          open={isModalVisible}
+          onOk={handleBidSubmit}
+          onCancel={() => setIsModalVisible(false)}
+          okText="Submit Bid"
+          cancelText="Cancel"
+        >
+          {selectedLoad && (
+            <>
+              <Text strong>
+                {selectedLoad.origin.city} → {selectedLoad.destination.city}
+              </Text>
+              <br />
+              <Text>Type: {selectedLoad.cargoType}</Text>
+              <br />
+              <Text>Weight: {selectedLoad.weight} Tons</Text>
+              <br />
+            </>
+          )}
+          <Form layout="vertical">
+            <Form.Item label="Enter your Bid Price">
+              <InputNumber
+                value={Number(bidPrice)}
+                onChange={(value) => setBidPrice(String(value))}
+                placeholder="Enter amount"
+                prefix="₹"
+                parser={(value?: any) =>
+                  value ? value.replace(/₹\s?|(,)/g, "") : "0"
+                }
+                style={{ width: "100%" }}
+              />
+            </Form.Item>
+          </Form>
+        </Modal>
       </div>
     </>
   );

@@ -19,6 +19,7 @@ import adminLoadRoutes from "./routes/adminLoads";
 import postLoadRoutes from "./routes/postLoadRoutes";
 import driverRoutes from "./routes/driverRoutes";
 import allBidsRoutes from "./routes/allBidsRoutes";
+import vehicleRoutes from "./routes/vehicleRoutes";
 
 // Configurations
 dotenv.config();
@@ -47,6 +48,7 @@ app.use("/loadmanagement", adminLoadRoutes);
 app.use("/postload", postLoadRoutes);
 app.use("/driverLocation", driverRoutes);
 app.use("/bids&orders", allBidsRoutes);
+app.use("/trucks", vehicleRoutes);
 
 // Socket.IO Configuration
 const io = new Server(server, {
@@ -108,7 +110,7 @@ io.on("connection", (socket) => {
   });
 
   // Updating bid status
-  socket.on("updateBidStatus", async ({ bidId, shipperId, toUser }) => {
+  socket.on("updateBidStatus", async ({ bidId, shipperId, toUser, loadId }) => {
     try {
       const receiverSocketId = onlineUsers.get(toUser);
       const fromUserSocketId = onlineUsers.get(shipperId);
@@ -123,7 +125,21 @@ io.on("connection", (socket) => {
       if (!receiverSocketId) {
         const updatedBidStatus = await prisma.bid.update({
           where: { id: bidId },
-          data: { [statusField]: true },
+          data: {
+            [statusField]: true,
+            status:
+              statusField === "isShipperAccepted" ? "ACCEPTED" : "PENDING",
+          },
+        });
+
+        const updateLoadStatus = await prisma.loads.update({
+          where: {
+            id: loadId,
+          },
+          data: {
+            status:
+              statusField === "isShipperAccepted" ? "ASSIGNED" : "AVAILABLE",
+          },
         });
         io.to(fromUserSocketId).emit(
           "receiveUpdatedBidPrice",
@@ -134,7 +150,19 @@ io.on("connection", (socket) => {
 
       const updatedBidStatus = await prisma.bid.update({
         where: { id: bidId },
-        data: { [statusField]: true },
+        data: {
+          [statusField]: true,
+          status: statusField === "isShipperAccepted" ? "ACCEPTED" : "PENDING",
+        },
+      });
+
+      const updateLoadStatus = await prisma.loads.update({
+        where: {
+          id: loadId,
+        },
+        data: {
+          status: statusField === "isShipperAccepted" ? "ASSIGNED" : "PENDING",
+        },
       });
 
       io.to(receiverSocketId).emit("receiveUpdatedBidStatus", updatedBidStatus);
@@ -154,7 +182,7 @@ io.on("connection", (socket) => {
 
   socket.on(
     "acceptAfterDriverBidViaSocket",
-    async ({ bidId, shipperId, toUser, price }) => {
+    async ({ bidId, shipperId, toUser, price, loadId }) => {
       const receiverSocketId = onlineUsers.get(toUser);
       const fromUserSocketId = onlineUsers.get(shipperId);
       if (!receiverSocketId) {
@@ -166,6 +194,14 @@ io.on("connection", (socket) => {
             isDriverAccepted: true,
             isShipperAccepted: true,
             negotiateShipperPrice: Number(price),
+          },
+        });
+        const updateLoadStatus = await prisma.loads.update({
+          where: {
+            id: loadId,
+          },
+          data: {
+            status: "ASSIGNED",
           },
         });
         io.to(fromUserSocketId).emit(
@@ -183,6 +219,16 @@ io.on("connection", (socket) => {
           isDriverAccepted: true,
           isShipperAccepted: true,
           negotiateShipperPrice: Number(price),
+          status: "ACCEPTED",
+        },
+      });
+
+      const updateLoadStatus = await prisma.loads.update({
+        where: {
+          id: loadId,
+        },
+        data: {
+          status: "ASSIGNED",
         },
       });
 

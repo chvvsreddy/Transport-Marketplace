@@ -1,5 +1,5 @@
 import DashboardWrapper from "./dashboardWrapper";
-
+import "@ant-design/v5-patch-for-react-19";
 // export default function Layout({ children, }: Readonly<{ children: React.ReactNode;}>) {
 //   return (
 //     <html lang="en">
