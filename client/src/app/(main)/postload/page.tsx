@@ -164,9 +164,9 @@ export default function PostLoad() {
   if (!authorized) return null;
 
   return (
-    <Flex vertical gap={15}>
+    <>
       <Heading name="Post a Load"/>
-
+      <div className={`bg-white p-4 m-4 rounded-xl shadow-md mt-4`}>
       {/* Upload Section */}
       <div>
         <h2 className="text-base/7 font-semibold text-gray-900 mb-3">
@@ -502,6 +502,7 @@ export default function PostLoad() {
           </Col>
         </Row>
       </Form>
-    </Flex>
+     </div>
+    </>
   );
 }

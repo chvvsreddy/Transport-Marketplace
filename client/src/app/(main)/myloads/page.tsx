@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Typography, Flex, Button, Divider, Select, Input } from "antd";
 import LoadCard from "@/app/util/LoadCard";
+import Heading from "@/app/util/Heading";
 
 const { Option } = Select;
 
@@ -109,13 +110,10 @@ export default function MyLoads() {
   );
 
   return (
-    <div style={{ padding: 24 }}>
-      <Typography.Title level={3}>
-        {isAdmin ? "All Loads (Admin View)" : "My Loads"}
-      </Typography.Title>
+    <>
+      <Heading name= {isAdmin ? "All Loads (Admin View)" : "My Loads"}/>
 
-      <Divider />
-
+      <div className={`bg-white p-4 m-4 rounded-xl shadow-md mt-4`}>
       <Flex align="center" gap={12} style={{ marginBottom: 16 }}>
         <Typography.Text strong>Status:</Typography.Text>
         <Select
@@ -172,6 +170,7 @@ export default function MyLoads() {
           </Button>
         </Flex>
       )}
-    </div>
+      </div>
+    </>
   );
 }

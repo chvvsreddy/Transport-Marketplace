@@ -36,16 +36,19 @@ export default function Profile() {
     },
   ];
   return (
-    <div>
-      <div style={{ margin: 10 }}>
+
+      <>
         <Heading name="Profile" />
+        <div className={`bg-white p-4 m-4 rounded-xl shadow-md mt-4`}>
 
         <Row>
           <Col lg={20}>
             <Tabs defaultActiveKey="1" items={items} onChange={onChange} />
           </Col>
         </Row>
-      </div>
-    </div>
+        </div>
+        
+      </>
+
   );
 }

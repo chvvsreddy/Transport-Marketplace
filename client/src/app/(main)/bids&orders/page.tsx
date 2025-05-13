@@ -360,8 +360,8 @@ export default function BidsAndOthers() {
       <h1>Admin bids page is in progress......</h1>
     </>
   ) : (
-    <div style={{ padding: "10px" }}>
-      <Row>
+    <>
+      <Row className="pr-4">
         <Col span={24} md={12}>
           <Heading name="Bids and Orders" />
         </Col>
@@ -391,8 +391,7 @@ export default function BidsAndOthers() {
           </div>
         </Col>
       </Row>
-
-      <Divider />
+      <div className={`bg-white p-4 m-4 rounded-xl shadow-md mt-4`}>
       <div className="flex gap-4">
         <DatePicker.RangePicker onChange={handleDateChange} />
         <Select
@@ -614,6 +613,7 @@ export default function BidsAndOthers() {
           </>
         )}
       </Modal>
-    </div>
+      </div>
+    </>
   );
 }

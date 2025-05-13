@@ -1,6 +1,7 @@
 "use client";
 
 import { getLoggedUserFromLS } from "@/app/util/getLoggedUserFromLS";
+import Heading from "@/app/util/Heading";
 import { getStatusColor } from "@/app/util/statusColorLoads";
 import { getLoadByLoadId, getLoadByLoadIdForAdmin } from "@/state/api";
 import { ArrowDownCircle, Edit } from "lucide-react";
@@ -101,9 +102,10 @@ export default function SingleLoad() {
     );
 
   return (
-    <div className="-m-4">
-      <div className="flex justify-between items-center p-4 border-neutral-200 border-b-2">
-        <h2 className="text-2xl font-bold">Load Details</h2>
+    <>
+      <div className="flex justify-between items-center pr-4">
+        <Heading name="Load Details"/>
+
         {pathname.includes("/myloads") && (
           <button
             className="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
@@ -121,7 +123,7 @@ export default function SingleLoad() {
           </button>
         )}
       </div>
-
+      <div className={`bg-white m-4 rounded-xl shadow-md mt-4`}>
       <div className="grid grid-cols-4">
         {/* Left column */}
         <div className="grid gap-4 p-6 border-neutral-200 border-r-2 col-span-4 md:col-span-1">
@@ -196,9 +198,7 @@ export default function SingleLoad() {
 
         <div className="col-span-4 md:col-span-3">
           <div>
-            <p onClick={() => toggleSection("route")}
-              className="cursor-pointer text-md font-semibold p-3 border-b-2 border-neutral-200 flex justify-between items-center"
-            >
+            <p onClick={() => toggleSection("route")} className="accordian-header" >
               Origin - Destination
               <ArrowDownCircle
                 className={`transition-transform duration-200 ${
@@ -248,10 +248,7 @@ export default function SingleLoad() {
 
           {/* Bid Section */}
           <div>
-            <p
-              onClick={() => toggleSection("bid")}
-              className="cursor-pointer text-md font-semibold p-3 border-b-2 border-neutral-200 flex justify-between items-center"
-            >
+            <p onClick={() => toggleSection("bid")} className="accordian-header" >
               Bid
               <ArrowDownCircle
                 className={`transition-transform duration-200 ${
@@ -268,10 +265,7 @@ export default function SingleLoad() {
 
           {/* Documents Section */}
           <div>
-            <p
-              onClick={() => toggleSection("documents")}
-              className="cursor-pointer text-md font-semibold p-3 border-b-2 border-neutral-200 flex justify-between items-center"
-            >
+            <p onClick={() => toggleSection("documents")} className="accordian-header" >
               Documents
               <ArrowDownCircle
                 className={`transition-transform duration-200 ${
@@ -288,10 +282,7 @@ export default function SingleLoad() {
 
           {/* Trip Section */}
           <div>
-            <p
-              onClick={() => toggleSection("trip")}
-              className="cursor-pointer text-md font-semibold p-3 border-b-2 border-neutral-200 flex justify-between items-center"
-            >
+            <p onClick={() => toggleSection("trip")} className="accordian-header" >
               Trip
               <ArrowDownCircle
                 className={`transition-transform duration-200 ${
@@ -307,6 +298,7 @@ export default function SingleLoad() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

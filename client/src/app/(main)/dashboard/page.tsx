@@ -4,6 +4,7 @@ import { Package, Tag, TrendingDown, TrendingUp } from "lucide-react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useUser } from "@/app/util/UserContext";
+import { Button } from "antd";
 const Heading = dynamic(() => import("@/app/util/Heading/index"), {
   loading: () => <h2>Loading Heading...</h2>,
 });
@@ -42,6 +43,14 @@ const Dashboard = () => {
   return (
     <>
       <Heading name="Dashboard" />
+      <div className="product-adve flex justify-between">
+        <div className="p-6">
+          <p className="text-white text-xl font-semibold">A complete Vehicle, Driver security & Monitoring system</p>
+          <Button className="mt-4">Know More</Button>
+        </div>
+        <img src="/advt-1.jpg" alt=""/>
+      </div>
+      <div className={`bg-white p-4 m-4 rounded-xl shadow-md mt-4`}>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10 pt-5 pb-4">
         <CardRevenueSummary />
         <CardPerformance />
@@ -86,6 +95,7 @@ const Dashboard = () => {
           ]}
         />
         {/* other StatCards... */}
+      </div>
       </div>
     </>
   );

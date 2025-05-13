@@ -131,9 +131,9 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         }`}
       >
         {isDriver ? <DriverHeader /> : <Navbar />}
-        <div className={`bg-white p-4 m-4 rounded-xl shadow-md ${ isDriver ? "mt-8" : "mt-0" }`}>
+        
          {children}
-        </div>       
+              
         {isDriver && <BottomNav />}
       </main>
     </div>

@@ -58,7 +58,7 @@ const Users = () => {
   return (
     <>
       <Heading name="Users" />
-
+      <div className={`bg-white p-4 m-4 rounded-xl shadow-md mt-4`}>
       {/* Dropdown filter */}
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <label htmlFor="userType" className="text-sm text-gray-700">
@@ -155,6 +155,7 @@ const Users = () => {
           </div>
         </>
       )}
+      </div>
     </>
   );
 };

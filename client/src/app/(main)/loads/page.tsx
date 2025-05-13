@@ -325,18 +325,19 @@ const Loads = () => {
 
   return (
     <>
-      {location ? (
-        <div className="text-md text-gray-600 mt-5 mb-3">
-          <strong>Current Location:</strong> {location.address}
-        </div>
-      ) : (
-        <div className="text-md text-gray-600 mt-5 mb-3">
-          <strong>Location not available</strong>
-        </div>
-      )}
-
+      <div className="text-md text-gray-600 m-4 mb-0">
+        {location ? (
+          <>
+            <strong>Current Location:</strong> {location.address}
+          </>
+        ) : (
+          <>
+            <strong>Location not available</strong>
+          </>
+        )}
+      </div>
       <div className="py-4">
-        <Row>
+        <Row className="pr-4">
           <Col span={24} md={12}>
             <Heading name="All Loads" />
           </Col>
@@ -364,6 +365,7 @@ const Loads = () => {
             </div>
           </Col>
         </Row>
+        <div className={`bg-white p-4 m-4 rounded-xl shadow-md mt-4`}>
         <h3 className="text-xl font-semibold mt-2 text-gray-700">Your Bids</h3>
         {countOfBid.length === 0 ? (
           <Empty description="You have not placed any bids yet." />
@@ -727,6 +729,7 @@ const Loads = () => {
           </Form.Item>
         </Form>
       </Modal>
+      </div>
     </>
   );
 };
