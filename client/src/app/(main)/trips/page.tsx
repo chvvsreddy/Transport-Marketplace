@@ -150,15 +150,8 @@ export default function Trips() {
           loads.map(
             (load) =>
               load.status === "ASSIGNED" && (
-                <Card
-                  key={load.id}
-                  style={{
-                    borderRadius: 12,
-                    boxShadow: "0 1px 6px rgba(0,0,0,0.05)",
-                    marginBottom: 16,
-                  }}
-                >
-                  <Text style={valueStyle}>Load : </Text>
+                <div key={load.id} className="box !p-0">
+                  {/* <Text style={valueStyle}>Load : </Text>
                   <Text
                     className={`${getStatusColor(
                       load.status
@@ -168,8 +161,8 @@ export default function Trips() {
                   </Text>
                   <Text className="bg-blue-200 p-1 px-2 text-sm rounded-r-md">
                     {timeSincePosted(load.createdAt)}
-                  </Text>
-                  <Row gutter={[16, 12]}>
+                  </Text> */}
+                  <Row gutter={[4, 4]} className="px-4 py-2 ">
                     <Col span={6}>
                       <Space direction="vertical">
                         <Text style={labelStyle}>Origin</Text>
@@ -186,27 +179,16 @@ export default function Trips() {
                         </Text>
                       </Space>
                     </Col>
-                    <Col span={6}>
+                    <Col span={3} >
                       <Text style={labelStyle}>Cargo Type</Text>
                       <br />
                       <Text style={valueStyle}>{load.cargoType}</Text>
                     </Col>
-                    <Col span={6}>
-                      <Button
-                        icon={<EyeOutlined />}
-                        className="button-primary max-h-10"
-                        style={{ borderRadius: 6, width: "100%" }}
-                        onClick={() => router.push(`/myloads/${load.id}`)}
-                      >
-                        View
-                      </Button>
-                    </Col>
-                  </Row>
-
-                  {/* Display Bids */}
+                    <Col span={3}>
+                    {/* Display Bids */}
                   {load.bids.length > 0 ? (
                     <>
-                      <Text strong>Bid : </Text>
+                      {/* <Text strong >Bid : </Text>
                       <Text
                         className={`${getStatusColor(
                           load.bids[0].status
@@ -219,12 +201,13 @@ export default function Trips() {
                           "Posted",
                           "Accepted "
                         )}
-                      </Text>
+                      </Text> */}
                       {load.bids.map((bid: Bid) => (
-                        <div key={bid.id} className="border p-2 my-2 rounded">
-                          <Text>
-                            Final Price: ₹ {bid.negotiateShipperPrice} | Status:{" "}
-                            {bid.status}
+                        <div key={bid.id} >
+                          <Text style={labelStyle}>Final Price:</Text><br/>
+                          <Text style={valueStyle}>
+                            ₹ {bid.negotiateShipperPrice} 
+                            {/* | Status:{" "} {bid.status} */}
                           </Text>
                         </div>
                       ))}
@@ -254,11 +237,23 @@ export default function Trips() {
                       </div>
                     </>
                   )}
+                    </Col>
+                    <Col span={6}>
+                    </Col>
+                    <Col span={6}>
+                      <Button icon={<EyeOutlined />}  className="button-primary max-h-10 "
+                        onClick={() => router.push(`/myloads/${load.id}`)} >
+                        View
+                      </Button>
+                    </Col>
+                  </Row>
+
+                  
 
                   {/* Display Trips */}
                   {load.trips.length > 0 ? (
                     <>
-                      <Text strong>Trip : </Text>
+                      {/* <Text strong>Trip : </Text>
                       <Text
                         className={`${getStatusColor(
                           load.trips[0]?.status ?? "IN_PROGRESS"
@@ -273,25 +268,28 @@ export default function Trips() {
                               "Accepted"
                             )
                           : "Not Assigned"}
-                      </Text>
+                      </Text> */}
                       {load.trips.map((trip: Trips, index) => (
-                        <div
-                          key={trip.id ?? index}
-                          className="border p-2 my-2 rounded"
-                        >
-                          {renderTripStatus(trip.status ?? "IN_PROGRESS")}
-                          <Text>
-                            {" "}
-                            Distance: {trip.distance ?? 0} km | Estimated
-                            Duration: {trip.estimatedDuration ?? 0} mins
-                          </Text>
+                        <div key={trip.id ?? index} className="p-4 flex justify-between" >
+                          <div >
+                          <Text style={labelStyle}>Trip Status : </Text><br/>
+                          <Text style={valueStyle}>{renderTripStatus(trip.status ?? "IN_PROGRESS")}</Text>
+                          </div>
+                          <div >
+                          <Text style={labelStyle}>Trip Distance : </Text><br/>
+                          <Text style={valueStyle}>{trip.distance ?? 0} km | Estimated</Text>
+                          </div>
+                          <div >
+                          <Text style={labelStyle}>Trip Duration : </Text><br/>
+                          <Text style={valueStyle}>{trip.estimatedDuration ?? 0} mins</Text>
+                          </div>    
                         </div>
                       ))}
                     </>
                   ) : (
                     <Text>No trips assigned yet.</Text>
                   )}
-                </Card>
+                </div>
               )
           )
         ) : (

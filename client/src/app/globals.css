@@ -211,3 +211,5 @@
     @apply bg-black m-4 mb-0 rounded-xl
   }
   .product-adve img{float: right;}
+  .box{
+    @apply !mt-4 rounded-md border-1 border-neutral-300 p-4 }
