@@ -8,13 +8,15 @@ import { useUser } from "@/app/util/UserContext";
 
 export default function ProfileDetails() {
   const router = useRouter();
-  const { user } = useUser();
+  const { user, setUser } = useUser();
 
   useEffect(() => {
     const getUserFromLocal: any = localStorage.getItem("token");
     const loggedUser = JSON.parse(getUserFromLocal);
     if (!loggedUser) {
       router.push("/login");
+    } else {
+      setUser(loggedUser);
     }
   }, []);
 

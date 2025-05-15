@@ -20,6 +20,7 @@ import postLoadRoutes from "./routes/postLoadRoutes";
 import driverRoutes from "./routes/driverRoutes";
 import allBidsRoutes from "./routes/allBidsRoutes";
 import vehicleRoutes from "./routes/vehicleRoutes";
+import tripRoutes from "./routes/tripRoutes";
 
 // Configurations
 dotenv.config();
@@ -49,6 +50,7 @@ app.use("/postload", postLoadRoutes);
 app.use("/driverLocation", driverRoutes);
 app.use("/bids&orders", allBidsRoutes);
 app.use("/trucks", vehicleRoutes);
+app.use("/trips", tripRoutes);
 
 // Socket.IO Configuration
 const io = new Server(server, {

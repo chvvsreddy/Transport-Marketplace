@@ -269,6 +269,44 @@ export const getLoadsById = async (obj: any) => {
   }
 };
 
+export const getBidsByLoadId = async (obj: any) => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/trips`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(obj),
+      }
+    );
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("bids getting By id, got error:", error);
+  }
+};
+export const getTripsByLoadId = async (obj: any) => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/trips`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(obj),
+      }
+    );
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("trips getting By id, got error:", error);
+  }
+};
 export const createLoad = async (obj: any) => {
   try {
     const getLatLngFromAPI = async (location: any) => {

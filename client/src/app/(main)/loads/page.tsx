@@ -370,7 +370,7 @@ const Loads = () => {
             </div>
           </Col>
         </Row>
-        <div className={`bg-white p-4 m-4 rounded-xl shadow-md mt-4`}>
+        <div className={`bg-white p-4 sm:m-4 rounded-xl shadow-md mt-4 `}>
           <h3 className="text-xl font-semibold mt-2 text-gray-700">
             Your Bids
           </h3>

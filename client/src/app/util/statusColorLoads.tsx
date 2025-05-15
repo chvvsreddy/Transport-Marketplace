@@ -8,6 +8,8 @@ export const getStatusColor = (status: string) => {
       return "bg-gray-200";
     case "CANCELLED":
       return "bg-red-200";
+    case "PENDING":
+      return "bg-orange-200";
     default:
       return "bg-yellow-200";
   }
