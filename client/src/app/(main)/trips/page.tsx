@@ -8,11 +8,12 @@ import {
   getLoadsById,
   getTripsByLoadId,
 } from "@/state/api";
-import { Button, Card, Col, Row, Typography, Space, Tag } from "antd";
+import { Button, Card, Col, Row, Typography, Space, Tag, DatePicker, Select, Input } from "antd";
 import { useRouter } from "next/navigation";
 import { EyeOutlined } from "@ant-design/icons";
 import { timeSincePosted } from "@/app/util/timeSincePosted";
 import { getStatusColor } from "@/app/util/statusColorLoads";
+import Title from "antd/es/typography/Title";
 
 interface Trips {
   id: string;
@@ -75,6 +76,8 @@ interface ExtendedLoad extends Load {
 }
 
 export default function Trips() {
+  const [originInput, setOriginInput] = useState("");
+  const [destinationInput, setDestinationInput] = useState("");
   const [loads, setLoads] = useState<ExtendedLoad[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loggedUser, setLoggedUser] = useState({ email: "", userId: "" });
@@ -144,8 +147,44 @@ export default function Trips() {
   console.log(loads);
   return (
     <>
-      <Heading name="Trips" />
+     <Row className="pr-4">
+        <Col span={24} md={6}>
+          <Heading name="Trips" />
+        </Col>
+        <Col span={24} md={18}>
+          <div className="flex md:justify-end gap-2 md:mt-0 overflow-auto ml-4">
+            <div className="page-filter-tabs active">              
+                5 All             
+            </div>
+            <div className="page-filter-tabs">
+            1 Not Started
+            </div>
+            <div className="page-filter-tabs">
+            2 InTransit
+            </div>
+            <div className="page-filter-tabs">
+               1 Completed
+            </div>                   
+          </div>
+        </Col>
+      </Row>
+
       <div className="bg-white p-4 m-4 rounded-xl shadow-md mt-4">
+      <div className="flex gap-4">
+          <DatePicker.RangePicker  />
+
+          <Input placeholder="Search Origin City"
+            value={originInput}
+            onChange={(e) => setOriginInput(e.target.value)}
+            style={{ width: 180 }}
+          />
+          <Input
+            placeholder="Search Destination City"
+            value={destinationInput}
+            onChange={(e) => setDestinationInput(e.target.value)}
+            style={{ width: 200 }}
+          />
+        </div>
         {loads.length > 0 ? (
           loads.map(
             (load) =>
@@ -162,29 +201,26 @@ export default function Trips() {
                   <Text className="bg-blue-200 p-1 px-2 text-sm rounded-r-md">
                     {timeSincePosted(load.createdAt)}
                   </Text> */}
-                  <Row gutter={[4, 4]} className="px-4 py-2 ">
-                    <Col span={6}>
-                      <Space direction="vertical">
-                        <Text style={labelStyle}>Origin</Text>
+                  <div className="p-4 flex justify-between flex-col md:flex-row gap-y-4" >
+                    <div >
+                        <Text style={labelStyle}>Origin</Text><br />
                         <Text style={valueStyle}>
                           {formatLocation(load.origin)}
                         </Text>
-                      </Space>
-                    </Col>
-                    <Col span={6}>
-                      <Space direction="vertical">
-                        <Text style={labelStyle}>Destination</Text>
+                
+                    </div>
+                    <div >
+                        <Text style={labelStyle}>Destination</Text><br />
                         <Text style={valueStyle}>
                           {formatLocation(load.destination)}
                         </Text>
-                      </Space>
-                    </Col>
-                    <Col span={3} >
+                            </div>
+                    <div >
                       <Text style={labelStyle}>Cargo Type</Text>
                       <br />
                       <Text style={valueStyle}>{load.cargoType}</Text>
-                    </Col>
-                    <Col span={3}>
+                    </div>
+                    <div >
                     {/* Display Bids */}
                   {load.bids.length > 0 ? (
                     <>
@@ -237,19 +273,8 @@ export default function Trips() {
                       </div>
                     </>
                   )}
-                    </Col>
-                    <Col span={6}>
-                    </Col>
-                    <Col span={6}>
-                      <Button icon={<EyeOutlined />}  className="button-primary max-h-10 "
-                        onClick={() => router.push(`/myloads/${load.id}`)} >
-                        View
-                      </Button>
-                    </Col>
-                  </Row>
-
-                  
-
+                    </div>
+            
                   {/* Display Trips */}
                   {load.trips.length > 0 ? (
                     <>
@@ -270,18 +295,18 @@ export default function Trips() {
                           : "Not Assigned"}
                       </Text> */}
                       {load.trips.map((trip: Trips, index) => (
-                        <div key={trip.id ?? index} className="p-4 flex justify-between" >
+                        <div key={trip.id ?? index} className="flex justify-between gap-4" >
                           <div >
-                          <Text style={labelStyle}>Trip Status : </Text><br/>
+                          <Text style={labelStyle}>Trip Status </Text><br/>
                           <Text style={valueStyle}>{renderTripStatus(trip.status ?? "IN_PROGRESS")}</Text>
                           </div>
                           <div >
-                          <Text style={labelStyle}>Trip Distance : </Text><br/>
-                          <Text style={valueStyle}>{trip.distance ?? 0} km | Estimated</Text>
+                          <Text style={labelStyle}>Trip Distance  </Text><br/>
+                          <Text style={valueStyle}>{trip.distance ?? 0} km</Text> 
                           </div>
                           <div >
-                          <Text style={labelStyle}>Trip Duration : </Text><br/>
-                          <Text style={valueStyle}>{trip.estimatedDuration ?? 0} mins</Text>
+                          <Text style={labelStyle}>Trip Duration  </Text><br/>
+                          <Text style={valueStyle}>{trip.estimatedDuration ?? 0} Hours</Text>
                           </div>    
                         </div>
                       ))}
@@ -289,6 +314,12 @@ export default function Trips() {
                   ) : (
                     <Text>No trips assigned yet.</Text>
                   )}
+                      <div>
+                      <EyeOutlined onClick={() => router.push(`/myloads/${load.id}`)} className="icon-button"/>
+              
+                    </div> 
+
+                  </div>
                 </div>
               )
           )

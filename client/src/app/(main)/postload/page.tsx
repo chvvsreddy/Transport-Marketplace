@@ -229,17 +229,18 @@ export default function PostLoad() {
           <Row gutter={24}>
             <Col lg={12}>
               <Form.Item
-                label="From"
+                label="Origin"
                 name="from"
                 rules={[
                   { required: true, message: "Please enter origin city name" },
                 ]}
               >
-                <div className="flex gap-4">
+                <div className="flex gap-4">                  
+                  <Input placeholder="Postal Code" />
                   <Input placeholder="City Name" />
                 </div>
               </Form.Item>
-              <Form.Item
+              {/* <Form.Item
                 label="From postal code"
                 name="postalCodeFrom"
                 rules={[
@@ -249,7 +250,7 @@ export default function PostLoad() {
                 <div className="flex gap-4">
                   <Input placeholder="Postal Code" />
                 </div>
-              </Form.Item>
+              </Form.Item> */}
               {/* <Form.Item label="Origin State"
               name="originState"
               rules={[{ required: true, message: "Please enter origin state" }]}
@@ -280,17 +281,18 @@ export default function PostLoad() {
             </Col>
             <Col lg={12}>
               <Form.Item
-                label="To"
+                label="Destination"
                 name="to"
                 rules={[
                   { required: true, message: "Please enter destination city" },
                 ]}
               >
                 <div className="flex gap-4">
+                <Input placeholder="Postal Code"  />
                   <Input placeholder="City Name" />
                 </div>
               </Form.Item>
-              <Form.Item
+              {/* <Form.Item
                 label="To postal code"
                 name="postalCodeTo"
                 rules={[
@@ -301,7 +303,7 @@ export default function PostLoad() {
                   <Input placeholder="Postal Code"  />
                   
                 </div>
-              </Form.Item>
+              </Form.Item> */}
               {/* <Form.Item
               label="Destination State"
               name="destinationState"
@@ -348,7 +350,7 @@ export default function PostLoad() {
           <Row gutter={24}>
             <Col lg={6}>
               <Form.Item
-                label="Select Pick up date"
+                label="Pickup date"
                 name="pickupDate"
                 rules={[
                   {
@@ -362,7 +364,7 @@ export default function PostLoad() {
             </Col>
             <Col lg={6}>
               <Form.Item
-                label="Select Estimated delivey  date"
+                label="Delivery date"
                 name="deliveryDate"
                 rules={[
                   {

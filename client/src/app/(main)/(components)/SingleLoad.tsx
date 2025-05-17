@@ -4,9 +4,28 @@ import { getLoggedUserFromLS } from "@/app/util/getLoggedUserFromLS";
 import Heading from "@/app/util/Heading";
 import { getStatusColor } from "@/app/util/statusColorLoads";
 import { getLoadByLoadId, getLoadByLoadIdForAdmin } from "@/state/api";
+
 import { ArrowDownCircle, Edit } from "lucide-react";
 import { useRouter, useParams, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+
+import { UploadOutlined } from '@ant-design/icons';
+import type { UploadProps } from 'antd';
+import { Button, Upload } from 'antd';
+const props: UploadProps = {
+  action: '//jsonplaceholder.typicode.com/posts/',
+  listType: 'picture',
+  previewFile(file) {
+    console.log('Your upload file:', file);
+    // Your process logic. Here we just mock to the same file
+    return fetch('https://next.json-generator.com/api/json/get/4ytyBoLK8', {
+      method: 'POST',
+      body: file,
+    })
+      .then((res) => res.json())
+      .then(({ thumbnail }) => thumbnail);
+  },
+};
 
 interface Location {
   address: string;
@@ -126,7 +145,7 @@ export default function SingleLoad() {
       <div className={`bg-white m-4 rounded-xl shadow-md mt-4`}>
       <div className="grid grid-cols-4">
         {/* Left column */}
-        <div className="grid gap-4 p-6 border-neutral-200 border-r-2 col-span-4 md:col-span-1">
+        <div className="p-6 border-neutral-200 border-r-2 col-span-4 md:col-span-1 flex flex-col gap-4">
           <div className="text-sm text-gray-500">
             <p>Created at: {new Date(load.createdAt).toLocaleString()}</p>
             <p>Updated at: {new Date(load.updatedAt).toLocaleString()}</p>
@@ -257,14 +276,22 @@ export default function SingleLoad() {
               />
             </p>
             {openSections.bid && (
-              <div className="p-4 text-gray-500 italic">
-                Bid details will go here .
+              <div className="p-4 text-gray-500">
+                <div className="bg-red-100 p-2 text-black rounded-md mb-2">
+                   Till now now one responded for the bid   
+                </div>
+                <div className="bg-orange-100 p-2 text-black rounded-md mb-2">
+                   2 Drivers Responded. Bid Going on... 
+                </div>
+                <div className="bg-green-100 p-2 text-black rounded-md mb-2">
+                   Bid completed. Mohan has confirmed for this load.
+                </div>
               </div>
             )}
           </div>
 
           {/* Documents Section */}
-          <div>
+          {/* <div>
             <p onClick={() => toggleSection("documents")} className="accordian-header" >
               Documents
               <ArrowDownCircle
@@ -278,11 +305,11 @@ export default function SingleLoad() {
                 Document list placeholder.
               </div>
             )}
-          </div>
+          </div> */}
 
           {/* Trip Section */}
-          <div>
-            <p onClick={() => toggleSection("trip")} className="accordian-header" >
+          <div className="border-b-2 border-neutral-200">
+            <p onClick={() => toggleSection("trip")} className="accordian-header border-b-0" >
               Trip
               <ArrowDownCircle
                 className={`transition-transform duration-200 ${
@@ -291,8 +318,24 @@ export default function SingleLoad() {
               />
             </p>
             {openSections.trip && (
-              <div className="p-4 text-gray-500 italic">
-                Trip details placeholder.
+              <div className="p-4 text-gray-500">
+               
+                <div className="p-3 border-2 rounded-md border-neutral-200 mb-2">
+                  <h6 className="mb-2"> Pre-Trip Documents</h6>
+                  <Upload {...props}> <Button icon={<UploadOutlined />}>Upload</Button> </Upload>  
+                </div>
+                <div className="p-3 border-2 rounded-md border-neutral-200 mb-2 map-bg">
+                  <div className="bg-white rounded-md p-1 px-2 shadow-neutral-300 shadow-md flex justify-between">
+                    <p>Current Location :<b> Zumeerabad</b></p>
+                    <p>Distance to Drive :<b> 400km</b></p>
+                    <p>Est Time to Reach :<b> 12Hrs</b></p>
+                  </div>
+                </div>
+                <div className="p-3 border-2 rounded-md border-neutral-200">
+                  <h6 className="mb-2"> Post-Trip Documents</h6>
+                  <Upload {...props}> <Button icon={<UploadOutlined />}>Upload</Button> </Upload>  
+                </div>
+               
               </div>
             )}
           </div>
