@@ -46,7 +46,7 @@ export default function LoadCard({ load }: any) {
     });
   const router = useRouter();
   return (
-    <Card key={load.id} className="!mb-2" >
+    <div key={load.id} className="box" >
       <div className="col-span-2 md:col-span-2">
         <div className="-mt-1">
           <Text
@@ -124,6 +124,6 @@ export default function LoadCard({ load }: any) {
           </Flex>
         </Col>
       </Row>
-    </Card>
+    </div>
   );
 }

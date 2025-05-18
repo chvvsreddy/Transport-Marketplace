@@ -214,7 +214,7 @@
   }
   .product-adve img{float: right;}
   .box{
-    @apply !mt-4 rounded-md border-1 border-neutral-300 p-4 }
+    @apply !mt-4 rounded-md border-1 border-neutral-300 p-4 bg-white }
   .icon-button{
     @apply border-2 rounded-md border-neutral-200 p-2 text-xl
   }
