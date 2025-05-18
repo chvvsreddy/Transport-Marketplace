@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { Typography, Flex, Button, Divider, Select, Input, Row, Col } from "antd";
 import LoadCard from "@/app/util/LoadCard";
 import Heading from "@/app/util/Heading";
-import Title from "antd/es/typography/Title";
+
 
 const { Option } = Select;
 
@@ -143,7 +143,7 @@ export default function MyLoads() {
         </Col>
       </Row>
 
-      <div className={`bg-white p-4 m-4 rounded-xl shadow-md mt-4`}>
+      <div className="main-content">
       <Flex align="center" gap={12} style={{ marginBottom: 16 }}>
         <Typography.Text strong>Status:</Typography.Text>
         <Select

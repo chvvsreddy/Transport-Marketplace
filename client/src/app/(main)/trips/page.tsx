@@ -84,9 +84,6 @@ export default function Trips() {
   const { Text } = Typography;
   const router = useRouter();
 
-  const labelStyle = { fontWeight: 500, fontSize: 13, color: "#888" };
-  const valueStyle = { fontWeight: 600, fontSize: 14, color: "#000" };
-
   useEffect(() => {
     const user = getLoggedUserFromLS();
     if (user.type === "ADMIN") {
@@ -169,7 +166,7 @@ export default function Trips() {
         </Col>
       </Row>
 
-      <div className="bg-white p-4 m-4 rounded-xl shadow-md mt-4">
+      <div className="main-content">
       <div className="flex gap-4">
           <DatePicker.RangePicker  />
 
@@ -190,7 +187,7 @@ export default function Trips() {
             (load) =>
               load.status === "ASSIGNED" && (
                 <div key={load.id} className="box !p-0">
-                  {/* <Text style={valueStyle}>Load : </Text>
+                  {/* <Text className ="valueStyle">Load : </Text>
                   <Text
                     className={`${getStatusColor(
                       load.status
@@ -203,22 +200,22 @@ export default function Trips() {
                   </Text> */}
                   <div className="p-4 flex justify-between flex-col md:flex-row gap-y-4" >
                     <div >
-                        <Text style={labelStyle}>Origin</Text><br />
-                        <Text style={valueStyle}>
+                        <Text className ="labelStyle">Origin</Text><br />
+                        <Text className ="valueStyle">
                           {formatLocation(load.origin)}
                         </Text>
                 
                     </div>
                     <div >
-                        <Text style={labelStyle}>Destination</Text><br />
-                        <Text style={valueStyle}>
+                        <Text className ="labelStyle">Destination</Text><br />
+                        <Text className ="valueStyle">
                           {formatLocation(load.destination)}
                         </Text>
                             </div>
                     <div >
-                      <Text style={labelStyle}>Cargo Type</Text>
+                      <Text className ="labelStyle">Cargo Type</Text>
                       <br />
-                      <Text style={valueStyle}>{load.cargoType}</Text>
+                      <Text className ="valueStyle">{load.cargoType}</Text>
                     </div>
                     <div >
                     {/* Display Bids */}
@@ -240,8 +237,8 @@ export default function Trips() {
                       </Text> */}
                       {load.bids.map((bid: Bid) => (
                         <div key={bid.id} >
-                          <Text style={labelStyle}>Final Price:</Text><br/>
-                          <Text style={valueStyle}>
+                          <Text className ="labelStyle">Final Price:</Text><br/>
+                          <Text className ="valueStyle">
                             ₹ {bid.negotiateShipperPrice} 
                             {/* | Status:{" "} {bid.status} */}
                           </Text>
@@ -297,16 +294,16 @@ export default function Trips() {
                       {load.trips.map((trip: Trips, index) => (
                         <div key={trip.id ?? index} className="flex justify-between gap-4" >
                           <div >
-                          <Text style={labelStyle}>Trip Status </Text><br/>
-                          <Text style={valueStyle}>{renderTripStatus(trip.status ?? "IN_PROGRESS")}</Text>
+                          <Text className ="labelStyle">Trip Status </Text><br/>
+                          <Text className ="valueStyle">{renderTripStatus(trip.status ?? "IN_PROGRESS")}</Text>
                           </div>
                           <div >
-                          <Text style={labelStyle}>Trip Distance  </Text><br/>
-                          <Text style={valueStyle}>{trip.distance ?? 0} km</Text> 
+                          <Text className ="labelStyle">Trip Distance  </Text><br/>
+                          <Text className ="valueStyle">{trip.distance ?? 0} km</Text> 
                           </div>
                           <div >
-                          <Text style={labelStyle}>Trip Duration  </Text><br/>
-                          <Text style={valueStyle}>{trip.estimatedDuration ?? 0} Hours</Text>
+                          <Text className ="labelStyle">Trip Duration  </Text><br/>
+                          <Text className ="valueStyle">{trip.estimatedDuration ?? 0} Hours</Text>
                           </div>    
                         </div>
                       ))}

@@ -37,7 +37,7 @@ export default function Payments() {
           </div>
         </Col>
       </Row>
-      <div className={`bg-white p-4 m-4 rounded-xl shadow-md mt-4`}>
+      <div className="main-content">
       <div className="flex gap-4">
                 <DatePicker.RangePicker  />
       

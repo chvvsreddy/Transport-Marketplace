@@ -399,7 +399,7 @@ export default function BidsAndOthers() {
         </Col>
       </Row>
      
-      <div className={`bg-white p-4 m-4 rounded-xl shadow-md mt-4`}>
+      <div className="main-content">
         <div className="flex gap-4">
           <DatePicker.RangePicker onChange={handleDateChange} />
           <Select
@@ -455,9 +455,9 @@ export default function BidsAndOthers() {
               className="!mt-4 rounded-md border-1 border-neutral-300"
             >
               <div className=" text-center p-2 px-4 flex justify-between items-center">
-                <Title level={5}>
+                <p className="valueStyle">
                   {load.origin.city} ➝ {load.destination.city}
-                </Title>
+                </p>
                 <Paragraph>
                   Load ID:
                   <strong>{load.id}</strong>
@@ -491,14 +491,14 @@ export default function BidsAndOthers() {
                     className="!bg-neutral-100 !rounded-0"
                   >
                     <div className="flex flex-wrap justify-between">
-                      <Paragraph>
-                        Driver Mail ID:
+                      <p>
+                        <span className="labelStyle">Driver Mail ID:</span>
                         <br />
-                        <strong>
+                        <span>
                           {users.find((user) => user.id === bid.carrierId)
                             ?.email || "Unknown Driver"}
-                        </strong>
-                      </Paragraph>
+                        </span>
+                      </p>
                       <Paragraph>
                         Shipper negotiated Price :
                         <br />
@@ -678,7 +678,7 @@ export default function BidsAndOthers() {
         </Col>
       </Row>
 
-      <div className={`bg-white p-4 m-4 rounded-xl shadow-md mt-4`}>
+      <div className="main-content">
         <div className="flex gap-4">
           <DatePicker.RangePicker onChange={handleDateChange} />
           <Select
@@ -733,17 +733,20 @@ export default function BidsAndOthers() {
               key={load.id}
               className="!mt-4 rounded-md border-1 border-neutral-300"
             >
-              <div className=" text-center p-2 px-4 flex justify-between items-center flex-col md:flex-row">
-                <Title level={5}>
+              <div className="p-2 px-4 flex justify-between items-center flex-col md:flex-row">
+                <p className="valueStyle">
                   {load.origin.city} ➝ {load.destination.city}
-                </Title>
-                <Paragraph>
-                  Load ID:
-                  <strong>{load.id}</strong>
-                </Paragraph>
-                <Paragraph>
-                  Actual Price: <strong>₹{load.bidPrice}</strong>
-                </Paragraph>
+                </p>
+                <p>
+                <span className="labelStyle">
+                  Load ID</span><br/>
+                  <span className="valueStyle">{load.id}</span>
+                </p>
+                <p>
+                <span className="labelStyle">
+                Actual Price</span><br/>
+                <span className="valueStyle">₹{load.bidPrice}</span>
+                </p>
 
                 <Button
                   type="link"
@@ -764,20 +767,18 @@ export default function BidsAndOthers() {
 
               {expandedLoadIds.includes(load.id) &&
                 relatedBids.map((bid) => (
-                  <Card
-                    key={bid.id}
-                    type="inner"
+                  <Card key={bid.id}  type="inner"
                     className="!bg-neutral-100 !rounded-0"
                   >
                     <div className="flex flex-wrap justify-between">
-                      <Paragraph>
-                        Driver Mail ID:
+                      <p>
+                        <span className="labelStyle">Driver Mail ID:</span>
                         <br />
-                        <strong>
+                        <span className="valueStyle">
                           {users.find((user) => user.id === bid.carrierId)
                             ?.email || "Unknown Driver"}
-                        </strong>
-                      </Paragraph>
+                        </span>
+                      </p>
                       
                       <Paragraph>
                         Driver Negotiate Price :{getTimeAgo(bid.updatedAt)}

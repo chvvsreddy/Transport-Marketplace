@@ -35,8 +35,7 @@ interface Load {
 
 export default function LoadCard({ load }: any) {
   const { Text } = Typography;
-  const labelStyle = { fontWeight: 500, fontSize: 13, color: "#888" };
-  const valueStyle = { fontWeight: 600, fontSize: 14, color: "#000" };
+
   const formatDateTime = (str: string) =>
     new Date(str).toLocaleString("en-IN", {
       day: "numeric",
@@ -64,8 +63,8 @@ export default function LoadCard({ load }: any) {
       </div>
       <Row gutter={[12, 12]} align="middle" justify="space-between">
         <Col xs={24} md={4}>
-            <Typography.Text style={labelStyle}>Origin</Typography.Text><br/>
-            <Typography.Text style={valueStyle}>
+            <Typography.Text className ="labelStyle">Origin</Typography.Text><br/>
+            <Typography.Text className ="valueStyle">
               {load.origin.city}
               {/* {load.origin.state} */}
             </Typography.Text>
@@ -76,8 +75,8 @@ export default function LoadCard({ load }: any) {
 
         <Col xs={24} md={4}>
 
-            <Typography.Text style={labelStyle}>Destination</Typography.Text><br/>
-            <Typography.Text style={valueStyle}>
+            <Typography.Text className ="labelStyle">Destination</Typography.Text><br/>
+            <Typography.Text className ="valueStyle">
               {load.destination.city}
                {/* {load.destination.state} */}
             </Typography.Text>
@@ -88,31 +87,31 @@ export default function LoadCard({ load }: any) {
         </Col>
 {/* 
         <Col xs={12} md={3}>
-          <Typography.Text style={labelStyle}>Equipment</Typography.Text>
+          <Typography.Text className ="labelStyle">Equipment</Typography.Text>
           <br />
-          <Typography.Text style={valueStyle}>
+          <Typography.Text className ="valueStyle">
             {load.specialRequirements}
           </Typography.Text>
         </Col> */}
 
         <Col xs={12} md={2}>
-          <Typography.Text style={labelStyle}>Cargo Type</Typography.Text>
+          <Typography.Text className ="labelStyle">Cargo Type</Typography.Text>
           <br />
-          <Typography.Text style={valueStyle}>{load.cargoType}</Typography.Text>
+          <Typography.Text className ="valueStyle">{load.cargoType}</Typography.Text>
         </Col>
 
         <Col xs={12} md={3}>
-          <Typography.Text style={labelStyle}>Pickup</Typography.Text>
+          <Typography.Text className ="labelStyle">Pickup</Typography.Text>
           <br />
-          <Typography.Text style={valueStyle}>
+          <Typography.Text className ="valueStyle">
             {formatDateTime(load.pickupWindowStart)}
           </Typography.Text>
         </Col>
 
         <Col xs={12} md={2}>
-          <Typography.Text style={labelStyle}>Delivery</Typography.Text>
+          <Typography.Text className ="labelStyle">Delivery</Typography.Text>
           <br />
-          <Typography.Text style={valueStyle}>
+          <Typography.Text className ="valueStyle">
             {formatDateTime(load.deliveryWindowEnd)}
           </Typography.Text>
         </Col>

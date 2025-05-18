@@ -166,7 +166,7 @@ export default function PostLoad() {
   return (
     <>
       <Heading name="Post a Load" />
-      <div className={`bg-white p-4 m-4 rounded-xl shadow-md mt-4`}>
+      <div className="main-content">
         {/* Upload Section */}
         <div>
           <h2 className="text-base/7 font-semibold text-gray-900 mb-3">
@@ -212,7 +212,7 @@ export default function PostLoad() {
         </div>
 
         {/* Form Starts Here */}
-        <Form
+        <Form 
           layout="vertical"
           form={form}
           onFinish={handlePost}
@@ -223,219 +223,222 @@ export default function PostLoad() {
           }}
         >
           {/* Origin & Destination */}
-          <h2 className="text-base/7 font-semibold text-gray-900 mb-3">
+          <h2 className="text-base/7 font-semibold text-gray-900 mb-3 mt-6">
             Origin & Destination Details
           </h2>
-          <Row gutter={24}>
-            <Col lg={12}>
-              <Form.Item
-                label="Origin"
-                name="from"
-                rules={[
-                  { required: true, message: "Please enter origin city name" },
-                ]}
+          <div className="box mb-6 !mt-0">
+            <Row gutter={24}>
+              <Col lg={12}>
+                <Form.Item
+                  label="Origin"
+                  name="from"
+                  rules={[
+                    { required: true, message: "Please enter origin city name" },
+                  ]}
+                >
+                  <div className="flex gap-4">                  
+                    <Input placeholder="Postal Code" />
+                    <Input placeholder="City Name" />
+                  </div>
+                </Form.Item>
+                {/* <Form.Item
+                  label="From postal code"
+                  name="postalCodeFrom"
+                  rules={[
+                    { required: true, message: "Please enter postal code" },
+                  ]}
+                >
+                  <div className="flex gap-4">
+                    <Input placeholder="Postal Code" />
+                  </div>
+                </Form.Item> */}
+                {/* <Form.Item label="Origin State"
+                name="originState"
+                rules={[{ required: true, message: "Please enter origin state" }]}
               >
-                <div className="flex gap-4">                  
-                  <Input placeholder="Postal Code" />
-                  <Input placeholder="City Name" />
-                </div>
-              </Form.Item>
-              {/* <Form.Item
-                label="From postal code"
-                name="postalCodeFrom"
-                rules={[
-                  { required: true, message: "Please enter postal code" },
-                ]}
-              >
-                <div className="flex gap-4">
-                  <Input placeholder="Postal Code" />
-                </div>
+                <Input placeholder="Telangana" />
               </Form.Item> */}
-              {/* <Form.Item label="Origin State"
-              name="originState"
-              rules={[{ required: true, message: "Please enter origin state" }]}
-            >
-              <Input placeholder="Telangana" />
-            </Form.Item> */}
-              <Form.Item
-                label="Origin Address"
-                name="originAddress"
+                <Form.Item
+                  label="Origin Address"
+                  name="originAddress"
+                  rules={[
+                    { required: true, message: "Please enter origin address" },
+                  ]}
+                >
+                  <TextArea placeholder="Street address" />
+                </Form.Item>
+                {/* <Form.Item
+                label="Origin Postal Code"
+                name="originPostalCode"
                 rules={[
-                  { required: true, message: "Please enter origin address" },
+                  { required: true, message: "Please enter origin postal code" },
                 ]}
               >
-                <TextArea placeholder="Street address" />
-              </Form.Item>
-              {/* <Form.Item
-              label="Origin Postal Code"
-              name="originPostalCode"
-              rules={[
-                { required: true, message: "Please enter origin postal code" },
-              ]}
-            >
-              <Input placeholder="500001" />
-            </Form.Item> */}
-              <Form.Item name="multiplePickups" valuePropName="checked">
-                <Checkbox>Multiple Pickups</Checkbox>
-              </Form.Item>
-            </Col>
-            <Col lg={12}>
-              <Form.Item
-                label="Destination"
-                name="to"
-                rules={[
-                  { required: true, message: "Please enter destination city" },
-                ]}
-              >
-                <div className="flex gap-4">
-                <Input placeholder="Postal Code"  />
-                  <Input placeholder="City Name" />
-                </div>
-              </Form.Item>
-              {/* <Form.Item
-                label="To postal code"
-                name="postalCodeTo"
-                rules={[
-                  { required: true, message: "Please enter destination" },
-                ]}
-              >
-                <div className="flex gap-4">
+                <Input placeholder="500001" />
+              </Form.Item> */}
+                <Form.Item name="multiplePickups" valuePropName="checked">
+                  <Checkbox>Multiple Pickups</Checkbox>
+                </Form.Item>
+              </Col>
+              <Col lg={12}>
+                <Form.Item
+                  label="Destination"
+                  name="to"
+                  rules={[
+                    { required: true, message: "Please enter destination city" },
+                  ]}
+                >
+                  <div className="flex gap-4">
                   <Input placeholder="Postal Code"  />
-                  
-                </div>
+                    <Input placeholder="City Name" />
+                  </div>
+                </Form.Item>
+                {/* <Form.Item
+                  label="To postal code"
+                  name="postalCodeTo"
+                  rules={[
+                    { required: true, message: "Please enter destination" },
+                  ]}
+                >
+                  <div className="flex gap-4">
+                    <Input placeholder="Postal Code"  />
+                    
+                  </div>
+                </Form.Item> */}
+                {/* <Form.Item
+                label="Destination State"
+                name="destinationState"
+                rules={[
+                  { required: true, message: "Please enter destination state" },
+                ]}
+              >
+                <Input placeholder="Andhra Pradesh" />
               </Form.Item> */}
-              {/* <Form.Item
-              label="Destination State"
-              name="destinationState"
-              rules={[
-                { required: true, message: "Please enter destination state" },
-              ]}
-            >
-              <Input placeholder="Andhra Pradesh" />
-            </Form.Item> */}
-              <Form.Item
-                label="Destination Address"
-                name="destinationAddress"
+                <Form.Item
+                  label="Destination Address"
+                  name="destinationAddress"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter destination address",
+                    },
+                  ]}
+                >
+                  <TextArea placeholder="Street address" />
+                </Form.Item>
+                {/* <Form.Item
+                label="Destination Postal Code"
+                name="destinationPostalCode"
                 rules={[
                   {
                     required: true,
-                    message: "Please enter destination address",
+                    message: "Please enter destination postal code",
                   },
                 ]}
               >
-                <TextArea placeholder="Street address" />
-              </Form.Item>
-              {/* <Form.Item
-              label="Destination Postal Code"
-              name="destinationPostalCode"
-              rules={[
-                {
-                  required: true,
-                  message: "Please enter destination postal code",
-                },
-              ]}
-            >
-              <Input placeholder="530001" />
-            </Form.Item> */}
-              <Form.Item name="multipleDrops" valuePropName="checked">
-                <Checkbox>Multiple Drops</Checkbox>
-              </Form.Item>
-            </Col>
-          </Row>
-
+                <Input placeholder="530001" />
+              </Form.Item> */}
+                <Form.Item name="multipleDrops" valuePropName="checked">
+                  <Checkbox>Multiple Drops</Checkbox>
+                </Form.Item>
+              </Col>
+            </Row>
+          </div>
           {/* Shipment Details */}
           <h2 className="text-base/7 font-semibold text-gray-900 mb-3 mt-3">
             Shipment Details
           </h2>
-          <Row gutter={24}>
-            <Col lg={6}>
-              <Form.Item
-                label="Pickup date"
-                name="pickupDate"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please select a Pickup date/time",
-                  },
-                ]}
-              >
-                <DatePicker showTime style={{ width: "100%" }} />
-              </Form.Item>
-            </Col>
-            <Col lg={6}>
-              <Form.Item
-                label="Delivery date"
-                name="deliveryDate"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please select a Estimated delivery date/time",
-                  },
-                ]}
-              >
-                <DatePicker showTime style={{ width: "100%" }} />
-              </Form.Item>
-            </Col>
-            <Col lg={6}>
-              <Form.Item
-                label="Load Type"
-                name="loadType"
-                rules={[{ required: true, message: "Please enter load type" }]}
-              >
-                <Input placeholder="Agriculture, Apparel etc" />
-              </Form.Item>
-            </Col>
-            <Col lg={6}>
-              <Form.Item
-                label="No. of Trucks"
-                name="noOfTrucks"
-                rules={[
-                  { required: true, message: "Please enter no. of trucks" },
-                ]}
-              >
-                <Input type="number" placeholder="1" />
-              </Form.Item>
-            </Col>
-            <Col lg={6}>
-              <Form.Item
-                label="Weight"
-                name="weight"
-                rules={[{ required: true, message: "Please enter weight" }]}
-              >
-                <Input suffix="Tons" />
-              </Form.Item>
-            </Col>
-            <Col lg={6}>
-              <Form.Item
-                label="Price"
-                name="price"
-                rules={[{ required: true, message: "Please enter price" }]}
-              >
-                <Input type="number" placeholder="Enter price" />
-              </Form.Item>
-            </Col>
-            <Col lg={6}>
-              <Form.Item label="Price Type" name="priceType">
-                <Radio.Group
-                  className="radio-grp"
-                  buttonStyle="solid"
-                  value={priceType}
-                  onChange={(e) => {
-                    setPriceType(e.target.value);
-                    form.setFieldValue("priceType", e.target.value);
-                  }}
+          <div className="box mb-6 !mt-0">
+            <Row gutter={24}>
+              <Col lg={6}>
+                <Form.Item
+                  label="Pickup date"
+                  name="pickupDate"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please select a Pickup date/time",
+                    },
+                  ]}
                 >
-                  <Radio.Button value="FixPrice">Fix Price</Radio.Button>
-                  <Radio.Button value="smart">Smart Bid</Radio.Button>
-                </Radio.Group>
-              </Form.Item>
-            </Col>
-          </Row>
-
+                  <DatePicker showTime style={{ width: "100%" }} />
+                </Form.Item>
+              </Col>
+              <Col lg={6}>
+                <Form.Item
+                  label="Delivery date"
+                  name="deliveryDate"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please select a Estimated delivery date/time",
+                    },
+                  ]}
+                >
+                  <DatePicker showTime style={{ width: "100%" }} />
+                </Form.Item>
+              </Col>
+              <Col lg={6}>
+                <Form.Item
+                  label="Load Type"
+                  name="loadType"
+                  rules={[{ required: true, message: "Please enter load type" }]}
+                >
+                  <Input placeholder="Agriculture, Apparel etc" />
+                </Form.Item>
+              </Col>
+              <Col lg={6}>
+                <Form.Item
+                  label="No. of Trucks"
+                  name="noOfTrucks"
+                  rules={[
+                    { required: true, message: "Please enter no. of trucks" },
+                  ]}
+                >
+                  <Input type="number" placeholder="1" />
+                </Form.Item>
+              </Col>
+              <Col lg={6}>
+                <Form.Item
+                  label="Weight"
+                  name="weight"
+                  rules={[{ required: true, message: "Please enter weight" }]}
+                >
+                  <Input suffix="Tons" />
+                </Form.Item>
+              </Col>
+              <Col lg={6}>
+                <Form.Item
+                  label="Price"
+                  name="price"
+                  rules={[{ required: true, message: "Please enter price" }]}
+                >
+                  <Input type="number" placeholder="Enter price" />
+                </Form.Item>
+              </Col>
+              <Col lg={6}>
+                <Form.Item label="Price Type" name="priceType">
+                  <Radio.Group
+                    className="radio-grp"
+                    buttonStyle="solid"
+                    value={priceType}
+                    onChange={(e) => {
+                      setPriceType(e.target.value);
+                      form.setFieldValue("priceType", e.target.value);
+                    }}
+                  >
+                    <Radio.Button value="FixPrice">Fix Price</Radio.Button>
+                    <Radio.Button value="smart">Smart Bid</Radio.Button>
+                  </Radio.Group>
+                </Form.Item>
+              </Col>
+            </Row>
+          </div>
           {/* Truck Details */}
           <h2 className="text-base/7 font-semibold text-gray-900 mb-3 mt-3">
             Truck Details
           </h2>
+          <div className="box mb-6 !mt-0">
           <Row gutter={24}>
             <Col lg={12}>
               <Form.Item
@@ -548,8 +551,7 @@ export default function PostLoad() {
               </Flex>
             )}
 
-          <Divider />
-
+          </div>
           <Row justify="end" gutter={16}>
             <Col>
               <Button className="button-secondary">Save as Draft</Button>

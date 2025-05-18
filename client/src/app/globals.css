@@ -207,7 +207,7 @@
    .ant-card .ant-card-body {padding: 16px;}
 
   .accordian-header{
-    @apply cursor-pointer p-3 border-t-2 border-neutral-200 flex justify-between items-center text-base/7 font-semibold text-gray-900
+    @apply cursor-pointer flex justify-between items-center text-base/7 font-semibold text-gray-900
   }
   .product-adve{ min-height:100px;overflow: hidden;
     @apply bg-black m-4 mb-0 rounded-xl
@@ -226,5 +226,7 @@
   }
 
     .map-bg{background: url(../../public/map.webp);min-height:300px;}
-    .labelStyle {color: #888}
-    .valueStyle{font-size: 14px;font-weight: 600;}
+    .main-content{
+      @apply bg-white p-4 m-4 rounded-md mt-4 border-neutral-300 border-1    }
+    .labelStyle {font-size: 12px;color: #888}
+    .valueStyle{font-size: 15px;color: #000}

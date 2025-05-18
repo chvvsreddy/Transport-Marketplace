@@ -142,7 +142,7 @@ export default function SingleLoad() {
           </button>
         )}
       </div>
-      <div className={`bg-white m-4 rounded-xl shadow-md mt-4`}>
+      <div className="main-content !p-0">
       <div className="grid grid-cols-4">
         {/* Left column */}
         <div className="p-6 border-neutral-200 border-r-2 col-span-4 md:col-span-1 flex flex-col gap-4">
@@ -151,72 +151,72 @@ export default function SingleLoad() {
             <p>Updated at: {new Date(load.updatedAt).toLocaleString()}</p>
           </div>
           <p>
-            Status:
+            <span className="labelStyle">Status</span>
             <br />
-            <span className={`font-semibold ${getStatusColor(load.status)}`}>
+            <span className={`${getStatusColor(load.status)}`}>
               {load.status}
             </span>
           </p>
           <p>
-            Load ID:
+          <span className="labelStyle">Load ID</span>
             <br />
-            <span className="font-semibold">{load.id}</span>
+            <span className ="valueStyle">{load.id}</span>
           </p>
           <p>
-            Your Price:
+          <span className="labelStyle">Your Price</span>
             <br />
-            <span className="font-semibold">₹{load.price}</span>
+            <span  className ="valueStyle">₹{load.price}</span>
           </p>
           <p>
-            Cargo Type:
+          <span className="labelStyle">Cargo Type</span>
             <br />
-            <span className="font-semibold">{load.cargoType}</span>
+            <span  className ="valueStyle">{load.cargoType}</span>
           </p>
           <p>
-            Weight:
+          <span className="labelStyle">Weight</span>
             <br />
-            <span className="font-semibold">{load.weight} Tones</span>
+            <span  className ="valueStyle">{load.weight} Tones</span>
           </p>
           <p>
-            Dimensions:
+          <span className="labelStyle">Dimensions</span>
             <br />
-            <span className="font-semibold">
+            <span  className ="valueStyle">
               {load.dimensions.length}m x {load.dimensions.width}m x{" "}
               {load.dimensions.height}m
             </span>
           </p>
           <p>
-            Special Requirements:
+          <span className="labelStyle">Special Requirements</span>
             <br />
-            <span className="font-semibold">
+            <span  className ="valueStyle">
               {load.specialRequirements?.join(", ") || "None"}
             </span>
           </p>
           <p>
-            Fragile:
+          <span className="labelStyle">Fragile</span>
             <br />
-            <span className="font-semibold">
+            <span  className ="valueStyle">
               {load.isFragile ? "Yes" : "No"}
             </span>
           </p>
           <p>
-            Cold Storage:
+          <span className="labelStyle">Cold Storage</span>
             <br />
-            <span className="font-semibold">
+            <span  className ="valueStyle">
               {load.requiresColdStorage ? "Yes" : "No"}
             </span>
           </p>
           <p>
-            Bulk Load:
+          <span className="labelStyle">Bulk Load</span>
             <br />
-            <span className="font-semibold">
+            <span  className ="valueStyle">
               {load.isBulkLoad ? "Yes" : "No"}
             </span>
           </p>
         </div>
 
         <div className="col-span-4 md:col-span-3">
-          <div>
+          <div className="box mx-4">
             <p onClick={() => toggleSection("route")} className="accordian-header" >
               Origin - Destination
               <ArrowDownCircle
@@ -226,9 +226,9 @@ export default function SingleLoad() {
               />
             </p>
             {openSections.route && (
-              <div className="grid md:grid-cols-2 gap-4 p-6">
+              <div className="grid md:grid-cols-2 gap-4 pt-4">
                 <div>
-                  <h3 className="font-semibold mb-1">Origin</h3>
+                  <p className="labelStyle">Origin</p>
                   <p>{load.origin.address}</p>
                   <p>
                     {load.origin.city}, {load.origin.state}
@@ -237,7 +237,7 @@ export default function SingleLoad() {
                     {load.origin.country} - {load.origin.postalCode}
                   </p>
                   <div className="mt-3">
-                    <h4 className="font-semibold">Pickup Window</h4>
+                    <p className ="labelStyle">Pickup Window</p>
                     <p>
                       {new Date(load.pickupWindowStart).toLocaleString()} -{" "}
                       {new Date(load.pickupWindowEnd).toLocaleString()}
@@ -245,7 +245,7 @@ export default function SingleLoad() {
                   </div>
                 </div>
                 <div>
-                  <h3 className="font-semibold mb-1">Destination</h3>
+                  <p className="labelStyle">Destination</p>
                   <p>{load.destination.address}</p>
                   <p>
                     {load.destination.city}, {load.destination.state}
@@ -254,7 +254,7 @@ export default function SingleLoad() {
                     {load.destination.country} - {load.destination.postalCode}
                   </p>
                   <div className="mt-3">
-                    <h4 className="font-semibold">Delivery Window</h4>
+                    <p className ="labelStyle">Delivery Window</p>
                     <p>
                       {new Date(load.deliveryWindowStart).toLocaleString()} -{" "}
                       {new Date(load.deliveryWindowEnd).toLocaleString()}
@@ -266,7 +266,7 @@ export default function SingleLoad() {
           </div>
 
           {/* Bid Section */}
-          <div>
+          <div className="box mx-4">
             <p onClick={() => toggleSection("bid")} className="accordian-header" >
               Bid
               <ArrowDownCircle
@@ -276,7 +276,7 @@ export default function SingleLoad() {
               />
             </p>
             {openSections.bid && (
-              <div className="p-4 text-gray-500">
+              <div className="pt-4 text-gray-500">
                 <div className="bg-red-100 p-2 text-black rounded-md mb-2">
                    Till now now one responded for the bid   
                 </div>
@@ -308,8 +308,8 @@ export default function SingleLoad() {
           </div> */}
 
           {/* Trip Section */}
-          <div className="border-b-2 border-neutral-200">
-            <p onClick={() => toggleSection("trip")} className="accordian-header border-b-0" >
+          <div className="box mx-4 mb-4">
+            <p onClick={() => toggleSection("trip")} className="accordian-header" >
               Trip
               <ArrowDownCircle
                 className={`transition-transform duration-200 ${
@@ -318,7 +318,7 @@ export default function SingleLoad() {
               />
             </p>
             {openSections.trip && (
-              <div className="p-4 text-gray-500">
+              <div className="pt-4 text-gray-500">
                
                 <div className="p-3 border-2 rounded-md border-neutral-200 mb-2">
                   <h6 className="mb-2"> Pre-Trip Documents</h6>
