@@ -376,37 +376,30 @@ export default function BidsAndOthers() {
 
   return isAdmin ? (
     <>
-      <Row className="pr-4">
-        <Col span={24} md={12}>
+     <Row className="pr-4">
+        <Col span={24} md={6}>
           <Heading name="Bids and Orders" />
         </Col>
-
-        <Col span={24} md={12}>
-          <div className="flex flex-wrap md:justify-end gap-2  md:mt-0">
-            <div className="border border-neutral-300 px-3 py-2 rounded-md text-center bg-orange-100">
-              <Title level={5} className="!mb-0 !text-base ">
-                {countOfLoadsofThisUser.length} All
-              </Title>
+        <Col span={24} md={18}>
+          <div className="flex md:justify-end gap-2  md:mt-0">
+            <div className="page-filter-tabs active">              
+               {countOfLoadsofThisUser.length} All    
             </div>
-            <div className="border border-neutral-300 px-3 py-2 rounded-md text-center">
-              <Title level={5} className="!mb-0 !text-base">
-                {countOfPendingLoadsofThisUser.length} Pending
-              </Title>
+            <div className="page-filter-tabs">
+            {countOfPendingLoadsofThisUser.length} Pending
             </div>
-            <div className="border border-neutral-300 px-3 py-2 rounded-md text-center">
-              <Title level={5} className="!mb-0 !text-base">
-                {countOfAcceptedLoadsofThisUser.length} Accepted
-              </Title>
+            <div className="page-filter-tabs">
+            {countOfAcceptedLoadsofThisUser.length} Accepted
             </div>
-            <div className="border border-neutral-300 px-3 py-2 rounded-md text-center">
-              <Title level={5} className="!mb-0 !text-base">
-                0 No response
-              </Title>
-            </div>
+            <div className="page-filter-tabs">
+            0 No response
+            </div>  
+                       
           </div>
         </Col>
       </Row>
-      <div className={`bg-white p-4 m-4 rounded-xl shadow-md mt-4`}>
+     
+      <div className="main-content">
         <div className="flex gap-4">
           <DatePicker.RangePicker onChange={handleDateChange} />
           <Select
@@ -462,9 +455,9 @@ export default function BidsAndOthers() {
               className="!mt-4 rounded-md border-1 border-neutral-300"
             >
               <div className=" text-center p-2 px-4 flex justify-between items-center">
-                <Title level={5}>
+                <p className="valueStyle">
                   {load.origin.city} ➝ {load.destination.city}
-                </Title>
+                </p>
                 <Paragraph>
                   Load ID:
                   <strong>{load.id}</strong>
@@ -498,14 +491,14 @@ export default function BidsAndOthers() {
                     className="!bg-neutral-100 !rounded-0"
                   >
                     <div className="flex flex-wrap justify-between">
-                      <Paragraph>
-                        Driver Mail ID:
+                      <p>
+                        <span className="labelStyle">Driver Mail ID:</span>
                         <br />
-                        <strong>
+                        <span>
                           {users.find((user) => user.id === bid.carrierId)
                             ?.email || "Unknown Driver"}
-                        </strong>
-                      </Paragraph>
+                        </span>
+                      </p>
                       <Paragraph>
                         Shipper negotiated Price :
                         <br />
@@ -662,37 +655,30 @@ export default function BidsAndOthers() {
     </>
   ) : (
     <>
-      <Row className="pr-4">
-        <Col span={24} md={12}>
+     <Row className="pr-4">
+        <Col span={24} md={6}>
           <Heading name="Bids and Orders" />
         </Col>
-
-        <Col span={24} md={12}>
-          <div className="flex flex-wrap md:justify-end gap-2  md:mt-0">
-            <div className="border border-neutral-300 px-3 py-2 rounded-md text-center bg-orange-100">
-              <Title level={5} className="!mb-0 !text-base ">
-                {countOfLoadsofThisUser.length} All
-              </Title>
+        <Col span={24} md={18}>
+          <div className="flex md:justify-end gap-2 md:mt-0 overflow-auto ml-4">
+            <div className="page-filter-tabs active">              
+            {countOfLoadsofThisUser.length} All  
             </div>
-            <div className="border border-neutral-300 px-3 py-2 rounded-md text-center">
-              <Title level={5} className="!mb-0 !text-base">
-                {countOfPendingLoadsofThisUser.length} Pending
-              </Title>
+            <div className="page-filter-tabs">
+            {countOfPendingLoadsofThisUser.length} Pending
             </div>
-            <div className="border border-neutral-300 px-3 py-2 rounded-md text-center">
-              <Title level={5} className="!mb-0 !text-base">
-                {countOfAcceptedLoadsofThisUser.length} Accepted
-              </Title>
+            <div className="page-filter-tabs">
+            {countOfAcceptedLoadsofThisUser.length} Accepted
             </div>
-            <div className="border border-neutral-300 px-3 py-2 rounded-md text-center">
-              <Title level={5} className="!mb-0 !text-base">
-                0 No response
-              </Title>
-            </div>
+            <div className="page-filter-tabs">
+            0 No response
+            </div>  
+                       
           </div>
         </Col>
       </Row>
-      <div className={`bg-white p-4 m-4 rounded-xl shadow-md mt-4`}>
+
+      <div className="main-content">
         <div className="flex gap-4">
           <DatePicker.RangePicker onChange={handleDateChange} />
           <Select
@@ -747,17 +733,20 @@ export default function BidsAndOthers() {
               key={load.id}
               className="!mt-4 rounded-md border-1 border-neutral-300"
             >
-              <div className=" text-center p-2 px-4 flex justify-between items-center">
-                <Title level={5}>
+              <div className="p-2 px-4 flex justify-between items-center flex-col md:flex-row">
+                <p className="valueStyle">
                   {load.origin.city} ➝ {load.destination.city}
-                </Title>
-                <Paragraph>
-                  Load ID:
-                  <strong>{load.id}</strong>
-                </Paragraph>
-                <Paragraph>
-                  Actual Price: <strong>₹{load.bidPrice}</strong>
-                </Paragraph>
+                </p>
+                <p>
+                <span className="labelStyle">
+                  Load ID</span><br/>
+                  <span className="valueStyle">{load.id}</span>
+                </p>
+                <p>
+                <span className="labelStyle">
+                Actual Price</span><br/>
+                <span className="valueStyle">₹{load.bidPrice}</span>
+                </p>
 
                 <Button
                   type="link"
@@ -778,37 +767,30 @@ export default function BidsAndOthers() {
 
               {expandedLoadIds.includes(load.id) &&
                 relatedBids.map((bid) => (
-                  <Card
-                    key={bid.id}
-                    type="inner"
+                  <Card key={bid.id}  type="inner"
                     className="!bg-neutral-100 !rounded-0"
                   >
                     <div className="flex flex-wrap justify-between">
-                      <Paragraph>
-                        Driver Mail ID:
+                      <p>
+                        <span className="labelStyle">Driver Mail ID:</span>
                         <br />
-                        <strong>
+                        <span className="valueStyle">
                           {users.find((user) => user.id === bid.carrierId)
                             ?.email || "Unknown Driver"}
-                        </strong>
+                        </span>
+                      </p>
+                      
+                      <Paragraph>
+                        Driver Negotiate Price :{getTimeAgo(bid.updatedAt)}
+                        <br />
+                        <strong> ₹{bid.negotiateDriverPrice}</strong>
                       </Paragraph>
                       <Paragraph>
                         Your negotiate Price :
                         <br />
                         <strong> ₹{bid.negotiateShipperPrice}</strong>
                       </Paragraph>
-                      <Paragraph>
-                        Driver Negotiate Price :{getTimeAgo(bid.updatedAt)}
-                        <br />
-                        <strong> ₹{bid.negotiateDriverPrice}</strong>
-                      </Paragraph>
-                      <div
-                        style={{
-                          display: "flex",
-                          gap: "10px",
-                          marginTop: "10px",
-                        }}
-                      >
+                      <div >
                         {bid.status === "PENDING" && (
                           <>
                             {bid &&

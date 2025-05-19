@@ -50,7 +50,7 @@ const Dashboard = () => {
         </div>
         <img src="/advt-1.jpg" alt=""/>
       </div>
-      <div className={`bg-white p-4 m-4 rounded-xl shadow-md mt-4`}>
+      <div className="main-content">
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10 pt-5 pb-4">
         <CardRevenueSummary />
         <CardPerformance />

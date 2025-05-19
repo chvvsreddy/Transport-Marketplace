@@ -4,9 +4,10 @@ import { getLoggedUserFromLS } from "@/app/util/getLoggedUserFromLS";
 import { getLoads, getLoadsById } from "@/state/api";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Typography, Flex, Button, Divider, Select, Input } from "antd";
+import { Typography, Flex, Button, Divider, Select, Input, Row, Col } from "antd";
 import LoadCard from "@/app/util/LoadCard";
 import Heading from "@/app/util/Heading";
+
 
 const { Option } = Select;
 
@@ -111,9 +112,38 @@ export default function MyLoads() {
 
   return (
     <>
-      <Heading name= {isAdmin ? "All Loads (Admin View)" : "My Loads"}/>
+    <Row className="pr-4">
+        <Col span={24} md={6}>
+          <Heading name= {isAdmin ? "All Loads (Admin View)" : "My Loads"} />
+        </Col>
+        <Col span={24} md={18}>
+          <div className="flex md:justify-end gap-2 md:mt-0 overflow-auto ml-4">
+            <div className="page-filter-tabs active">              
+                5 All             
+            </div>
+            <div className="page-filter-tabs">
+                1 Available
+            </div>
+            <div className="page-filter-tabs">
+                2 Pending
+            </div>
+            <div className="page-filter-tabs">
+               1 Assigned
+            </div>  
+            <div className="page-filter-tabs">
+               1 InTransit
+            </div>
+            <div className="page-filter-tabs">
+               2 Delivered
+            </div>  
+            <div className="page-filter-tabs">
+               1 Cancelled
+            </div>           
+          </div>
+        </Col>
+      </Row>
 
-      <div className={`bg-white p-4 m-4 rounded-xl shadow-md mt-4`}>
+      <div className="main-content">
       <Flex align="center" gap={12} style={{ marginBottom: 16 }}>
         <Typography.Text strong>Status:</Typography.Text>
         <Select

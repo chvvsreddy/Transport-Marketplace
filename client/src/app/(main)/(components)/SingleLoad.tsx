@@ -4,9 +4,28 @@ import { getLoggedUserFromLS } from "@/app/util/getLoggedUserFromLS";
 import Heading from "@/app/util/Heading";
 import { getStatusColor } from "@/app/util/statusColorLoads";
 import { getLoadByLoadId, getLoadByLoadIdForAdmin } from "@/state/api";
+
 import { ArrowDownCircle, Edit } from "lucide-react";
 import { useRouter, useParams, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+
+import { UploadOutlined } from '@ant-design/icons';
+import type { UploadProps } from 'antd';
+import { Button, Upload } from 'antd';
+const props: UploadProps = {
+  action: '//jsonplaceholder.typicode.com/posts/',
+  listType: 'picture',
+  previewFile(file) {
+    console.log('Your upload file:', file);
+    // Your process logic. Here we just mock to the same file
+    return fetch('https://next.json-generator.com/api/json/get/4ytyBoLK8', {
+      method: 'POST',
+      body: file,
+    })
+      .then((res) => res.json())
+      .then(({ thumbnail }) => thumbnail);
+  },
+};
 
 interface Location {
   address: string;
@@ -123,81 +142,81 @@ export default function SingleLoad() {
           </button>
         )}
       </div>
-      <div className={`bg-white m-4 rounded-xl shadow-md mt-4`}>
+      <div className="main-content !p-0">
       <div className="grid grid-cols-4">
         {/* Left column */}
-        <div className="grid gap-4 p-6 border-neutral-200 border-r-2 col-span-4 md:col-span-1">
+        <div className="p-6 border-neutral-200 border-r-2 col-span-4 md:col-span-1 flex flex-col gap-4">
           <div className="text-sm text-gray-500">
             <p>Created at: {new Date(load.createdAt).toLocaleString()}</p>
             <p>Updated at: {new Date(load.updatedAt).toLocaleString()}</p>
           </div>
           <p>
-            Status:
+            <span className="labelStyle">Status</span>
             <br />
-            <span className={`font-semibold ${getStatusColor(load.status)}`}>
+            <span className={`${getStatusColor(load.status)}`}>
               {load.status}
             </span>
           </p>
           <p>
-            Load ID:
+          <span className="labelStyle">Load ID</span>
             <br />
-            <span className="font-semibold">{load.id}</span>
+            <span className ="valueStyle">{load.id}</span>
           </p>
           <p>
-            Your Price:
+          <span className="labelStyle">Your Price</span>
             <br />
-            <span className="font-semibold">₹{load.price}</span>
+            <span  className ="valueStyle">₹{load.price}</span>
           </p>
           <p>
-            Cargo Type:
+          <span className="labelStyle">Cargo Type</span>
             <br />
-            <span className="font-semibold">{load.cargoType}</span>
+            <span  className ="valueStyle">{load.cargoType}</span>
           </p>
           <p>
-            Weight:
+          <span className="labelStyle">Weight</span>
             <br />
-            <span className="font-semibold">{load.weight} Tones</span>
+            <span  className ="valueStyle">{load.weight} Tones</span>
           </p>
           <p>
-            Dimensions:
+          <span className="labelStyle">Dimensions</span>
             <br />
-            <span className="font-semibold">
+            <span  className ="valueStyle">
               {load.dimensions.length}m x {load.dimensions.width}m x{" "}
               {load.dimensions.height}m
             </span>
           </p>
           <p>
-            Special Requirements:
+          <span className="labelStyle">Special Requirements</span>
             <br />
-            <span className="font-semibold">
+            <span  className ="valueStyle">
               {load.specialRequirements?.join(", ") || "None"}
             </span>
           </p>
           <p>
-            Fragile:
+          <span className="labelStyle">Fragile</span>
             <br />
-            <span className="font-semibold">
+            <span  className ="valueStyle">
               {load.isFragile ? "Yes" : "No"}
             </span>
           </p>
           <p>
-            Cold Storage:
+          <span className="labelStyle">Cold Storage</span>
             <br />
-            <span className="font-semibold">
+            <span  className ="valueStyle">
               {load.requiresColdStorage ? "Yes" : "No"}
             </span>
           </p>
           <p>
-            Bulk Load:
+          <span className="labelStyle">Bulk Load</span>
             <br />
-            <span className="font-semibold">
+            <span  className ="valueStyle">
               {load.isBulkLoad ? "Yes" : "No"}
             </span>
           </p>
         </div>
 
         <div className="col-span-4 md:col-span-3">
-          <div>
+          <div className="box mx-4">
             <p onClick={() => toggleSection("route")} className="accordian-header" >
               Origin - Destination
               <ArrowDownCircle
@@ -207,9 +226,9 @@ export default function SingleLoad() {
               />
             </p>
             {openSections.route && (
-              <div className="grid md:grid-cols-2 gap-4 p-6">
+              <div className="grid md:grid-cols-2 gap-4 pt-4">
                 <div>
-                  <h3 className="font-semibold mb-1">Origin</h3>
+                  <p className="labelStyle">Origin</p>
                   <p>{load.origin.address}</p>
                   <p>
                     {load.origin.city}, {load.origin.state}
@@ -218,7 +237,7 @@ export default function SingleLoad() {
                     {load.origin.country} - {load.origin.postalCode}
                   </p>
                   <div className="mt-3">
-                    <h4 className="font-semibold">Pickup Window</h4>
+                    <p className ="labelStyle">Pickup Window</p>
                     <p>
                       {new Date(load.pickupWindowStart).toLocaleString()} -{" "}
                       {new Date(load.pickupWindowEnd).toLocaleString()}
@@ -226,7 +245,7 @@ export default function SingleLoad() {
                   </div>
                 </div>
                 <div>
-                  <h3 className="font-semibold mb-1">Destination</h3>
+                  <p className="labelStyle">Destination</p>
                   <p>{load.destination.address}</p>
                   <p>
                     {load.destination.city}, {load.destination.state}
@@ -235,7 +254,7 @@ export default function SingleLoad() {
                     {load.destination.country} - {load.destination.postalCode}
                   </p>
                   <div className="mt-3">
-                    <h4 className="font-semibold">Delivery Window</h4>
+                    <p className ="labelStyle">Delivery Window</p>
                     <p>
                       {new Date(load.deliveryWindowStart).toLocaleString()} -{" "}
                       {new Date(load.deliveryWindowEnd).toLocaleString()}
@@ -247,7 +266,7 @@ export default function SingleLoad() {
           </div>
 
           {/* Bid Section */}
-          <div>
+          <div className="box mx-4">
             <p onClick={() => toggleSection("bid")} className="accordian-header" >
               Bid
               <ArrowDownCircle
@@ -257,14 +276,22 @@ export default function SingleLoad() {
               />
             </p>
             {openSections.bid && (
-              <div className="p-4 text-gray-500 italic">
-                Bid details will go here .
+              <div className="pt-4 text-gray-500">
+                <div className="bg-red-100 p-2 text-black rounded-md mb-2">
+                   Till now now one responded for the bid   
+                </div>
+                <div className="bg-orange-100 p-2 text-black rounded-md mb-2">
+                   2 Drivers Responded. Bid Going on... 
+                </div>
+                <div className="bg-green-100 p-2 text-black rounded-md mb-2">
+                   Bid completed. Mohan has confirmed for this load.
+                </div>
               </div>
             )}
           </div>
 
           {/* Documents Section */}
-          <div>
+          {/* <div>
             <p onClick={() => toggleSection("documents")} className="accordian-header" >
               Documents
               <ArrowDownCircle
@@ -278,10 +305,10 @@ export default function SingleLoad() {
                 Document list placeholder.
               </div>
             )}
-          </div>
+          </div> */}
 
           {/* Trip Section */}
-          <div>
+          <div className="box mx-4 mb-4">
             <p onClick={() => toggleSection("trip")} className="accordian-header" >
               Trip
               <ArrowDownCircle
@@ -291,8 +318,24 @@ export default function SingleLoad() {
               />
             </p>
             {openSections.trip && (
-              <div className="p-4 text-gray-500 italic">
-                Trip details placeholder.
+              <div className="pt-4 text-gray-500">
+               
+                <div className="p-3 border-2 rounded-md border-neutral-200 mb-2">
+                  <h6 className="mb-2"> Pre-Trip Documents</h6>
+                  <Upload {...props}> <Button icon={<UploadOutlined />}>Upload</Button> </Upload>  
+                </div>
+                <div className="p-3 border-2 rounded-md border-neutral-200 mb-2 map-bg">
+                  <div className="bg-white rounded-md p-1 px-2 shadow-neutral-300 shadow-md flex justify-between">
+                    <p>Current Location :<b> Zumeerabad</b></p>
+                    <p>Distance to Drive :<b> 400km</b></p>
+                    <p>Est Time to Reach :<b> 12Hrs</b></p>
+                  </div>
+                </div>
+                <div className="p-3 border-2 rounded-md border-neutral-200">
+                  <h6 className="mb-2"> Post-Trip Documents</h6>
+                  <Upload {...props}> <Button icon={<UploadOutlined />}>Upload</Button> </Upload>  
+                </div>
+               
               </div>
             )}
           </div>
