@@ -163,7 +163,8 @@ io.on("connection", (socket) => {
           id: loadId,
         },
         data: {
-          status: statusField === "isShipperAccepted" ? "ASSIGNED" : "PENDING",
+          status:
+            statusField === "isShipperAccepted" ? "ASSIGNED" : "AVAILABLE",
         },
       });
 

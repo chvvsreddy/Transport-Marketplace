@@ -12,7 +12,7 @@ import { Button, Card, Col, Row, Typography, Space, Tag } from "antd";
 import { useRouter } from "next/navigation";
 import { EyeOutlined } from "@ant-design/icons";
 import { timeSincePosted } from "@/app/util/timeSincePosted";
-import { getStatusColor } from "@/app/util/statusColorLoads";
+import { getStatusColor, getStatusColorForBids, getStatusColorForTrips } from "@/app/util/statusColorLoads";
 
 interface Trips {
   id: string;
@@ -130,7 +130,7 @@ export default function Trips() {
   const renderTripStatus = (status: string) => {
     switch (status) {
       case "SCHEDULED":
-        return <Tag color="blue">Scheduled</Tag>;
+        return <Tag color="green">Scheduled</Tag>;
       case "IN_PROGRESS":
         return <Tag color="orange">In Progress</Tag>;
       case "COMPLETED":
@@ -208,7 +208,7 @@ export default function Trips() {
                     <>
                       <Text strong>Bid : </Text>
                       <Text
-                        className={`${getStatusColor(
+                        className={`${getStatusColorForBids(
                           load.bids[0].status
                         )} p-1 px-2 text-sm rounded-l-md`}
                       >
@@ -232,19 +232,12 @@ export default function Trips() {
                   ) : (
                     <>
                       <Text strong>Bid : </Text>
-
                       <Text
-                        className={`${getStatusColor(
+                        className={`${getStatusColorForBids(
                           load.status
                         )} p-1 px-2 text-sm rounded-l-md`}
                       >
-                        {load.status}
-                      </Text>
-                      <Text className="bg-blue-200 p-1 px-2 text-sm rounded-r-md">
-                        {timeSincePosted(load.createdAt).replace(
-                          "Posted",
-                          "Accepted "
-                        )}
+                        Fixed Price
                       </Text>
 
                       <div key={load.id} className="border p-2 my-2 rounded">
@@ -260,7 +253,7 @@ export default function Trips() {
                     <>
                       <Text strong>Trip : </Text>
                       <Text
-                        className={`${getStatusColor(
+                        className={`${getStatusColorForTrips(
                           load.trips[0]?.status ?? "IN_PROGRESS"
                         )} p-1 px-2 text-sm rounded-l-md`}
                       >
