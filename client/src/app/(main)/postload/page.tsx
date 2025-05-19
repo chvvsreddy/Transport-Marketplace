@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Button,
@@ -29,6 +29,7 @@ import { useWatch } from "antd/es/form/Form";
 import { createLoad } from "@/state/api";
 import Heading from "@/app/util/Heading";
 import TextArea from "antd/es/input/TextArea";
+import Shimmer from "../(components)/shimmerUi/Shimmer";
 
 export default function PostLoad() {
   const [priceType, setPriceType] = useState<string>("FixPrice");
@@ -40,6 +41,7 @@ export default function PostLoad() {
   const [activeGoodsType, setActiveGoodsType] = useState<number | null>(null);
   const [selectedTruckType, setSelectedTruckType] = useState<string>("Open");
   const [postStatus, setPostStatus] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const Goods_Types: any = {
     Open: [
@@ -68,7 +70,7 @@ export default function PostLoad() {
     },
   };
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const userObj = getLoggedUserFromLS();
     if (
       !userObj ||
@@ -85,6 +87,9 @@ export default function PostLoad() {
 
   const acOptionValue = useWatch("acOption", form);
   const trollyOptionValue = useWatch("trollyOption", form);
+  useEffect(() => {
+    setIsLoading(false);
+  }, []);
 
   const handlePost = async (values: any) => {
     let selectedGoods;
@@ -164,6 +169,7 @@ export default function PostLoad() {
   if (!authorized) return null;
 
   return (
+    isLoading ? <Shimmer/> :
     <>
       <Heading name="Post a Load" />
       <div className="main-content">
@@ -212,7 +218,7 @@ export default function PostLoad() {
         </div>
 
         {/* Form Starts Here */}
-        <Form 
+        <Form
           layout="vertical"
           form={form}
           onFinish={handlePost}
@@ -233,10 +239,13 @@ export default function PostLoad() {
                   label="Origin"
                   name="from"
                   rules={[
-                    { required: true, message: "Please enter origin city name" },
+                    {
+                      required: true,
+                      message: "Please enter origin city name",
+                    },
                   ]}
                 >
-                  <div className="flex gap-4">                  
+                  <div className="flex gap-4">
                     <Input placeholder="Postal Code" />
                     <Input placeholder="City Name" />
                   </div>
@@ -285,11 +294,14 @@ export default function PostLoad() {
                   label="Destination"
                   name="to"
                   rules={[
-                    { required: true, message: "Please enter destination city" },
+                    {
+                      required: true,
+                      message: "Please enter destination city",
+                    },
                   ]}
                 >
                   <div className="flex gap-4">
-                  <Input placeholder="Postal Code"  />
+                    <Input placeholder="Postal Code" />
                     <Input placeholder="City Name" />
                   </div>
                 </Form.Item>
@@ -382,7 +394,9 @@ export default function PostLoad() {
                 <Form.Item
                   label="Load Type"
                   name="loadType"
-                  rules={[{ required: true, message: "Please enter load type" }]}
+                  rules={[
+                    { required: true, message: "Please enter load type" },
+                  ]}
                 >
                   <Input placeholder="Agriculture, Apparel etc" />
                 </Form.Item>
@@ -439,96 +453,72 @@ export default function PostLoad() {
             Truck Details
           </h2>
           <div className="box mb-6 !mt-0">
-          <Row gutter={24}>
-            <Col lg={12}>
-              <Form.Item
-                label="Truck Type"
-                name="truckType"
-                rules={[
-                  { required: true, message: "Please select truck type" },
-                ]}
-              >
-                <Radio.Group
-                  onChange={(e) => {
-                    setSelectedTruckType(e.target.value);
-                    setActiveGoodsType(null);
-                    form.setFieldValue("truckType", e.target.value);
-                  }}
+            <Row gutter={24}>
+              <Col lg={12}>
+                <Form.Item
+                  label="Truck Type"
+                  name="truckType"
+                  rules={[
+                    { required: true, message: "Please select truck type" },
+                  ]}
                 >
-                  <Radio.Button value="Open">
-                    <Image src={OpenVan} alt="" height={40} />
-                    Open
-                  </Radio.Button>
-                  <Radio.Button value="Closed">
-                    <Image src={CloseVan} alt="" height={40} />
-                    Closed
-                  </Radio.Button>
-                  <Radio.Button value="Tanker">
-                    <Image src={tanker} alt="" height={40} />
-                    Tanker
-                  </Radio.Button>
-                  <Radio.Button value="Container">
-                    <Image src={container} alt="" height={40} />
-                    Container
-                  </Radio.Button>
-                </Radio.Group>
-              </Form.Item>
-            </Col>
-            <Col lg={6}>
-              <Form.Item label="AC / Non AC" name="acOption">
-                <Radio.Group
-                  buttonStyle="solid"
-                  disabled={selectedTruckType !== "Closed"}
-                >
-                  <Radio.Button value="Non AC">Non AC</Radio.Button>
-                  <Radio.Button value="AC">AC</Radio.Button>
-                </Radio.Group>
-              </Form.Item>
-            </Col>
-            <Col lg={6}>
-              <Form.Item label="Trolly Option" name="trollyOption">
-                <Radio.Group
-                  buttonStyle="solid"
-                  disabled={selectedTruckType !== "Container"}
-                >
-                  <Radio.Button value="With Trolly">With Trolly</Radio.Button>
-                  <Radio.Button value="Without Trolly">
-                    Without Trolly
-                  </Radio.Button>
-                </Radio.Group>
-              </Form.Item>
-            </Col>
-          </Row>
-
-          {/* Goods Types */}
-          {["Open", "Closed"].includes(selectedTruckType) &&
-            Goods_Types[selectedTruckType].length > 0 && (
-              <Flex wrap gap={15} style={{ marginBottom: 16 }}>
-                {Goods_Types[selectedTruckType].map((g: any, i: number) => (
-                  <Button
-                    key={i}
-                    className={`materials-btn ${
-                      activeGoodsType === i ? "active" : ""
-                    }`}
-                    onClick={() => setActiveGoodsType(i)}
-                    style={{
-                      border:
-                        activeGoodsType === i ? "2px solid #1677ff" : undefined,
+                  <Radio.Group
+                    onChange={(e) => {
+                      setSelectedTruckType(e.target.value);
+                      setActiveGoodsType(null);
+                      form.setFieldValue("truckType", e.target.value);
                     }}
                   >
-                    <Typography.Text strong style={{ fontSize: "14px" }}>
-                      {g.title}
-                    </Typography.Text>
-                  </Button>
-                ))}
-              </Flex>
-            )}
+                    <Radio.Button value="Open">
+                      <Image src={OpenVan} alt="" height={40} />
+                      Open
+                    </Radio.Button>
+                    <Radio.Button value="Closed">
+                      <Image src={CloseVan} alt="" height={40} />
+                      Closed
+                    </Radio.Button>
+                    <Radio.Button value="Tanker">
+                      <Image src={tanker} alt="" height={40} />
+                      Tanker
+                    </Radio.Button>
+                    <Radio.Button value="Container">
+                      <Image src={container} alt="" height={40} />
+                      Container
+                    </Radio.Button>
+                  </Radio.Group>
+                </Form.Item>
+              </Col>
+              <Col lg={6}>
+                <Form.Item label="AC / Non AC" name="acOption">
+                  <Radio.Group
+                    buttonStyle="solid"
+                    disabled={selectedTruckType !== "Closed"}
+                  >
+                    <Radio.Button value="Non AC">Non AC</Radio.Button>
+                    <Radio.Button value="AC">AC</Radio.Button>
+                  </Radio.Group>
+                </Form.Item>
+              </Col>
+              <Col lg={6}>
+                <Form.Item label="Trolly Option" name="trollyOption">
+                  <Radio.Group
+                    buttonStyle="solid"
+                    disabled={selectedTruckType !== "Container"}
+                  >
+                    <Radio.Button value="With Trolly">With Trolly</Radio.Button>
+                    <Radio.Button value="Without Trolly">
+                      Without Trolly
+                    </Radio.Button>
+                  </Radio.Group>
+                </Form.Item>
+              </Col>
+            </Row>
 
-          {selectedTruckType === "Container" &&
-            trollyOptionValue === "With Trolly" && (
-              <Flex wrap gap={15} style={{ marginBottom: 16 }}>
-                {Goods_Types.Container["With Trolly"].map(
-                  (g: any, i: number) => (
+            {/* Goods Types */}
+            {["Open", "Closed"].includes(selectedTruckType) &&
+              Goods_Types[selectedTruckType].length > 0 && (
+                <Flex wrap gap={15} style={{ marginBottom: 16 }}>
+                  {Goods_Types[selectedTruckType].map((g: any, i: number) => (
                     <Button
                       key={i}
                       className={`materials-btn ${
@@ -546,11 +536,36 @@ export default function PostLoad() {
                         {g.title}
                       </Typography.Text>
                     </Button>
-                  )
-                )}
-              </Flex>
-            )}
+                  ))}
+                </Flex>
+              )}
 
+            {selectedTruckType === "Container" &&
+              trollyOptionValue === "With Trolly" && (
+                <Flex wrap gap={15} style={{ marginBottom: 16 }}>
+                  {Goods_Types.Container["With Trolly"].map(
+                    (g: any, i: number) => (
+                      <Button
+                        key={i}
+                        className={`materials-btn ${
+                          activeGoodsType === i ? "active" : ""
+                        }`}
+                        onClick={() => setActiveGoodsType(i)}
+                        style={{
+                          border:
+                            activeGoodsType === i
+                              ? "2px solid #1677ff"
+                              : undefined,
+                        }}
+                      >
+                        <Typography.Text strong style={{ fontSize: "14px" }}>
+                          {g.title}
+                        </Typography.Text>
+                      </Button>
+                    )
+                  )}
+                </Flex>
+              )}
           </div>
           <Row justify="end" gutter={16}>
             <Col>

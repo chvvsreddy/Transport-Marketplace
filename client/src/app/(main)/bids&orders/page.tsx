@@ -1,12 +1,6 @@
 "use client";
 import { getLoggedUserFromLS } from "@/app/util/getLoggedUserFromLS";
-import {
-  getAllUsers,
-  getBids,
-  getLoads,
-  updateBid,
-  updateBidStatus,
-} from "@/state/api";
+import { getAllUsers, getBids, getLoads } from "@/state/api";
 import { useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -18,15 +12,14 @@ import {
   message,
   DatePicker,
   Select,
-  Divider,
   Col,
   Row,
 } from "antd";
 import { DownOutlined, UpOutlined } from "@ant-design/icons";
 import { SocketContext } from "@/app/util/SocketContext";
-import Header from "@/app/util/Header";
+
 import Heading from "@/app/util/Heading";
-import { getStatusColor } from "@/app/util/statusColorLoads";
+import Shimmer from "../(components)/shimmerUi/Shimmer";
 
 const { Title, Paragraph, Text } = Typography;
 const { Option } = Select;
@@ -87,6 +80,7 @@ export default function BidsAndOthers() {
   const [bidStatusFilter, setBidStatusFilter] = useState<
     "PENDING" | "ACCEPTED" | "REJECTED" | "ALL"
   >("PENDING");
+  const [isLoading, setIsLoading] = useState(true);
   const [originInput, setOriginInput] = useState("");
   const [destinationInput, setDestinationInput] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
@@ -119,6 +113,7 @@ export default function BidsAndOthers() {
       setBids(allBids);
       setFilteredLoads(allLoads);
       setUsers(allUsers);
+      setIsLoading(false);
     }
 
     fetchData();
@@ -228,21 +223,8 @@ export default function BidsAndOthers() {
             ? findUserIdByLoad?.shipperId
             : selectedBid.carrierId,
       });
-
       message.success("Bid updated successfully");
-    } else {
-      offlineUserBidUpdate({
-        bidId: selectedBid.id,
-        shipperId: loggedUser.userId,
-        price: negotiatedPrice,
-      });
     }
-
-    async function offlineUserBidUpdate(obj: any) {
-      const updateBidAmount = await updateBid(obj);
-      message.success("Bid updated successfully ");
-    }
-
     setIsModalVisible(false);
   };
 
@@ -374,306 +356,26 @@ export default function BidsAndOthers() {
     });
   };
 
-  return isAdmin ? (
-    <>
-     <Row className="pr-4">
-        <Col span={24} md={6}>
-          <Heading name="Bids and Orders" />
-        </Col>
-        <Col span={24} md={18}>
-          <div className="flex md:justify-end gap-2  md:mt-0">
-            <div className="page-filter-tabs active">              
-               {countOfLoadsofThisUser.length} All    
-            </div>
-            <div className="page-filter-tabs">
-            {countOfPendingLoadsofThisUser.length} Pending
-            </div>
-            <div className="page-filter-tabs">
-            {countOfAcceptedLoadsofThisUser.length} Accepted
-            </div>
-            <div className="page-filter-tabs">
-            0 No response
-            </div>  
-                       
-          </div>
-        </Col>
-      </Row>
-     
-      <div className="main-content">
-        <div className="flex gap-4">
-          <DatePicker.RangePicker onChange={handleDateChange} />
-          <Select
-            defaultValue="PENDING"
-            value={bidStatusFilter}
-            onChange={(value: any) => {
-              setBidStatusFilter(value);
-              setCurrentPage(1);
-            }}
-            style={{ width: 160 }}
-          >
-            <Option value="ALL">All Bids</Option>
-            <Option value="PENDING">Pending</Option>
-            <Option value="ACCEPTED">Accepted</Option>
-            <Option value="REJECTED">Rejected</Option>
-          </Select>
-          <Input
-            placeholder="Search Origin City"
-            value={originInput}
-            onChange={(e) => setOriginInput(e.target.value)}
-            style={{ width: 180 }}
-          />
-          <Input
-            placeholder="Search Destination City"
-            value={destinationInput}
-            onChange={(e) => setDestinationInput(e.target.value)}
-            style={{ width: 200 }}
-          />
-        </div>
-
-        {paginatedLoads.map((load) => {
-          const relatedBids = bids.filter(
-            (bid) =>
-              bid.loadId === load.id &&
-              (bidStatusFilter === "ALL" || bid.status === bidStatusFilter)
-          );
-
-          const pickupDate = new Date(load.pickupWindowStart);
-          const daysLeft = Math.max(
-            0,
-            Math.ceil(
-              (pickupDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-            )
-          );
-
-          let color: "red" | "orange" | undefined;
-          if (daysLeft <= 2) color = "red";
-          else if (daysLeft <= 5) color = "orange";
-
-          return (
-            <div
-              key={load.id}
-              className="!mt-4 rounded-md border-1 border-neutral-300"
-            >
-              <div className=" text-center p-2 px-4 flex justify-between items-center">
-                <p className="valueStyle">
-                  {load.origin.city} ➝ {load.destination.city}
-                </p>
-                <Paragraph>
-                  Load ID:
-                  <strong>{load.id}</strong>
-                </Paragraph>
-                <Paragraph>
-                  Actual Price: <strong>₹{load.bidPrice}</strong>
-                </Paragraph>
-
-                <Button
-                  type="link"
-                  icon={
-                    expandedLoadIds.includes(load.id) ? (
-                      <UpOutlined />
-                    ) : (
-                      <DownOutlined />
-                    )
-                  }
-                  onClick={() => toggleExpand(load.id)}
-                >
-                  {expandedLoadIds.includes(load.id)
-                    ? "Hide Bids"
-                    : "Show Bids"}
-                </Button>
-              </div>
-
-              {expandedLoadIds.includes(load.id) &&
-                relatedBids.map((bid) => (
-                  <Card
-                    key={bid.id}
-                    type="inner"
-                    className="!bg-neutral-100 !rounded-0"
-                  >
-                    <div className="flex flex-wrap justify-between">
-                      <p>
-                        <span className="labelStyle">Driver Mail ID:</span>
-                        <br />
-                        <span>
-                          {users.find((user) => user.id === bid.carrierId)
-                            ?.email || "Unknown Driver"}
-                        </span>
-                      </p>
-                      <Paragraph>
-                        Shipper negotiated Price :
-                        <br />
-                        <strong> ₹{bid.negotiateShipperPrice}</strong>
-                      </Paragraph>
-                      <Paragraph>
-                        Driver Negotiated Price :{getTimeAgo(bid.updatedAt)}
-                        <br />
-                        <strong> ₹{bid.negotiateDriverPrice}</strong>
-                      </Paragraph>
-                      <div
-                        style={{
-                          display: "flex",
-                          gap: "10px",
-                          marginTop: "10px",
-                        }}
-                      >
-                        {/* {bid.status === "PENDING" && (
-                          <>
-                            {bid &&
-                              bid.negotiateDriverPrice > 0 &&
-                              bid.negotiateShipperPrice === 0 && (
-                                <>
-                                  <Button
-                                    className="max-h-10"
-                                    onClick={() =>
-                                      handleNegotiateBid(bid, load)
-                                    }
-                                  >
-                                    Negotiate
-                                  </Button>
-                                  <Button
-                                    className="button-primary max-h-10"
-                                    onClick={() =>
-                                      acceptAfterDriverBid(
-                                        bid.id,
-                                        bid.carrierId,
-                                        bid.negotiateDriverPrice
-                                      )
-                                    }
-                                  >
-                                    Accept
-                                  </Button>
-                                </>
-                              )}
-                            {bid.negotiateDriverPrice > 0 &&
-                              bid.negotiateShipperPrice > 0 &&
-                              bid.isDriverAccepted &&
-                              bid.isShipperAccepted === false && (
-                                <Button
-                                  className="button-primary max-h-10"
-                                  onClick={() => handleAcceptBid(bid.id)}
-                                >
-                                  Accept
-                                </Button>
-                              )}
-                          </>
-                        )} */}
-                        {bid &&
-                          bid.negotiateDriverPrice > 0 &&
-                          bid.negotiateShipperPrice === 0 && (
-                            <>
-                              <span className=" max-h-10 text-red-800 text-sm">
-                                Driver bidded,shipper will have to give response
-                              </span>
-                            </>
-                          )}
-                        {bid &&
-                          bid.isDriverAccepted &&
-                          bid.isShipperAccepted && (
-                            <Text type="secondary">Status: {bid.status}</Text>
-                          )}
-                        {bid.isDriverAccepted === false &&
-                          bid.negotiateDriverPrice > 0 &&
-                          bid.negotiateShipperPrice > 0 && (
-                            <span className=" max-h-10 text-red-800 text-sm">
-                              bid on process
-                            </span>
-                          )}
-
-                        {bid.negotiateDriverPrice > 0 &&
-                          bid.negotiateShipperPrice > 0 &&
-                          bid.isDriverAccepted &&
-                          bid.isShipperAccepted === false && (
-                            <span className=" max-h-10 text-red-800 text-sm">
-                              <span className=" max-h-10 text-green-800 text-sm">
-                                Driver accepted the bid,
-                              </span>
-                              <br />
-                              shipper will have to give response
-                            </span>
-                          )}
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-            </div>
-          );
-        })}
-
-        {loadsWithMatchingBids.length > pageSize && (
-          <div className="flex justify-center mt-6 items-center gap-4">
-            <Button
-              onClick={() => setCurrentPage(currentPage - 1)}
-              disabled={currentPage === 1}
-            >
-              Prev
-            </Button>
-            <Text>
-              Page {currentPage} of {totalPages}
-            </Text>
-            <Button
-              onClick={() => setCurrentPage(currentPage + 1)}
-              disabled={currentPage === totalPages}
-            >
-              Next
-            </Button>
-          </div>
-        )}
-
-        <Modal
-          title="Negotiate Bid"
-          open={isModalVisible}
-          onCancel={() => setIsModalVisible(false)}
-          onOk={handleSubmitNegotiation}
-          okText="Submit Bid"
-        >
-          {selectedLoad && selectedBid && (
-            <>
-              <Paragraph>
-                <strong>Route:</strong> {selectedLoad.origin.city} ➝{" "}
-                {selectedLoad.destination.city}
-              </Paragraph>
-              <Paragraph>
-                <strong>Actual Price:</strong> ₹{selectedLoad.bidPrice}
-              </Paragraph>
-              <Paragraph>
-                <strong>Current Ongoing Price:</strong> ₹{selectedBid.price}
-              </Paragraph>
-              <Paragraph>
-                <strong>Enter New Offer:</strong>
-              </Paragraph>
-              <Input
-                type="number"
-                value={negotiatedPrice ?? ""}
-                onChange={(e) => setNegotiatedPrice(Number(e.target.value))}
-                min={0}
-                prefix="₹"
-              />
-            </>
-          )}
-        </Modal>
-      </div>
-    </>
+  return isLoading ? (
+    <Shimmer />
   ) : (
     <>
-     <Row className="pr-4">
+      <Row className="pr-4">
         <Col span={24} md={6}>
           <Heading name="Bids and Orders" />
         </Col>
         <Col span={24} md={18}>
           <div className="flex md:justify-end gap-2 md:mt-0 overflow-auto ml-4">
-            <div className="page-filter-tabs active">              
-            {countOfLoadsofThisUser.length} All  
+            <div className="page-filter-tabs active">
+              {countOfLoadsofThisUser.length} All
             </div>
             <div className="page-filter-tabs">
-            {countOfPendingLoadsofThisUser.length} Pending
+              {countOfPendingLoadsofThisUser.length} Pending
             </div>
             <div className="page-filter-tabs">
-            {countOfAcceptedLoadsofThisUser.length} Accepted
+              {countOfAcceptedLoadsofThisUser.length} Accepted
             </div>
-            <div className="page-filter-tabs">
-            0 No response
-            </div>  
-                       
+            <div className="page-filter-tabs">0 No response</div>
           </div>
         </Col>
       </Row>
@@ -738,14 +440,14 @@ export default function BidsAndOthers() {
                   {load.origin.city} ➝ {load.destination.city}
                 </p>
                 <p>
-                <span className="labelStyle">
-                  Load ID</span><br/>
+                  <span className="labelStyle">Load ID</span>
+                  <br />
                   <span className="valueStyle">{load.id}</span>
                 </p>
                 <p>
-                <span className="labelStyle">
-                Actual Price</span><br/>
-                <span className="valueStyle">₹{load.bidPrice}</span>
+                  <span className="labelStyle">Actual Price</span>
+                  <br />
+                  <span className="valueStyle">₹{load.bidPrice}</span>
                 </p>
 
                 <Button
@@ -767,88 +469,180 @@ export default function BidsAndOthers() {
 
               {expandedLoadIds.includes(load.id) &&
                 relatedBids.map((bid) => (
-                  <Card key={bid.id}  type="inner"
+                  <Card
+                    key={bid.id}
+                    type="inner"
                     className="!bg-neutral-100 !rounded-0"
                   >
-                    <div className="flex flex-wrap justify-between">
-                      <p>
-                        <span className="labelStyle">Driver Mail ID:</span>
-                        <br />
-                        <span className="valueStyle">
-                          {users.find((user) => user.id === bid.carrierId)
-                            ?.email || "Unknown Driver"}
-                        </span>
-                      </p>
-                      
-                      <Paragraph>
-                        Driver Negotiate Price :{getTimeAgo(bid.updatedAt)}
-                        <br />
-                        <strong> ₹{bid.negotiateDriverPrice}</strong>
-                      </Paragraph>
-                      <Paragraph>
-                        Your negotiate Price :
-                        <br />
-                        <strong> ₹{bid.negotiateShipperPrice}</strong>
-                      </Paragraph>
-                      <div >
-                        {bid.status === "PENDING" && (
-                          <>
-                            {bid &&
-                              bid.negotiateDriverPrice > 0 &&
-                              bid.negotiateShipperPrice === 0 && (
-                                <>
-                                  <Button
-                                    className="max-h-10"
-                                    onClick={() =>
-                                      handleNegotiateBid(bid, load)
-                                    }
-                                  >
-                                    Negotiate
-                                  </Button>
-                                  <Button
-                                    className="button-primary max-h-10"
-                                    onClick={() =>
-                                      acceptAfterDriverBid(
-                                        bid.id,
-                                        bid.carrierId,
-                                        bid.negotiateDriverPrice,
-                                        load.id
-                                      )
-                                    }
-                                  >
-                                    Accept
-                                  </Button>
-                                </>
-                              )}
-                            {bid.negotiateDriverPrice > 0 &&
-                              bid.negotiateShipperPrice > 0 &&
-                              bid.isDriverAccepted &&
-                              bid.isShipperAccepted === false && (
-                                <Button
-                                  className="button-primary max-h-10"
-                                  onClick={() =>
-                                    handleAcceptBid(bid.id, load.id)
-                                  }
-                                >
-                                  Accept
-                                </Button>
-                              )}
-                          </>
-                        )}
-                        {bid &&
-                          bid.isDriverAccepted &&
-                          bid.isShipperAccepted && (
-                            <Text type="secondary">Status: {bid.status}</Text>
-                          )}
-                        {bid.isDriverAccepted === false &&
-                          bid.negotiateDriverPrice > 0 &&
-                          bid.negotiateShipperPrice > 0 && (
-                            <span className=" max-h-10 text-red-800 text-sm">
-                              Waiting for driver response
+                    {isAdmin ? (
+                      <>
+                        <div className="flex flex-wrap justify-between">
+                          <p>
+                            <span className="labelStyle">Driver Mail ID:</span>
+                            <br />
+                            <span className="valueStyle">
+                              {users.find((user) => user.id === bid.carrierId)
+                                ?.email || "Unknown Driver"}
                             </span>
-                          )}
-                      </div>
-                    </div>
+                          </p>
+
+                          <Paragraph>
+                            Driver Negotiate Price :{getTimeAgo(bid.updatedAt)}
+                            <br />
+                            <strong> ₹{bid.negotiateDriverPrice}</strong>
+                          </Paragraph>
+                          <Paragraph>
+                            Your negotiate Price :
+                            <br />
+                            <strong> ₹{bid.negotiateShipperPrice}</strong>
+                          </Paragraph>
+                          <div>
+                            {bid.status === "PENDING" && (
+                              <>
+                                {bid &&
+                                  bid.negotiateDriverPrice > 0 &&
+                                  bid.negotiateShipperPrice === 0 && (
+                                    <>
+                                      <Button
+                                        className="max-h-10"
+                                        onClick={() =>
+                                          handleNegotiateBid(bid, load)
+                                        }
+                                      >
+                                        Negotiate
+                                      </Button>
+                                      <Button
+                                        className="button-primary max-h-10"
+                                        onClick={() =>
+                                          acceptAfterDriverBid(
+                                            bid.id,
+                                            bid.carrierId,
+                                            bid.negotiateDriverPrice,
+                                            load.id
+                                          )
+                                        }
+                                      >
+                                        Accept
+                                      </Button>
+                                    </>
+                                  )}
+                                {bid.negotiateDriverPrice > 0 &&
+                                  bid.negotiateShipperPrice > 0 &&
+                                  bid.isDriverAccepted &&
+                                  bid.isShipperAccepted === false && (
+                                    <Button
+                                      className="button-primary max-h-10"
+                                      onClick={() =>
+                                        handleAcceptBid(bid.id, load.id)
+                                      }
+                                    >
+                                      Accept
+                                    </Button>
+                                  )}
+                              </>
+                            )}
+                            {bid &&
+                              bid.isDriverAccepted &&
+                              bid.isShipperAccepted && (
+                                <Text type="secondary">
+                                  Status: {bid.status}
+                                </Text>
+                              )}
+                            {bid.isDriverAccepted === false &&
+                              bid.negotiateDriverPrice > 0 &&
+                              bid.negotiateShipperPrice > 0 && (
+                                <span className=" max-h-10 text-red-800 text-sm">
+                                  Waiting for driver response
+                                </span>
+                              )}
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex flex-wrap justify-between">
+                          <p>
+                            <span className="labelStyle">Driver Mail ID:</span>
+                            <br />
+                            <span className="valueStyle">
+                              {users.find((user) => user.id === bid.carrierId)
+                                ?.email || "Unknown Driver"}
+                            </span>
+                          </p>
+
+                          <Paragraph>
+                            Driver Negotiate Price :{getTimeAgo(bid.updatedAt)}
+                            <br />
+                            <strong> ₹{bid.negotiateDriverPrice}</strong>
+                          </Paragraph>
+                          <Paragraph>
+                            Your negotiate Price :
+                            <br />
+                            <strong> ₹{bid.negotiateShipperPrice}</strong>
+                          </Paragraph>
+                          <div>
+                            {bid.status === "PENDING" && (
+                              <>
+                                {bid &&
+                                  bid.negotiateDriverPrice > 0 &&
+                                  bid.negotiateShipperPrice === 0 && (
+                                    <>
+                                      <Button
+                                        className="max-h-10"
+                                        onClick={() =>
+                                          handleNegotiateBid(bid, load)
+                                        }
+                                      >
+                                        Negotiate
+                                      </Button>
+                                      <Button
+                                        className="button-primary max-h-10"
+                                        onClick={() =>
+                                          acceptAfterDriverBid(
+                                            bid.id,
+                                            bid.carrierId,
+                                            bid.negotiateDriverPrice,
+                                            load.id
+                                          )
+                                        }
+                                      >
+                                        Accept
+                                      </Button>
+                                    </>
+                                  )}
+                                {bid.negotiateDriverPrice > 0 &&
+                                  bid.negotiateShipperPrice > 0 &&
+                                  bid.isDriverAccepted &&
+                                  bid.isShipperAccepted === false && (
+                                    <Button
+                                      className="button-primary max-h-10"
+                                      onClick={() =>
+                                        handleAcceptBid(bid.id, load.id)
+                                      }
+                                    >
+                                      Accept
+                                    </Button>
+                                  )}
+                              </>
+                            )}
+                            {bid &&
+                              bid.isDriverAccepted &&
+                              bid.isShipperAccepted && (
+                                <Text type="secondary">
+                                  Status: {bid.status}
+                                </Text>
+                              )}
+                            {bid.isDriverAccepted === false &&
+                              bid.negotiateDriverPrice > 0 &&
+                              bid.negotiateShipperPrice > 0 && (
+                                <span className=" max-h-10 text-red-800 text-sm">
+                                  Waiting for driver response
+                                </span>
+                              )}
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </Card>
                 ))}
             </div>

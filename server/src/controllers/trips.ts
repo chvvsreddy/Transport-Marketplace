@@ -36,3 +36,29 @@ export const getTripsByLoadId = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const createTrip = async (req: Request, res: Response) => {
+  const {
+    loadId,
+    driverId,
+    plannedRoute,
+    vehicleId,
+    estimatedDuration,
+    distance,
+  } = req.body;
+  try {
+    const createdTrip = await prisma.trips.create({
+      data: {
+        driverId,
+        loadId,
+        plannedRoute,
+        vehicleId,
+        estimatedDuration,
+        distance,
+      },
+    });
+    res.json(createdTrip);
+  } catch (error) {
+    res.json({ message: "error on creating trip" });
+  }
+};
