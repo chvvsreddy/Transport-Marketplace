@@ -13,7 +13,7 @@ import {
   Empty,
   message,
 } from "antd";
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useLayoutEffect } from "react";
 import Heading from "@/app/util/Heading/index";
 import { createBid, getBids, useGetAllLoadsQuery } from "@/state/api";
 import { getLoggedUserFromLS } from "@/app/util/getLoggedUserFromLS";
@@ -21,6 +21,7 @@ import { SocketContext } from "@/app/util/SocketContext";
 import { useRouter } from "next/navigation";
 import { timeSincePosted } from "@/app/util/timeSincePosted";
 import { getStatusColor } from "@/app/util/statusColorLoads";
+import Shimmer from "../(components)/shimmerUi/Shimmer";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -106,8 +107,6 @@ const Loads = () => {
   const { data, isLoading, isError } = useGetAllLoadsQuery();
   const allLoads = data as Load[] | undefined;
   const allData = allLoads || [];
-  const [paginationHide, setPaginationHide] = useState(true);
-
   const [location, setLocation] = useState<Location | null>(null);
   const [Bids, setBids] = useState<Bid[]>([]);
   const [filteredLoads, setFilteredLoads] = useState<Load[]>([]);
@@ -116,12 +115,12 @@ const Loads = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedLoad, setSelectedLoad] = useState<Load | null>(null);
   const [bidPrice, setBidPrice] = useState<string>("");
+  const [isLoadingSpin, setIsLoading] = useState(true);
 
   const { socket } = useContext(SocketContext) || {};
   const router = useRouter();
-  
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (getLoggedUserFromLS().userId) {
       if (getLoggedUserFromLS().type !== "INDIVIDUAL_DRIVER") {
         router.push("/login");
@@ -156,7 +155,7 @@ const Loads = () => {
                 state: stateName,
               };
               setLocation(updatedLocation);
-
+              setIsLoading(false);
               if (selectedState) {
                 const filtered = allData.filter(
                   (load) =>
@@ -166,7 +165,6 @@ const Loads = () => {
                 );
                 setFilteredLoads(filtered);
               }
-
               await fetch(
                 `${process.env.NEXT_PUBLIC_API_BASE_URL}/driverLocation`,
                 {
@@ -294,10 +292,9 @@ const Loads = () => {
       setBidPrice("");
     }
     message.success("bid updated success");
-    // window.location.reload();
   };
 
-  const acceptBidWithoutBid = (bidId: string) => {
+  const acceptBidWithoutBid = (bidId: string, loadId: string) => {
     //Directly create trip
   };
 
@@ -318,7 +315,12 @@ const Loads = () => {
     });
   };
 
-  if (isLoading) return <div className="py-4">Loading...</div>;
+  if (isLoading)
+    return (
+      <div className="py-4">
+        <Shimmer />
+      </div>
+    );
   if (isError || !allData)
     return (
       <div className="text-center text-red-500 py-4">Failed to fetch Loads</div>
@@ -328,7 +330,9 @@ const Loads = () => {
     (bid) => bid.carrierId === getLoggedUserFromLS().userId
   );
 
-  return (
+  return isLoadingSpin ? (
+    <Shimmer />
+  ) : (
     <>
       <div className="text-md text-gray-600 m-4 mb-0">
         {location ? (
@@ -480,7 +484,9 @@ const Loads = () => {
                               <>
                                 <Button
                                   className="button-primary max-h-10"
-                                  onClick={() => acceptBidWithoutBid(bid.id)}
+                                  onClick={() =>
+                                    acceptBidWithoutBid(bid.id, load.id)
+                                  }
                                 >
                                   Accept
                                 </Button>
@@ -492,31 +498,6 @@ const Loads = () => {
                                 </Button>
                               </>
                             )}
-                          {/* {bid.isDriverAccepted ||
-                          (bid.negotiateDriverPrice > 0 && (
-                            <span className=" max-h-10 text-red-800 text-sm">
-                              Waiting for shipper response
-                            </span>
-                          ))}
-
-                        {bid.negotiateShipperPrice > 0 && (
-                          <Button
-                            className="button-primary max-h-10"
-                            onClick={() => {}}
-                          >
-                            Accept
-                          </Button>
-                        )}
-
-                        {bid.negotiateShipperPrice == 0 ||
-                          (bid.negotiateDriverPrice === 0 && (
-                            <Button
-                              className="button-secondary max-h-10"
-                              onClick={() => showBidModal(load)}
-                            >
-                              Bid
-                            </Button>
-                          ))} */}
                         </>
                       )}
                     </div>
@@ -553,7 +534,7 @@ const Loads = () => {
             paginatedLoads.map((load) => {
               const isBidLoad = load.bidPrice > 0;
               const isFixedLoad = load.bidPrice === 0 && load.price > 0;
-              const currentUserBid: Bid | undefined = Bids.find(
+              const currentUserBid: Bid | any = Bids.find(
                 (bid) => bid.loadId === load.id
               );
 
@@ -616,23 +597,6 @@ const Loads = () => {
                     )}
                     {isBidLoad && (
                       <>
-                        {/* {(currentUserBid?.isDriverAccepted ||
-                        (currentUserBid?.negotiateDriverPrice ?? 0) > 0) && (
-                        <span className="max-h-10 text-red-800 text-sm">
-                          Waiting for shipper response
-                        </span>
-                      )} */}
-
-                        {/* {(!currentUserBid ||
-                        (currentUserBid?.negotiateShipperPrice ?? 0) > 0) && (
-                        <Button
-                          className="button-primary max-h-10"
-                          onClick={() => {}}
-                        >
-                          Accept
-                        </Button>
-                      )} */}
-
                         {currentUserBid &&
                           currentUserBid.negotiateDriverPrice > 0 &&
                           currentUserBid.negotiateShipperPrice == 0 && (
@@ -664,7 +628,9 @@ const Loads = () => {
                           <>
                             <Button
                               className="button-primary max-h-10"
-                              onClick={() => acceptBidWithoutBid(load.id)}
+                              onClick={() =>
+                                acceptBidWithoutBid(currentUserBid?.id, load.id)
+                              }
                             >
                               Accept
                             </Button>
@@ -676,6 +642,7 @@ const Loads = () => {
                             </Button>
                           </>
                         )}
+
                         {currentUserBid &&
                           currentUserBid.isDriverAccepted &&
                           currentUserBid.isShipperAccepted && (

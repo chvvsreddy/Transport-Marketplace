@@ -8,6 +8,7 @@ import { UserProvider } from "../util/UserContext";
 import { SocketProvider } from "../util/SocketContext";
 import { useRouter } from "next/navigation";
 import "@ant-design/v5-patch-for-react-19";
+import Shimmer from "./(components)/shimmerUi/Shimmer";
 
 const AdminSidebar = dynamic(() => import("./(components)/admin/adminSidebar/adminsidebar"),{ ssr: false });
 const IndividualShipperSidebar = dynamic(() =>import("./(components)/individualshipper/shipperSidebar/IndividualShipperSidebar"),{ ssr: false });
@@ -36,6 +37,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const [isLogisticShipper, setIsLogisticShipper] = useState(false);
   const [isIndividualShipper, setIsIndividualShipper] = useState(false);
   const [isDriver, setIsDriver] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const router = useRouter();
 
@@ -74,6 +76,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       default:
         break;
     }
+    setIsLoading(false);
   }, [loggedUser]);
 
   useEffect(() => {
@@ -86,7 +89,9 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     }
   }, [isDarkMode]);
 
-  return (
+  return isLoading ? (
+    <Shimmer />
+  ) : (
     <div className={`flex bg-gray-50 text-gray-900 w-full min-h-screen ${
         isDarkMode ? "dark" : "light"
       }`} id="fordash" >
@@ -98,13 +103,17 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
       <main
         className={`flex flex-col w-full h-full bg-gray-100 pb-6 pr-2 ${
-          isDriver ? "max-w-[1200px] mx-auto py-14 pl-2 pr-2" : isSidebarCollapsed ? "md:pl-16" : "md:pl-64"
+          isDriver
+            ? "max-w-[1200px] mx-auto py-14 pl-2 pr-2"
+            : isSidebarCollapsed
+            ? "md:pl-16"
+            : "md:pl-64"
         }`}
       >
         {isDriver ? <DriverHeader /> : <Navbar />}
-        
-         {children}
-              
+
+        {children}
+
         {isDriver && <BottomNav />}
       </main>
     </div>

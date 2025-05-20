@@ -1,19 +1,31 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useLayoutEffect } from "react";
 import Heading from "@/app/util/Heading";
 import { getLoggedUserFromLS } from "@/app/util/getLoggedUserFromLS";
 import {
+  getActiveBidsByCarrierId,
   getBidsByLoadId,
   getLoads,
   getLoadsById,
   getTripsByLoadId,
 } from "@/state/api";
-import { Button, Card, Col, Row, Typography, Space, Tag, DatePicker, Select, Input } from "antd";
+import {
+  Button,
+  Card,
+  Col,
+  Row,
+  Typography,
+  Space,
+  Tag,
+  DatePicker,
+  Select,
+  Input,
+} from "antd";
 import { useRouter } from "next/navigation";
 import { EyeOutlined } from "@ant-design/icons";
-import { timeSincePosted } from "@/app/util/timeSincePosted";
+
 import { getStatusColor } from "@/app/util/statusColorLoads";
-import Title from "antd/es/typography/Title";
+import Shimmer from "../(components)/shimmerUi/Shimmer";
 
 interface Trips {
   id: string;
@@ -80,7 +92,9 @@ export default function Trips() {
   const [destinationInput, setDestinationInput] = useState("");
   const [loads, setLoads] = useState<ExtendedLoad[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isDriver, setIsDriver] = useState(false);
   const [loggedUser, setLoggedUser] = useState({ email: "", userId: "" });
+  const [isLoading, setIsLoading] = useState(true);
   const { Text } = Typography;
   const router = useRouter();
 
@@ -88,19 +102,30 @@ export default function Trips() {
     const user = getLoggedUserFromLS();
     if (user.type === "ADMIN") {
       setIsAdmin(true);
+    } else if (user.type === "INDIVIDUAL_DRIVER") {
+      setIsDriver(true);
     }
     setLoggedUser(user);
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (loggedUser?.userId) {
       const fetchData = async () => {
         try {
-          const currentUserLoads = isAdmin
-            ? await getLoads()
-            : await getLoadsById({
-                shipperId: loggedUser.userId,
-              });
+          let currentUserLoads;
+          if (isAdmin) {
+            currentUserLoads = await getLoads();
+          } else if (isDriver) {
+            const bids = await getActiveBidsByCarrierId(
+              getLoggedUserFromLS().userId
+            );
+            currentUserLoads = bids;
+            console.log(bids);
+          } else {
+            currentUserLoads = await getLoadsById({
+              shipperId: loggedUser.userId,
+            });
+          }
 
           const loadsWithDetails: ExtendedLoad[] = await Promise.all(
             currentUserLoads.map(async (load: Load) => {
@@ -113,6 +138,7 @@ export default function Trips() {
           );
 
           setLoads(loadsWithDetails);
+          setIsLoading(false);
         } catch (error) {
           console.error("Failed to fetch data: ", error);
         }
@@ -141,36 +167,31 @@ export default function Trips() {
         return <Tag color="default">Unknown</Tag>;
     }
   };
-  console.log(loads);
-  return (
+
+  return isLoading ? (
+    <Shimmer />
+  ) : (
     <>
-     <Row className="pr-4">
+      <Row className="pr-4">
         <Col span={24} md={6}>
           <Heading name="Trips" />
         </Col>
         <Col span={24} md={18}>
           <div className="flex md:justify-end gap-2 md:mt-0 overflow-auto ml-4">
-            <div className="page-filter-tabs active">              
-                5 All             
-            </div>
-            <div className="page-filter-tabs">
-            1 Not Started
-            </div>
-            <div className="page-filter-tabs">
-            2 InTransit
-            </div>
-            <div className="page-filter-tabs">
-               1 Completed
-            </div>                   
+            <div className="page-filter-tabs active">5 All</div>
+            <div className="page-filter-tabs">1 Not Started</div>
+            <div className="page-filter-tabs">2 InTransit</div>
+            <div className="page-filter-tabs">1 Completed</div>
           </div>
         </Col>
       </Row>
 
       <div className="main-content">
-      <div className="flex gap-4">
-          <DatePicker.RangePicker  />
+        <div className="flex gap-4">
+          <DatePicker.RangePicker />
 
-          <Input placeholder="Search Origin City"
+          <Input
+            placeholder="Search Origin City"
             value={originInput}
             onChange={(e) => setOriginInput(e.target.value)}
             style={{ width: 180 }}
@@ -198,30 +219,31 @@ export default function Trips() {
                   <Text className="bg-blue-200 p-1 px-2 text-sm rounded-r-md">
                     {timeSincePosted(load.createdAt)}
                   </Text> */}
-                  <div className="p-4 flex justify-between flex-col md:flex-row gap-y-4" >
-                    <div >
-                        <Text className ="labelStyle">Origin</Text><br />
-                        <Text className ="valueStyle">
-                          {formatLocation(load.origin)}
-                        </Text>
-                
-                    </div>
-                    <div >
-                        <Text className ="labelStyle">Destination</Text><br />
-                        <Text className ="valueStyle">
-                          {formatLocation(load.destination)}
-                        </Text>
-                            </div>
-                    <div >
-                      <Text className ="labelStyle">Cargo Type</Text>
+                  <div className="p-4 flex justify-between flex-col md:flex-row gap-y-4">
+                    <div>
+                      <Text className="labelStyle">Origin</Text>
                       <br />
-                      <Text className ="valueStyle">{load.cargoType}</Text>
+                      <Text className="valueStyle">
+                        {formatLocation(load.origin)}
+                      </Text>
                     </div>
-                    <div >
-                    {/* Display Bids */}
-                  {load.bids.length > 0 ? (
-                    <>
-                      {/* <Text strong >Bid : </Text>
+                    <div>
+                      <Text className="labelStyle">Destination</Text>
+                      <br />
+                      <Text className="valueStyle">
+                        {formatLocation(load.destination)}
+                      </Text>
+                    </div>
+                    <div>
+                      <Text className="labelStyle">Cargo Type</Text>
+                      <br />
+                      <Text className="valueStyle">{load.cargoType}</Text>
+                    </div>
+                    <div>
+                      {/* Display Bids */}
+                      {load.bids.length > 0 ? (
+                        <>
+                          {/* <Text strong >Bid : </Text>
                       <Text
                         className={`${getStatusColorForBids(
                           load.bids[0].status
@@ -235,40 +257,44 @@ export default function Trips() {
                           "Accepted "
                         )}
                       </Text> */}
-                      {load.bids.map((bid: Bid) => (
-                        <div key={bid.id} >
-                          <Text className ="labelStyle">Final Price:</Text><br/>
-                          <Text className ="valueStyle">
-                            ₹ {bid.negotiateShipperPrice} 
-                            {/* | Status:{" "} {bid.status} */}
+                          {load.bids.map((bid: Bid) => (
+                            <div key={bid.id}>
+                              <Text className="labelStyle">Final Price:</Text>
+                              <br />
+                              <Text className="valueStyle">
+                                ₹ {bid.negotiateShipperPrice}
+                                {/* | Status:{" "} {bid.status} */}
+                              </Text>
+                            </div>
+                          ))}
+                        </>
+                      ) : (
+                        <>
+                          <Text strong>Bid : </Text>
+                          <Text
+                            className={`${getStatusColor(
+                              load.status
+                            )} p-1 px-2 text-sm rounded-l-md`}
+                          >
+                            Fixed Price
                           </Text>
-                        </div>
-                      ))}
-                    </>
-                  ) : (
-                    <>
-                      <Text strong>Bid : </Text>
-                      <Text
-                        className={`${getStatusColorForBids(
-                          load.status
-                        )} p-1 px-2 text-sm rounded-l-md`}
-                      >
-                        Fixed Price
-                      </Text>
 
-                      <div key={load.id} className="border p-2 my-2 rounded">
-                        <Text>
-                          Final Price: ${load.price} | Status: {load.status}
-                        </Text>
-                      </div>
-                    </>
-                  )}
+                          <div
+                            key={load.id}
+                            className="border p-2 my-2 rounded"
+                          >
+                            <Text>
+                              Final Price: ${load.price} | Status: {load.status}
+                            </Text>
+                          </div>
+                        </>
+                      )}
                     </div>
-            
-                  {/* Display Trips */}
-                  {load.trips.length > 0 ? (
-                    <>
-                      {/* <Text strong>Trip : </Text>
+
+                    {/* Display Trips */}
+                    {load.trips.length > 0 ? (
+                      <>
+                        {/* <Text strong>Trip : </Text>
                       <Text
                         className={`${getStatusColorForTrips(
                           load.trips[0]?.status ?? "IN_PROGRESS"
@@ -284,31 +310,44 @@ export default function Trips() {
                             )
                           : "Not Assigned"}
                       </Text> */}
-                      {load.trips.map((trip: Trips, index) => (
-                        <div key={trip.id ?? index} className="flex justify-between gap-4" >
-                          <div >
-                          <Text className ="labelStyle">Trip Status </Text><br/>
-                          <Text className ="valueStyle">{renderTripStatus(trip.status ?? "IN_PROGRESS")}</Text>
+                        {load.trips.map((trip: Trips, index) => (
+                          <div
+                            key={trip.id ?? index}
+                            className="flex justify-between gap-4"
+                          >
+                            <div>
+                              <Text className="labelStyle">Trip Status </Text>
+                              <br />
+                              <Text className="valueStyle">
+                                {renderTripStatus(trip.status ?? "IN_PROGRESS")}
+                              </Text>
+                            </div>
+                            <div>
+                              <Text className="labelStyle">Trip Distance </Text>
+                              <br />
+                              <Text className="valueStyle">
+                                {trip.distance ?? 0} km
+                              </Text>
+                            </div>
+                            <div>
+                              <Text className="labelStyle">Trip Duration </Text>
+                              <br />
+                              <Text className="valueStyle">
+                                {trip.estimatedDuration ?? 0} Hours
+                              </Text>
+                            </div>
                           </div>
-                          <div >
-                          <Text className ="labelStyle">Trip Distance  </Text><br/>
-                          <Text className ="valueStyle">{trip.distance ?? 0} km</Text> 
-                          </div>
-                          <div >
-                          <Text className ="labelStyle">Trip Duration  </Text><br/>
-                          <Text className ="valueStyle">{trip.estimatedDuration ?? 0} Hours</Text>
-                          </div>    
-                        </div>
-                      ))}
-                    </>
-                  ) : (
-                    <Text>No trips assigned yet.</Text>
-                  )}
-                      <div>
-                      <EyeOutlined onClick={() => router.push(`/myloads/${load.id}`)} className="icon-button"/>
-              
-                    </div> 
-
+                        ))}
+                      </>
+                    ) : (
+                      <Text>No trips assigned yet.</Text>
+                    )}
+                    <div>
+                      <EyeOutlined
+                        onClick={() => router.push(`/myloads/${load.id}`)}
+                        className="icon-button"
+                      />
+                    </div>
                   </div>
                 </div>
               )
