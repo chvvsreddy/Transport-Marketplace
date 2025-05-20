@@ -1,87 +1,200 @@
 "use client";
 
-import React, { useState } from "react";
-import Heading from "@/app/util/Heading"
-import { Col, DatePicker, Row , Typography} from "antd";
-import {EyeOutlined } from "@ant-design/icons";
+import React, { useEffect, useState } from "react";
+import Heading from "@/app/util/Heading";
+import { Col, DatePicker, Row, Typography } from "antd";
+import { EyeOutlined, DownOutlined, UpOutlined } from "@ant-design/icons";
+import { getLoadBidPaymentTripByUserId } from "../../../state/api";
+import { getLoggedUserFromLS } from "@/app/util/getLoggedUserFromLS";
+import Shimmer from "../(components)/shimmerUi/Shimmer";
 
+export interface Payment {
+  id: string;
+  orderId?: string | null;
+  tripId?: string | null;
+  amount: number;
+  currency: string;
+  status: string;
+  method: string;
+  transactionId?: string | null;
+  metadata?: Record<string, any> | null;
+  createdAt: string;
+  updatedAt: string;
+}
 
-const payments = [
- { id : "pay_y5z6",tripId: "trp_5e6f", transactionId: "TXNTXN2025051241000" , amount: "20000",Status: "Success", time : "2025-05-02 17:45:00" },
- { id : "pay_w3x4",tripId: "trp_2c6d", transactionId: "TXNTXN2025051055022" , amount: "60000",Status: "Success", time : "2025-05-11 10:15:00" },
- { id : "pay_p6q7",tripId: "trp_3a4b", transactionId: "TXNTXN2025051025022" , amount: "40000",Status: "Success", time : "2025-05-11 10:15:00" }
-
-]
+interface LoadBidTripPayment {
+  load: any;
+  bid: any | null;
+  trip: any | null;
+  payments: Payment[];
+}
 
 export default function Payments() {
-   const { Text } = Typography;
-   const [originInput, setOriginInput] = useState("");
-    const [destinationInput, setDestinationInput] = useState("");
+  const { Text } = Typography;
+
+  const [data, setData] = useState<LoadBidTripPayment[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<"All" | "Pending" | "Completed">("All");
+  const [expandedTrips, setExpandedTrips] = useState<Record<string, boolean>>(
+    {}
+  );
+
+  const userId = getLoggedUserFromLS().userId;
+
+  useEffect(() => {
+    const fetchPayments = async () => {
+      setLoading(true);
+      try {
+        const result = await getLoadBidPaymentTripByUserId({ userId });
+        setData(result || []);
+      } catch (err: any) {
+        setError("Failed to load payments.");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (userId) fetchPayments();
+  }, [userId]);
+
+  const toggleTrip = (tripId: string) => {
+    setExpandedTrips((prev) => ({
+      ...prev,
+      [tripId]: !prev[tripId],
+    }));
+  };
+
   return (
     <>
-     <Row className="pr-4">
+      <Row className="pr-4">
         <Col span={24} md={6}>
           <Heading name="Payments" />
         </Col>
         <Col span={24} md={18}>
           <div className="flex md:justify-end gap-2 md:mt-0 overflow-auto ml-4">
-            <div className="page-filter-tabs active">              
-                5 All             
-            </div>
-            <div className="page-filter-tabs">
-                1 Pending
-            </div>
-            <div className="page-filter-tabs">
-                2 Completed
-            </div>           
+            {["All", "Pending", "Completed"].map((type) => (
+              <div
+                key={type}
+                onClick={() => setFilter(type as typeof filter)}
+                className={`px-3 py-1 rounded-md font-medium cursor-pointer whitespace-nowrap
+                  ${
+                    filter === type
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  }`}
+              >
+                {type}
+              </div>
+            ))}
           </div>
         </Col>
       </Row>
-      <div className="main-content">
-      <div className="flex gap-4">
-                <DatePicker.RangePicker  />
-      
-              
-              </div>
 
-          {(payments.length > 0) ? (
-              <>
-              {payments.map((payment) =>
-    
-              <div key={payment.id} className="box p-4 flex justify-between flex-col md:flex-row gap-y-4">
-                <div>
-                    <Text className="labelStyle">Transaction Id</Text><br/>
-                    <Text className="valueStyle">{payment.transactionId}</Text>
-               </div>
-               <div>
-                    <Text className="labelStyle">Trip Id</Text><br/>
-                    <Text className="valueStyle">{payment.tripId}</Text>
-               </div>
-               <div>
-                    <Text className="labelStyle">Amount</Text><br/>
-                    <Text className="valueStyle">{payment.amount}</Text>
-               </div>               
-               <div>
-                    <Text className="labelStyle">Time</Text><br/>
-                    <Text className="valueStyle">{payment.time}</Text>
-               </div>
-               <div>
-                    <Text className="labelStyle">Status</Text><br/>
-                    <Text className="valueStyle">{payment.Status}</Text>
-               </div>
-               <div>
-                      <EyeOutlined className="icon-button"/>
-              
-                    </div>
-                </div>
-              )}
-              </>
-          ): (
-            <p>No Transcation</p>
-          )}
-        
+      <div className="main-content px-4">
+        <div className="flex gap-4 mb-4">
+          <DatePicker.RangePicker />
+        </div>
+
+        {loading && (
+          <div className="text-gray-600">
+            <Shimmer />
+          </div>
+        )}
+        {error && <p className="text-red-500">{error}</p>}
+        {!loading && data.length === 0 && (
+          <p className="text-gray-500">No Transactions</p>
+        )}
+
+        {!loading &&
+          data.map(({ trip, payments }, idx) => {
+            const tripId = trip?.id ?? `no-trip-${idx}`;
+            const filteredPayments = payments.filter((payment) => {
+              if (filter === "All") return true;
+              return payment.status.toLowerCase() === filter.toLowerCase();
+            });
+
+            if (filteredPayments.length === 0) {
+              return null;
+            }
+
+            const isExpanded = expandedTrips[tripId] ?? false;
+
+            return (
+              <div
+                key={tripId}
+                className="mb-6 border border-gray-300 rounded-lg bg-gray-50 shadow-sm"
+              >
+                <button
+                  onClick={() => toggleTrip(tripId)}
+                  className="w-full px-4 py-3 flex justify-between items-center bg-white rounded-t-lg cursor-pointer"
+                  aria-expanded={isExpanded}
+                  aria-controls={`payments-list-${tripId}`}
+                >
+                  <span className="text-lg font-semibold text-gray-800">
+                    Trip ID: {tripId === `no-trip-${idx}` ? "N/A" : tripId}
+                  </span>
+                  <span className="text-blue-600">
+                    {isExpanded ? <UpOutlined /> : <DownOutlined />}
+                  </span>
+                </button>
+
+                {isExpanded && (
+                  <div
+                    id={`payments-list-${tripId}`}
+                    className="p-4 space-y-4 bg-white rounded-b-lg"
+                  >
+                    {filteredPayments.map((payment) => (
+                      <div
+                        key={payment.id}
+                        className="bg-white border border-gray-200 rounded-xl p-4 flex flex-col md:flex-row justify-between gap-y-4 shadow-sm"
+                      >
+                        <div>
+                          <p className="text-sm text-gray-500">
+                            Transaction ID
+                          </p>
+                          <p className="text-base font-semibold text-gray-800">
+                            {payment.transactionId || "N/A"}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">Amount</p>
+                          <p className="text-base font-semibold text-gray-800">
+                            {payment.amount} {payment.currency}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">Time</p>
+                          <p className="text-base font-semibold text-gray-800">
+                            {new Date(payment.createdAt).toLocaleString()}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">Status</p>
+                          <p
+                            className={`text-base font-semibold ${
+                              payment.status === "Completed"
+                                ? "text-green-600"
+                                : payment.status === "Pending"
+                                ? "text-yellow-600"
+                                : "text-gray-800"
+                            }`}
+                          >
+                            {payment.status}
+                          </p>
+                        </div>
+                        <div className="flex items-center">
+                          <EyeOutlined className="text-blue-500 text-xl cursor-pointer" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
       </div>
-      
     </>
   );
 }

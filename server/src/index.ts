@@ -21,6 +21,7 @@ import driverRoutes from "./routes/driverRoutes";
 import allBidsRoutes from "./routes/allBidsRoutes";
 import vehicleRoutes from "./routes/vehicleRoutes";
 import tripRoutes from "./routes/tripRoutes";
+import paymentRoutes from "./routes/paymentRoutes";
 
 // Configurations
 dotenv.config();
@@ -51,6 +52,7 @@ app.use("/driverLocation", driverRoutes);
 app.use("/bids&orders", allBidsRoutes);
 app.use("/trucks", vehicleRoutes);
 app.use("/trips", tripRoutes);
+app.use("/payments", paymentRoutes);
 
 // Socket.IO Configuration
 const io = new Server(server, {

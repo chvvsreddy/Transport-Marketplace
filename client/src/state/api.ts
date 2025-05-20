@@ -382,22 +382,21 @@ export const getLoadByLoadId = async (loadId: any) => {
   }
 };
 
-export const getActiveBidsByCarrierId = async(carrierId:string)=>{
-
-  try{
+export const getActiveBidsByCarrierId = async (carrierId: string) => {
+  try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/driverLocation`,
       {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({carrierId}),
+        body: JSON.stringify({ carrierId }),
       }
     );
     return response.json();
-  }catch(e){
+  } catch (e) {
     console.error(" got error in filter active bids by carrierId:", e);
   }
-}
+};
 export const getLoadByLoadIdForAdmin = async (loadId: any) => {
   try {
     const response = await fetch(
@@ -417,41 +416,56 @@ export const getLoadByLoadIdForAdmin = async (loadId: any) => {
   }
 };
 
-const getDistanceAndTimeBetweenTwoLocations = async (location: any) => {
+// const getDistanceAndTimeBetweenTwoLocations = async (location: any) => {
+//   try {
+//     const response = await fetch(
+//       `${process.env.NEXT_PUBLIC_OPEN_ROUTE_SERVICE_API}`,
+//       {
+//         method: "POST",
+//         headers: {
+//           Authorization: `${process.env.NEXT_PUBLIC_OPEN_ROUTE_SERVICE_API_KEY}`,
+//           "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify({ locations: location }),
+//       }
+//     );
+
+//     const data = await response.json();
+
+//     const distances = data.distances;
+//     const durations = data.durations;
+
+//     const distanceInKm = (distances[0][1] / 1000).toFixed(2);
+
+//     const totalSeconds = durations[0][1];
+//     const hours = Math.floor(totalSeconds / 3600);
+//     const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+//     const durationString = `${hours} hours ${minutes} minutes`;
+
+//     return {
+//       distanceInKm: Number(distanceInKm),
+//       duration: durationString,
+//     };
+//   } catch (error: any) {
+//     console.error("Error fetching matrix:", error.message);
+//     return null;
+//   }
+// };
+
+export const getLoadBidPaymentTripByUserId = async (obj: any) => {
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_OPEN_ROUTE_SERVICE_API}`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/payments`,
       {
         method: "POST",
-        headers: {
-          Authorization: `${process.env.NEXT_PUBLIC_OPEN_ROUTE_SERVICE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ locations: location }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(obj),
       }
     );
-
-    const data = await response.json();
-
-    const distances = data.distances;
-    const durations = data.durations;
-
-    const distanceInKm = (distances[0][1] / 1000).toFixed(2);
-
-    const totalSeconds = durations[0][1];
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-
-    const durationString = `${hours} hours ${minutes} minutes`;
-
-    return {
-      distanceInKm: Number(distanceInKm),
-      duration: durationString,
-    };
-  } catch (error: any) {
-    console.error("Error fetching matrix:", error.message);
-    return null;
+    return response.json();
+  } catch (error) {
+    console.log(error);
   }
 };
-
 export const { useGetAllLoadsQuery } = api;
