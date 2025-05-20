@@ -9,40 +9,13 @@ import { SocketProvider } from "../util/SocketContext";
 import { useRouter } from "next/navigation";
 import "@ant-design/v5-patch-for-react-19";
 
-const AdminSidebar = dynamic(
-  () => import("./(components)/admin/adminSidebar/adminsidebar"),
-  { ssr: false }
-);
-const IndividualShipperSidebar = dynamic(
-  () =>
-    import(
-      "./(components)/individualshipper/shipperSidebar/IndividualShipperSidebar"
-    ),
-  { ssr: false }
-);
-
-const Navbar = dynamic(() => import("@/app/util/Navbar/Navbar"), {
-  ssr: false,
-});
-
-const BottomNav = dynamic(() => import("../util/BottomNav"), {
-  ssr: false,
-});
-const DriverHeader = dynamic(() => import("../util/DriverHeader"), {
-  ssr: false,
-});
-const LogisticsShipperSidebar = dynamic(
-  () =>
-    import("./(components)/logisticshipper/logisticsSidebar/logisticsSidebar"),
-  { ssr: false }
-);
-const CompanyShipperSidebar = dynamic(
-  () =>
-    import(
-      "./(components)/companyshipper/shipperSidebar/CompanyShipperSidebar"
-    ),
-  { ssr: false }
-);
+const AdminSidebar = dynamic(() => import("./(components)/admin/adminSidebar/adminsidebar"),{ ssr: false });
+const IndividualShipperSidebar = dynamic(() =>import("./(components)/individualshipper/shipperSidebar/IndividualShipperSidebar"),{ ssr: false });
+const Navbar = dynamic(() => import("@/app/util/Navbar/Navbar"), {ssr: false,});
+const BottomNav = dynamic(() => import("../util/BottomNav"), {ssr: false,});
+const DriverHeader = dynamic(() => import("../util/DriverHeader"), {ssr: false,});
+const LogisticsShipperSidebar = dynamic(  () => import("./(components)/logisticshipper/logisticsSidebar/logisticsSidebar"),{ ssr: false });
+const CompanyShipperSidebar = dynamic(() => import( "./(components)/companyshipper/shipperSidebar/CompanyShipperSidebar" ),{ ssr: false });
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const isSidebarCollapsed = useAppSelector(
@@ -114,12 +87,10 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   }, [isDarkMode]);
 
   return (
-    <div
-      className={`flex bg-gray-50 text-gray-900 w-full min-h-screen ${
+    <div className={`flex bg-gray-50 text-gray-900 w-full min-h-screen ${
         isDarkMode ? "dark" : "light"
-      }`}
-      id="fordash"
-    >
+      }`} id="fordash" >
+        
       {isAdmin && <AdminSidebar />}
       {isIndividualShipper && <IndividualShipperSidebar />}
       {isLogisticShipper && <LogisticsShipperSidebar />}
