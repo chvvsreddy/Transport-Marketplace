@@ -122,23 +122,33 @@ export default function Payments() {
             const isExpanded = expandedTrips[tripId] ?? false;
 
             return (
-              <div
-                key={tripId}
-                className="mb-6 border border-gray-300 rounded-lg bg-gray-50 shadow-sm"
-              >
-                <button
-                  onClick={() => toggleTrip(tripId)}
-                  className="w-full px-4 py-3 flex justify-between items-center bg-white rounded-t-lg cursor-pointer"
-                  aria-expanded={isExpanded}
-                  aria-controls={`payments-list-${tripId}`}
-                >
-                  <span className="text-lg font-semibold text-gray-800">
-                    Trip ID: {tripId === `no-trip-${idx}` ? "N/A" : tripId}
-                  </span>
+              <div key={tripId} className="mb-6 border border-gray-300 rounded-lg bg-gray-50 shadow-sm" >
+                <div className="p-2 px-4 flex justify-between items-center flex-col md:flex-row">
+                <p className="valueStyle">
+                  {/* {load.origin.city} ➝ {load.destination.city} */}
+                  Hyderabad ➝ Narsipatnam
+                </p>
+                <p>
+                  <span className="labelStyle">Load ID</span>
+                  <br />
+                  <span className="valueStyle">4ee1b738-84de-4f09-8612-fd8782a1033e</span>
+                </p>
+                <p>
+                  <span className="labelStyle">Trip ID</span>
+                  <br />
+                  <span className="valueStyle">{tripId === `no-trip-${idx}` ? "N/A" : tripId}</span>
+                </p>
+                <button onClick={() => toggleTrip(tripId)} aria-expanded={isExpanded} aria-controls={`payments-list-${tripId}`} >                  
                   <span className="text-blue-600">
-                    {isExpanded ? <UpOutlined /> : <DownOutlined />}
+                    {isExpanded ? 
+                      <> Hide Transcations <UpOutlined /> 
+                      </> : 
+                      <> Show Transcations <UpOutlined /> 
+                      </> }
                   </span>
                 </button>
+                </div>
+             
 
                 {isExpanded && (
                   <div
@@ -151,29 +161,29 @@ export default function Payments() {
                         className="bg-white border border-gray-200 rounded-xl p-4 flex flex-col md:flex-row justify-between gap-y-4 shadow-sm"
                       >
                         <div>
-                          <p className="text-sm text-gray-500">
+                          <p className="labelStyle">
                             Transaction ID
                           </p>
-                          <p className="text-base font-semibold text-gray-800">
+                          <p className="valueStyle">
                             {payment.transactionId || "N/A"}
                           </p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-500">Amount</p>
-                          <p className="text-base font-semibold text-gray-800">
+                          <p className="labelStyle">Amount</p>
+                          <p className="valueStyle">
                             {payment.amount} {payment.currency}
                           </p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-500">Time</p>
-                          <p className="text-base font-semibold text-gray-800">
+                          <p className="labelStyle">Time</p>
+                          <p className="valueStyle">
                             {new Date(payment.createdAt).toLocaleString()}
                           </p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-500">Status</p>
+                          <p className="labelStyle">Status</p>
                           <p
-                            className={`text-base font-semibold ${
+                            className={`valueStyle ${
                               payment.status === "Completed"
                                 ? "text-green-600"
                                 : payment.status === "Pending"
@@ -185,7 +195,7 @@ export default function Payments() {
                           </p>
                         </div>
                         <div className="flex items-center">
-                          <EyeOutlined className="text-blue-500 text-xl cursor-pointer" />
+                          <EyeOutlined className="icon-button" />
                         </div>
                       </div>
                     ))}
