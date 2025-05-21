@@ -367,31 +367,30 @@ const Loads = () => {
 
           <Col span={24} md={12}>
             <div className="flex flex-wrap md:justify-end gap-2 mt-2 md:mt-0">
-              <div className="border border-neutral-300 px-3 py-2 rounded-md text-center">
-                <Title level={5} className="!mb-0 !text-base">
-                  {allData.length} All
-                </Title>
+              <div className="page-filter-tabs active">               
+                  {allData.length} All               
               </div>
-              <div className="border border-neutral-300 px-3 py-2 rounded-md text-center">
-                <Title level={5} className="!mb-0 !text-base">
+              <div className="page-filter-tabs">
                   {allData.length - countOfBid.length} Fixed Price
-                </Title>
               </div>
-              <div className="border border-neutral-300 px-3 py-2 rounded-md text-center">
-                <Title level={5} className="!mb-0 !text-base">
+              <div className="page-filter-tabs">   
                   {countOfBid.length < 10
                     ? `0${countOfBid.length}`
                     : countOfBid.length}{" "}
-                  Bid Price
-                </Title>
+                  Bid Price         
               </div>
             </div>
           </Col>
         </Row>
         <div className={`bg-white p-4 sm:m-4 rounded-xl shadow-md mt-4 `}>
+          <div className="flex justify-between">
           <h3 className="text-xl font-semibold mt-2 text-gray-700">
             Your Bids
           </h3>
+          <div className="bg-red-100 p-2 text-black rounded-md mb-2">
+              <b>2 Carriars</b> from <b>2 Bids</b> Responded.
+            </div>
+            </div>
           {countOfBid.length === 0 ? (
             <Empty description="You have not placed any bids yet." />
           ) : (

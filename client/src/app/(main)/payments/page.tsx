@@ -78,13 +78,7 @@ export default function Payments() {
               <div
                 key={type}
                 onClick={() => setFilter(type as typeof filter)}
-                className={`px-3 py-1 rounded-md font-medium cursor-pointer whitespace-nowrap
-                  ${
-                    filter === type
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                  }`}
-              >
+                className={`page-filter-tabs  cursor-pointer ${ filter === type  ? "active" : "" }`} >
                 {type}
               </div>
             ))}

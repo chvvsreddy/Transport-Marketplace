@@ -360,6 +360,7 @@ export default function BidsAndOthers() {
     <Shimmer />
   ) : (
     <>
+    
       <Row className="pr-4">
         <Col span={24} md={6}>
           <Heading name="Bids and Orders" />
@@ -381,6 +382,9 @@ export default function BidsAndOthers() {
       </Row>
 
       <div className="main-content">
+          <div className="bg-red-100 p-2 text-black rounded-md mb-2">
+              <b>2 Carriars</b> from <b>2 Bids</b> Responded.
+            </div>
         <div className="flex gap-4">
           <DatePicker.RangePicker onChange={handleDateChange} />
           <Select
