@@ -11,7 +11,7 @@ import {
   InputNumber,
   Form,
   Empty,
-  message,
+  message,Radio
 } from "antd";
 import React, { useState, useEffect, useContext, useLayoutEffect } from "react";
 import Heading from "@/app/util/Heading/index";
@@ -22,6 +22,8 @@ import { useRouter } from "next/navigation";
 import { timeSincePosted } from "@/app/util/timeSincePosted";
 import { getStatusColor } from "@/app/util/statusColorLoads";
 import Shimmer from "../(components)/shimmerUi/Shimmer";
+import type { CheckboxGroupProps } from 'antd/es/checkbox';
+
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -103,6 +105,12 @@ interface Load {
 
 const PAGE_SIZE = 5;
 
+const options: CheckboxGroupProps<string>['options'] = [
+  { label: 'Apple', value: 'Apple' },
+  { label: 'Pear', value: 'Pear' },
+  { label: 'Orange', value: 'Orange' },
+];
+
 const Loads = () => {
   const { data, isLoading, isError } = useGetAllLoadsQuery();
   const allLoads = data as Load[] | undefined;
@@ -116,9 +124,15 @@ const Loads = () => {
   const [selectedLoad, setSelectedLoad] = useState<Load | null>(null);
   const [bidPrice, setBidPrice] = useState<string>("");
   const [isLoadingSpin, setIsLoading] = useState(true);
+  const [open, setOpen] = React.useState<boolean>(true);
 
   const { socket } = useContext(SocketContext) || {};
   const router = useRouter();
+
+  const showLoading = () => {
+    setOpen(false);
+
+  };
 
   useLayoutEffect(() => {
     if (getLoggedUserFromLS().userId) {
@@ -711,6 +725,36 @@ const Loads = () => {
           </Form>
         </Modal>
       </div>
+
+      <Modal
+        title={<p>Load Confirmation</p>}
+        footer={
+          <Button type="primary" onClick={showLoading}>
+           Ok
+          </Button>
+        }
+        open={open}
+        onCancel={() => setOpen(false)}
+      >
+        <p><b>allahabad transport</b> has cofirmed you for the Load</p><br/>
+        <p>Attach Truck to that Load</p>
+        <div className="box flex justify-between">
+            <p>
+              <span className="labelStyle">Registration Number</span>
+              <br />
+              <span className="valueStyle">TN04 GH 3456</span>
+            </p>
+            <Radio></Radio>
+        </div>
+        <div className="box flex justify-between">
+            <p>
+              <span className="labelStyle">Registration Number</span>
+              <br />
+              <span className="valueStyle">TN04 GH 3456</span>
+            </p>
+            <Radio></Radio>
+        </div>
+      </Modal>
     </>
   );
 };
