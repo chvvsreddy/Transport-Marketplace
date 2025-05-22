@@ -13,7 +13,6 @@ import {
 import { ArrowDownCircle, Edit } from "lucide-react";
 import { useRouter, useParams, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-
 import { UploadOutlined } from "@ant-design/icons";
 import type { UploadProps } from "antd";
 import { Button, Upload } from "antd";
@@ -150,7 +149,7 @@ export default function SingleLoad() {
     async function fetchData() {
       if (bids.length > 0) {
         const activeBid: any = bids.find((b: any) => b.status === "ACCEPTED");
-        const user = await getUser(activeBid.carrierId);
+        const user = await getUser(activeBid?.carrierId);
         setUserActive(user);
         setBidActive(activeBid);
       }

@@ -11,19 +11,24 @@ import {
   InputNumber,
   Form,
   Empty,
-  message,Radio
+  message,
+  Radio,
 } from "antd";
 import React, { useState, useEffect, useContext, useLayoutEffect } from "react";
 import Heading from "@/app/util/Heading/index";
-import { createBid, getBids, useGetAllLoadsQuery } from "@/state/api";
+import {
+  createBid,
+  getBids,
+  getLoadByLoadIdForAdmin,
+  useGetAllLoadsQuery,
+} from "@/state/api";
 import { getLoggedUserFromLS } from "@/app/util/getLoggedUserFromLS";
 import { SocketContext } from "@/app/util/SocketContext";
 import { useRouter } from "next/navigation";
 import { timeSincePosted } from "@/app/util/timeSincePosted";
 import { getStatusColor } from "@/app/util/statusColorLoads";
 import Shimmer from "../(components)/shimmerUi/Shimmer";
-import type { CheckboxGroupProps } from 'antd/es/checkbox';
-
+import type { CheckboxGroupProps } from "antd/es/checkbox";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -102,14 +107,23 @@ interface Load {
   price: number;
   createdAt: string;
 }
+interface Load {
+  id: string;
+  origin: Location;
+  destination: Location;
+  shipperId: string;
+  status: string;
+  cargoType: string;
+  weight: number;
+  bidPrice: number;
+  price: number;
+  createdAt: string;
+  pickupWindowStart: string;
+  specialRequirements: string;
+  deliveryWindowEnd: string;
+}
 
 const PAGE_SIZE = 5;
-
-const options: CheckboxGroupProps<string>['options'] = [
-  { label: 'Apple', value: 'Apple' },
-  { label: 'Pear', value: 'Pear' },
-  { label: 'Orange', value: 'Orange' },
-];
 
 const Loads = () => {
   const { data, isLoading, isError } = useGetAllLoadsQuery();
@@ -131,7 +145,6 @@ const Loads = () => {
 
   const showLoading = () => {
     setOpen(false);
-
   };
 
   useLayoutEffect(() => {
@@ -169,7 +182,7 @@ const Loads = () => {
                 state: stateName,
               };
               setLocation(updatedLocation);
-              setIsLoading(false);
+
               if (selectedState) {
                 const filtered = allData.filter(
                   (load) =>
@@ -201,6 +214,7 @@ const Loads = () => {
     };
 
     fetchBidsAndSetInitialLoads();
+    setIsLoading(false);
   }, [allData]);
 
   useEffect(() => {
@@ -227,6 +241,7 @@ const Loads = () => {
         "receiveUpdatedBidStatus",
         "receiveNewBid",
         "receiveAfterDriverBidViaSocket",
+        "receiveFixedLoad",
       ];
       events.forEach((event) => socket.on(event, updateBidState));
 
@@ -308,25 +323,52 @@ const Loads = () => {
     message.success("bid updated success");
   };
 
-  const acceptBidWithoutBid = (bidId: string, loadId: string) => {
-    //Directly create trip
+  const acceptBidWithoutBid: any = async (
+    idOfLoad: string,
+    loadShipperId: string
+  ) => {
+    try {
+      const getLoad = await getLoadByLoadIdForAdmin(idOfLoad);
+
+      if (getLoad.status === "AVAILABLE") {
+        socket?.emit("fixedAcceptLoad", {
+          loadId: idOfLoad,
+          toUser: loadShipperId,
+          fromUser: getLoggedUserFromLS().userId,
+        });
+      } else {
+        message.error("load already assigned to someone");
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   //accept btn
   const handleBidStatus = async (bidId: string, loadId: string) => {
-    const currentBid = Bids.find((bid) => bid.id === bidId);
-    const findUserIdByLoad = allLoads?.find(
-      (load) => load.id === currentBid?.loadId
-    );
-    socket?.emit("updateBidStatus", {
-      bidId,
-      shipperId: getLoggedUserFromLS().userId,
-      loadId,
-      toUser:
-        getLoggedUserFromLS().type === "INDIVIDUAL_DRIVER"
-          ? findUserIdByLoad?.shipperId
-          : currentBid?.carrierId,
-    });
+    try {
+      const getLoad = await getLoadByLoadIdForAdmin(loadId);
+
+      if (getLoad.status === "AVAILABLE") {
+        const currentBid = Bids.find((bid) => bid.id === bidId);
+        const findUserIdByLoad = allLoads?.find(
+          (load) => load.id === currentBid?.loadId
+        );
+        socket?.emit("updateBidStatus", {
+          bidId,
+          shipperId: getLoggedUserFromLS().userId,
+          loadId,
+          toUser:
+            getLoggedUserFromLS().type === "INDIVIDUAL_DRIVER"
+              ? findUserIdByLoad?.shipperId
+              : currentBid?.carrierId,
+        });
+      } else {
+        message.error("load already assigned to someone");
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   if (isLoading)
@@ -367,39 +409,37 @@ const Loads = () => {
 
           <Col span={24} md={12}>
             <div className="flex flex-wrap md:justify-end gap-2 mt-2 md:mt-0">
-              <div className="page-filter-tabs active">               
-                  {allData.length} All               
+              <div className="page-filter-tabs active">
+                {allData.length} All
               </div>
               <div className="page-filter-tabs">
-                  {allData.length - countOfBid.length} Fixed Price
+                {allData.length - countOfBid.length} Fixed Price
               </div>
-              <div className="page-filter-tabs">   
-                  {countOfBid.length < 10
-                    ? `0${countOfBid.length}`
-                    : countOfBid.length}{" "}
-                  Bid Price         
+              <div className="page-filter-tabs">
+                {countOfBid.length < 10
+                  ? `0${countOfBid.length}`
+                  : countOfBid.length}{" "}
+                Bid Price
               </div>
             </div>
           </Col>
         </Row>
         <div className={`bg-white p-4 sm:m-4 rounded-xl shadow-md mt-4 `}>
           <div className="flex justify-between">
-          <h3 className="text-xl font-semibold mt-2 text-gray-700">
-            Your Bids
-          </h3>
-          <div className="bg-red-100 p-2 text-black rounded-md mb-2">
+            <h3 className="text-xl font-semibold mt-2 text-gray-700">
+              Your Bids
+            </h3>
+            <div className="bg-red-100 p-2 text-black rounded-md mb-2">
               <b>2 Carriars</b> from <b>2 Bids</b> Responded.
             </div>
-            </div>
+          </div>
           {countOfBid.length === 0 ? (
             <Empty description="You have not placed any bids yet." />
           ) : (
             Bids.map((bid) => {
-              const load = allData.find((l) => l.id === bid.loadId);
+              const load: any = allData.find((l) => l.id === bid.loadId);
               if (!load) return null;
-              const isBidLoad =
-                load.bidPrice > 0 &&
-                bid.carrierId === getLoggedUserFromLS().userId;
+              const isBidLoad = bid.carrierId === getLoggedUserFromLS().userId;
               return (
                 isBidLoad && (
                   <div
@@ -481,8 +521,8 @@ const Loads = () => {
                                 Load accepted by shipper
                               </span>
                             )}
-
-                          {bid.isDriverAccepted === false &&
+                          {load.status === "AVAILABLE" &&
+                            bid.isDriverAccepted === false &&
                             bid.negotiateDriverPrice > 0 &&
                             bid.negotiateShipperPrice > 0 && (
                               <Button
@@ -492,13 +532,22 @@ const Loads = () => {
                                 Accept
                               </Button>
                             )}
+                          {load.status === "ASSIGNED" &&
+                            bid.isDriverAccepted === false &&
+                            bid.negotiateDriverPrice > 0 &&
+                            bid.negotiateShipperPrice > 0 && (
+                              <span className="max-h-10 text-red-800 text-sm">
+                                Load assigned by someone
+                              </span>
+                            )}
+                         
                           {bid.negotiateDriverPrice == 0 &&
                             bid.negotiateShipperPrice == 0 && (
                               <>
                                 <Button
                                   className="button-primary max-h-10"
                                   onClick={() =>
-                                    acceptBidWithoutBid(bid.id, load.id)
+                                    acceptBidWithoutBid(load.id, load.shipperId)
                                   }
                                 >
                                   Accept
@@ -548,7 +597,9 @@ const Loads = () => {
               const isBidLoad = load.bidPrice > 0;
               const isFixedLoad = load.bidPrice === 0 && load.price > 0;
               const currentUserBid: Bid | any = Bids.find(
-                (bid) => bid.loadId === load.id
+                (bid) =>
+                  bid.loadId === load.id &&
+                  bid.carrierId === getLoggedUserFromLS().userId
               );
 
               return (
@@ -600,10 +651,12 @@ const Loads = () => {
                   </Text>
 
                   <div className="flex justify-end">
-                    {isFixedLoad && (
+                    {isFixedLoad && !currentUserBid && (
                       <Button
                         className="button-primary max-h-10"
-                        onClick={() => {}}
+                        onClick={() => {
+                          acceptBidWithoutBid(load.id, load.shipperId);
+                        }}
                       >
                         Accept
                       </Button>
@@ -642,7 +695,7 @@ const Loads = () => {
                             <Button
                               className="button-primary max-h-10"
                               onClick={() =>
-                                acceptBidWithoutBid(currentUserBid?.id, load.id)
+                                acceptBidWithoutBid(load.id, load.shipperId)
                               }
                             >
                               Accept
@@ -729,29 +782,32 @@ const Loads = () => {
         title={<p>Load Confirmation</p>}
         footer={
           <Button type="primary" onClick={showLoading}>
-           Ok
+            Ok
           </Button>
         }
         open={open}
         onCancel={() => setOpen(false)}
       >
-        <p><b>allahabad transport</b> has cofirmed you for the Load</p><br/>
+        <p>
+          <b>allahabad transport</b> has cofirmed you for the Load
+        </p>
+        <br />
         <p>Attach Truck to that Load</p>
         <div className="box flex justify-between">
-            <p>
-              <span className="labelStyle">Registration Number</span>
-              <br />
-              <span className="valueStyle">TN04 GH 3456</span>
-            </p>
-            <Radio></Radio>
+          <p>
+            <span className="labelStyle">Registration Number</span>
+            <br />
+            <span className="valueStyle">TN04 GH 3456</span>
+          </p>
+          <Radio></Radio>
         </div>
         <div className="box flex justify-between">
-            <p>
-              <span className="labelStyle">Registration Number</span>
-              <br />
-              <span className="valueStyle">TN04 GH 3456</span>
-            </p>
-            <Radio></Radio>
+          <p>
+            <span className="labelStyle">Registration Number</span>
+            <br />
+            <span className="valueStyle">TN04 GH 3456</span>
+          </p>
+          <Radio></Radio>
         </div>
       </Modal>
     </>

@@ -149,6 +149,7 @@ export default function BidsAndOthers() {
       "receiveUpdatedBidStatus",
       "receiveNewBid",
       "receiveAfterDriverBidViaSocket",
+      "receiveFixedLoad",
     ];
     events.forEach((event) => socket.on(event, handleBidPrice));
 

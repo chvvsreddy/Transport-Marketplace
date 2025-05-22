@@ -9,18 +9,7 @@ import {
   getLoadsById,
   getTripsByLoadId,
 } from "@/state/api";
-import {
-  Button,
-  Card,
-  Col,
-  Row,
-  Typography,
-  Space,
-  Tag,
-  DatePicker,
-  Select,
-  Input,
-} from "antd";
+import { Button, Col, Row, Typography, Tag, DatePicker, Input } from "antd";
 import { useRouter } from "next/navigation";
 import { EyeOutlined } from "@ant-design/icons";
 
@@ -98,6 +87,10 @@ export default function Trips() {
   const { Text } = Typography;
   const router = useRouter();
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 4;
+
   useEffect(() => {
     const user = getLoggedUserFromLS();
     if (user.type === "ADMIN") {
@@ -120,7 +113,6 @@ export default function Trips() {
               getLoggedUserFromLS().userId
             );
             currentUserLoads = bids;
-            console.log(bids);
           } else {
             currentUserLoads = await getLoadsById({
               shipperId: loggedUser.userId,
@@ -147,11 +139,26 @@ export default function Trips() {
     }
   }, [loggedUser]);
 
-  const formatLocation = (location: Location) => {
-    return `${location.city ?? ""}, ${location.state ?? ""}, ${
+  const totalPages = Math.ceil(
+    loads.filter((l) => l.status === "ASSIGNED").length / pageSize
+  );
+
+  const paginatedLoads = loads
+    .filter((load) => load.status === "ASSIGNED")
+    .slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  const handleNext = () => {
+    if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+  };
+
+  const handlePrev = () => {
+    if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+  };
+
+  const formatLocation = (location: Location) =>
+    `${location.city ?? ""}, ${location.state ?? ""}, ${
       location.country ?? ""
     }`;
-  };
 
   const renderTripStatus = (status: string) => {
     switch (status) {
@@ -187,9 +194,8 @@ export default function Trips() {
       </Row>
 
       <div className="main-content">
-        <div className="flex gap-4">
+        <div className="flex gap-4 mb-4">
           <DatePicker.RangePicker />
-
           <Input
             placeholder="Search Origin City"
             value={originInput}
@@ -203,157 +209,118 @@ export default function Trips() {
             style={{ width: 200 }}
           />
         </div>
-        {loads.length > 0 ? (
-          loads.map(
-            (load) =>
-              load.status === "ASSIGNED" && (
-                <div key={load.id} className="box !p-0">
-                  {/* <Text className ="valueStyle">Load : </Text>
-                  <Text
-                    className={`${getStatusColor(
-                      load.status
-                    )} p-1 px-2 text-sm rounded-l-md`}
-                  >
-                    {load.status}
+
+        {paginatedLoads.length > 0 ? (
+          paginatedLoads.map((load) => (
+            <div key={load.id} className="box !p-0 mb-4">
+              <div className="p-4 flex justify-between flex-col md:flex-row gap-y-4">
+                <div>
+                  <Text className="labelStyle">Origin</Text>
+                  <br />
+                  <Text className="valueStyle">
+                    {formatLocation(load.origin)}
                   </Text>
-                  <Text className="bg-blue-200 p-1 px-2 text-sm rounded-r-md">
-                    {timeSincePosted(load.createdAt)}
-                  </Text> */}
-                  <div className="p-4 flex justify-between flex-col md:flex-row gap-y-4">
-                    <div>
-                      <Text className="labelStyle">Origin</Text>
-                      <br />
-                      <Text className="valueStyle">
-                        {formatLocation(load.origin)}
-                      </Text>
-                    </div>
-                    <div>
-                      <Text className="labelStyle">Destination</Text>
-                      <br />
-                      <Text className="valueStyle">
-                        {formatLocation(load.destination)}
-                      </Text>
-                    </div>
-                    <div>
-                      <Text className="labelStyle">Cargo Type</Text>
-                      <br />
-                      <Text className="valueStyle">{load.cargoType}</Text>
-                    </div>
-                    <div>
-                      {/* Display Bids */}
-                      {load.bids.length > 0 ? (
-                        <>
-                          {/* <Text strong >Bid : </Text>
-                      <Text
-                        className={`${getStatusColorForBids(
-                          load.bids[0].status
-                        )} p-1 px-2 text-sm rounded-l-md`}
-                      >
-                        {load.bids[0].status}
-                      </Text>
-                      <Text className="bg-blue-200 p-1 px-2 text-sm rounded-r-md">
-                        {timeSincePosted(load.bids[0].createdAt).replace(
-                          "Posted",
-                          "Accepted "
-                        )}
-                      </Text> */}
-                          {load.bids.map((bid: Bid) => (
-                            <div key={bid.id}>
-                              <Text className="labelStyle">Final Price:</Text>
-                              <br />
-                              <Text className="valueStyle">
-                                ₹ {bid.negotiateShipperPrice}
-                                {/* | Status:{" "} {bid.status} */}
-                              </Text>
-                            </div>
-                          ))}
-                        </>
-                      ) : (
-                        <>
-                          <Text strong>Bid : </Text>
-                          <Text
-                            className={`${getStatusColor(
-                              load.status
-                            )} p-1 px-2 text-sm rounded-l-md`}
-                          >
-                            Fixed Price
-                          </Text>
-
-                          <div
-                            key={load.id}
-                            className="border p-2 my-2 rounded"
-                          >
-                            <Text>
-                              Final Price: ${load.price} | Status: {load.status}
-                            </Text>
-                          </div>
-                        </>
-                      )}
-                    </div>
-
-                    {/* Display Trips */}
-                    {load.trips.length > 0 ? (
-                      <>
-                        {/* <Text strong>Trip : </Text>
-                      <Text
-                        className={`${getStatusColorForTrips(
-                          load.trips[0]?.status ?? "IN_PROGRESS"
-                        )} p-1 px-2 text-sm rounded-l-md`}
-                      >
-                        {load.trips[0]?.status ?? "IN_PROGRESS"}
-                      </Text>
-                      <Text className="bg-blue-200 p-1 px-2 text-sm rounded-r-md">
-                        {load.trips[0]?.createdAt
-                          ? timeSincePosted(load.trips[0].createdAt).replace(
-                              "Posted",
-                              "Accepted"
-                            )
-                          : "Not Assigned"}
-                      </Text> */}
-                        {load.trips.map((trip: Trips, index) => (
-                          <div
-                            key={trip.id ?? index}
-                            className="flex justify-between gap-4"
-                          >
-                            <div>
-                              <Text className="labelStyle">Trip Status </Text>
-                              <br />
-                              <Text className="valueStyle">
-                                {renderTripStatus(trip.status ?? "IN_PROGRESS")}
-                              </Text>
-                            </div>
-                            <div>
-                              <Text className="labelStyle">Trip Distance </Text>
-                              <br />
-                              <Text className="valueStyle">
-                                {trip.distance ?? 0} km
-                              </Text>
-                            </div>
-                            <div>
-                              <Text className="labelStyle">Trip Duration </Text>
-                              <br />
-                              <Text className="valueStyle">
-                                {trip.estimatedDuration ?? 0} Hours
-                              </Text>
-                            </div>
-                          </div>
-                        ))}
-                      </>
-                    ) : (
-                      <Text>No trips assigned yet.</Text>
-                    )}
-                    <div>
-                      <EyeOutlined
-                        onClick={() => router.push(`/myloads/${load.id}`)}
-                        className="icon-button"
-                      />
-                    </div>
-                  </div>
                 </div>
-              )
-          )
+                <div>
+                  <Text className="labelStyle">Destination</Text>
+                  <br />
+                  <Text className="valueStyle">
+                    {formatLocation(load.destination)}
+                  </Text>
+                </div>
+                <div>
+                  <Text className="labelStyle">Cargo Type</Text>
+                  <br />
+                  <Text className="valueStyle">{load.cargoType}</Text>
+                </div>
+                <div>
+                  {load.bids.length > 0 ? (
+                    load.bids.map((bid: Bid) => (
+                      <div key={bid.id}>
+                        <Text className="labelStyle">Final Price:</Text>
+                        <br />
+                        <Text className="valueStyle">
+                          ₹ {bid.negotiateShipperPrice}
+                        </Text>
+                      </div>
+                    ))
+                  ) : (
+                    <div>
+                      <Text strong>Bid : </Text>
+                      <Text
+                        className={`${getStatusColor(
+                          load.status
+                        )} p-1 px-2 text-sm rounded-l-md`}
+                      >
+                        Fixed Price
+                      </Text>
+                      <div className="border p-2 my-2 rounded">
+                        <Text>
+                          Final Price: ₹{load.price} | Status: {load.status}
+                        </Text>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  {load.trips.length > 0 ? (
+                    load.trips.map((trip: Trips) => (
+                      <div key={trip.id} className="flex justify-between gap-4">
+                        <div>
+                          <Text className="labelStyle">Trip Status</Text>
+                          <br />
+                          <Text className="valueStyle">
+                            {renderTripStatus(trip.status)}
+                          </Text>
+                        </div>
+                        <div>
+                          <Text className="labelStyle">Trip Distance</Text>
+                          <br />
+                          <Text className="valueStyle">
+                            {trip.distance ?? 0} km
+                          </Text>
+                        </div>
+                        <div>
+                          <Text className="labelStyle">Trip Duration</Text>
+                          <br />
+                          <Text className="valueStyle">
+                            {trip.estimatedDuration ?? 0} Hours
+                          </Text>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <Text>No trips assigned yet.</Text>
+                  )}
+                </div>
+
+                <div>
+                  <EyeOutlined
+                    onClick={() => router.push(`/myloads/${load.id}`)}
+                    className="icon-button"
+                  />
+                </div>
+              </div>
+            </div>
+          ))
         ) : (
           <p>No trips found.</p>
+        )}
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex justify-center mt-6 items-center gap-4">
+            <Button onClick={handlePrev} disabled={currentPage === 1}>
+              Prev
+            </Button>
+            <Text>
+              Page {currentPage} of {totalPages}
+            </Text>
+            <Button onClick={handleNext} disabled={currentPage === totalPages}>
+              Next
+            </Button>
+          </div>
         )}
       </div>
     </>

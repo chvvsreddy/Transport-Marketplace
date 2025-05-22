@@ -144,76 +144,75 @@ io.on("connection", (socket) => {
               statusField === "isShipperAccepted" ? "ASSIGNED" : "AVAILABLE",
           },
         });
-        if (
-          updatedBidStatus.isDriverAccepted &&
-          updatedBidStatus.isShipperAccepted
-        ) {
-          const driverVehicle = await prisma.vehicle.findFirst({
-            where: {
-              ownerId: updatedBidStatus.carrierId,
-            },
-          });
+        // if (
+        //   updatedBidStatus.isDriverAccepted &&
+        //   updatedBidStatus.isShipperAccepted
+        // ) {
+        //   const driverVehicle = await prisma.vehicle.findFirst({
+        //     where: {
+        //       ownerId: updatedBidStatus.carrierId,
+        //     },
+        //   });
 
-          // Validate vehicle existence
-          if (!driverVehicle) {
-            console.error(
-              `No vehicle found for driver ID: ${updatedBidStatus.carrierId}`
-            );
-            return;
-          }
+        //   // Validate vehicle existence
+        //   if (!driverVehicle) {
+        //     console.error(
+        //       `No vehicle found for driver ID: ${updatedBidStatus.carrierId}`
+        //     );
+        //     return;
+        //   }
 
-          // Fetch load origin and destination
-          const load = await prisma.loads.findUnique({
-            where: { id: loadId },
-          });
+        //   // Fetch load origin and destination
+        //   const load = await prisma.loads.findUnique({
+        //     where: { id: loadId },
+        //   });
 
-          const originData =
-            typeof load?.origin === "string"
-              ? JSON.parse(load.origin)
-              : load?.origin;
+        //   const originData =
+        //     typeof load?.origin === "string"
+        //       ? JSON.parse(load.origin)
+        //       : load?.origin;
 
-          const destinationData =
-            typeof load?.destination === "string"
-              ? JSON.parse(load.destination)
-              : load?.destination;
+        //   const destinationData =
+        //     typeof load?.destination === "string"
+        //       ? JSON.parse(load.destination)
+        //       : load?.destination;
 
-          // Validate coordinates
-          if (
-            !originData?.lat ||
-            !originData?.lng ||
-            !destinationData?.lat ||
-            !destinationData?.lng
-          ) {
-            console.error("Missing origin or destination coordinates.");
-            return;
-          }
+        //   // Validate coordinates
+        //   if (
+        //     !originData?.lat ||
+        //     !originData?.lng ||
+        //     !destinationData?.lat ||
+        //     !destinationData?.lng
+        //   ) {
+        //     console.error("Missing origin or destination coordinates.");
+        //     return;
+        //   }
 
-          // Create Trip with proper structure
-          const createTrip = await prisma.trips.create({
-            data: {
-              driverId: updatedBidStatus.carrierId,
-              loadId,
-              vehicleId: driverVehicle.id,
-              estimatedDuration: 0.0,
-              distance: 0.0,
-              plannedRoute: {
-                distance: 0,
-                waypoints: [
-                  {
-                    lat: originData.lat,
-                    lng: originData.lng,
-                  },
-                  {
-                    lat: destinationData.lat,
-                    lng: destinationData.lng,
-                  },
-                ],
-              },
-            },
-          });
+        //   const createTrip = await prisma.trips.create({
+        //     data: {
+        //       driverId: updatedBidStatus.carrierId,
+        //       loadId,
+        //       vehicleId: driverVehicle.id,
+        //       estimatedDuration: 0.0,
+        //       distance: 0.0,
+        //       plannedRoute: {
+        //         distance: 0,
+        //         waypoints: [
+        //           {
+        //             lat: originData.lat,
+        //             lng: originData.lng,
+        //           },
+        //           {
+        //             lat: destinationData.lat,
+        //             lng: destinationData.lng,
+        //           },
+        //         ],
+        //       },
+        //     },
+        //   });
 
-          console.log("Trip created successfully:", createTrip);
-        }
+        //   console.log("Trip created successfully:", createTrip);
+        // }
         io.to(fromUserSocketId).emit(
           "receiveUpdatedBidPrice",
           updatedBidStatus
@@ -238,76 +237,75 @@ io.on("connection", (socket) => {
         },
       });
 
-      if (
-        updatedBidStatus.isDriverAccepted &&
-        updatedBidStatus.isShipperAccepted
-      ) {
-        const driverVehicle = await prisma.vehicle.findFirst({
-          where: {
-            ownerId: updatedBidStatus.carrierId,
-          },
-        });
+      // if (
+      //   updatedBidStatus.isDriverAccepted &&
+      //   updatedBidStatus.isShipperAccepted
+      // ) {
+      //   const driverVehicle = await prisma.vehicle.findFirst({
+      //     where: {
+      //       ownerId: updatedBidStatus.carrierId,
+      //     },
+      //   });
 
-        // Validate vehicle existence
-        if (!driverVehicle) {
-          console.error(
-            `No vehicle found for driver ID: ${updatedBidStatus.carrierId}`
-          );
-          return;
-        }
+      //   // Validate vehicle existence
+      //   if (!driverVehicle) {
+      //     console.error(
+      //       `No vehicle found for driver ID: ${updatedBidStatus.carrierId}`
+      //     );
+      //     return;
+      //   }
 
-        // Fetch load origin and destination
-        const load = await prisma.loads.findUnique({
-          where: { id: loadId },
-        });
+      //   // Fetch load origin and destination
+      //   const load = await prisma.loads.findUnique({
+      //     where: { id: loadId },
+      //   });
 
-        const originData =
-          typeof load?.origin === "string"
-            ? JSON.parse(load.origin)
-            : load?.origin;
+      //   const originData =
+      //     typeof load?.origin === "string"
+      //       ? JSON.parse(load.origin)
+      //       : load?.origin;
 
-        const destinationData =
-          typeof load?.destination === "string"
-            ? JSON.parse(load.destination)
-            : load?.destination;
+      //   const destinationData =
+      //     typeof load?.destination === "string"
+      //       ? JSON.parse(load.destination)
+      //       : load?.destination;
 
-        // Validate coordinates
-        if (
-          !originData?.lat ||
-          !originData?.lng ||
-          !destinationData?.lat ||
-          !destinationData?.lng
-        ) {
-          console.error("Missing origin or destination coordinates.");
-          return;
-        }
+      //   // Validate coordinates
+      //   if (
+      //     !originData?.lat ||
+      //     !originData?.lng ||
+      //     !destinationData?.lat ||
+      //     !destinationData?.lng
+      //   ) {
+      //     console.error("Missing origin or destination coordinates.");
+      //     return;
+      //   }
 
-        // Create Trip with proper structure
-        const createTrip = await prisma.trips.create({
-          data: {
-            driverId: updatedBidStatus.carrierId,
-            loadId,
-            vehicleId: driverVehicle.id,
-            estimatedDuration: 0.0,
-            distance: 0.0,
-            plannedRoute: {
-              distance: 0,
-              waypoints: [
-                {
-                  lat: originData.lat,
-                  lng: originData.lng,
-                },
-                {
-                  lat: destinationData.lat,
-                  lng: destinationData.lng,
-                },
-              ],
-            },
-          },
-        });
+      //   const createTrip = await prisma.trips.create({
+      //     data: {
+      //       driverId: updatedBidStatus.carrierId,
+      //       loadId,
+      //       vehicleId: driverVehicle.id,
+      //       estimatedDuration: 0.0,
+      //       distance: 0.0,
+      //       plannedRoute: {
+      //         distance: 0,
+      //         waypoints: [
+      //           {
+      //             lat: originData.lat,
+      //             lng: originData.lng,
+      //           },
+      //           {
+      //             lat: destinationData.lat,
+      //             lng: destinationData.lng,
+      //           },
+      //         ],
+      //       },
+      //     },
+      //   });
 
-        console.log("Trip created successfully:", createTrip);
-      }
+      //   console.log("Trip created successfully:", createTrip);
+      // }
 
       console.log(updatedBidStatus);
 
@@ -350,71 +348,71 @@ io.on("connection", (socket) => {
             status: "ASSIGNED",
           },
         });
-        const driverVehicle = await prisma.vehicle.findFirst({
-          where: {
-            ownerId: updateBid.carrierId,
-          },
-        });
+        // const driverVehicle = await prisma.vehicle.findFirst({
+        //   where: {
+        //     ownerId: updateBid.carrierId,
+        //   },
+        // });
 
         // Validate vehicle existence
-        if (!driverVehicle) {
-          console.error(
-            `No vehicle found for driver ID: ${updateBid.carrierId}`
-          );
-          return;
-        }
+        // if (!driverVehicle) {
+        //   console.error(
+        //     `No vehicle found for driver ID: ${updateBid.carrierId}`
+        //   );
+        //   return;
+        // }
 
-        // Fetch load origin and destination
-        const load = await prisma.loads.findUnique({
-          where: { id: loadId },
-        });
+        // // Fetch load origin and destination
+        // const load = await prisma.loads.findUnique({
+        //   where: { id: loadId },
+        // });
 
-        const originData =
-          typeof load?.origin === "string"
-            ? JSON.parse(load.origin)
-            : load?.origin;
+        // const originData =
+        //   typeof load?.origin === "string"
+        //     ? JSON.parse(load.origin)
+        //     : load?.origin;
 
-        const destinationData =
-          typeof load?.destination === "string"
-            ? JSON.parse(load.destination)
-            : load?.destination;
+        // const destinationData =
+        //   typeof load?.destination === "string"
+        //     ? JSON.parse(load.destination)
+        //     : load?.destination;
 
-        // Validate coordinates
-        if (
-          !originData?.lat ||
-          !originData?.lng ||
-          !destinationData?.lat ||
-          !destinationData?.lng
-        ) {
-          console.error("Missing origin or destination coordinates.");
-          return;
-        }
+        // // Validate coordinates
+        // if (
+        //   !originData?.lat ||
+        //   !originData?.lng ||
+        //   !destinationData?.lat ||
+        //   !destinationData?.lng
+        // ) {
+        //   console.error("Missing origin or destination coordinates.");
+        //   return;
+        // }
 
-        // Create Trip with proper structure
-        const createTrip = await prisma.trips.create({
-          data: {
-            driverId: updateBid.carrierId,
-            loadId,
-            vehicleId: driverVehicle.id,
-            estimatedDuration: 0.0,
-            distance: 0.0,
-            plannedRoute: {
-              distance: 0,
-              waypoints: [
-                {
-                  lat: originData.lat,
-                  lng: originData.lng,
-                },
-                {
-                  lat: destinationData.lat,
-                  lng: destinationData.lng,
-                },
-              ],
-            },
-          },
-        });
+        // // Create Trip with proper structure
+        // const createTrip = await prisma.trips.create({
+        //   data: {
+        //     driverId: updateBid.carrierId,
+        //     loadId,
+        //     vehicleId: driverVehicle.id,
+        //     estimatedDuration: 0.0,
+        //     distance: 0.0,
+        //     plannedRoute: {
+        //       distance: 0,
+        //       waypoints: [
+        //         {
+        //           lat: originData.lat,
+        //           lng: originData.lng,
+        //         },
+        //         {
+        //           lat: destinationData.lat,
+        //           lng: destinationData.lng,
+        //         },
+        //       ],
+        //     },
+        //   },
+        // });
 
-        console.log("Trip created successfully:", createTrip);
+        // console.log("Trip created successfully:", createTrip);
         io.to(fromUserSocketId).emit(
           "receiveAfterDriverBidViaSocket",
           updateBid
@@ -443,84 +441,239 @@ io.on("connection", (socket) => {
         },
       });
 
-      const driverVehicle = await prisma.vehicle.findFirst({
-        where: {
-          ownerId: updateBid.carrierId,
-        },
-      });
+      // const driverVehicle = await prisma.vehicle.findFirst({
+      //   where: {
+      //     ownerId: updateBid.carrierId,
+      //   },
+      // });
 
-      // Validate vehicle existence
-      if (!driverVehicle) {
-        console.error(`No vehicle found for driver ID: ${updateBid.carrierId}`);
-        return;
-      }
+      // // Validate vehicle existence
+      // if (!driverVehicle) {
+      //   console.error(`No vehicle found for driver ID: ${updateBid.carrierId}`);
+      //   return;
+      // }
 
-      // Fetch load origin and destination
-      const load = await prisma.loads.findUnique({
-        where: { id: loadId },
-      });
+      // // Fetch load origin and destination
+      // const load = await prisma.loads.findUnique({
+      //   where: { id: loadId },
+      // });
 
-      const originData =
-        typeof load?.origin === "string"
-          ? JSON.parse(load.origin)
-          : load?.origin;
+      // const originData =
+      //   typeof load?.origin === "string"
+      //     ? JSON.parse(load.origin)
+      //     : load?.origin;
 
-      const destinationData =
-        typeof load?.destination === "string"
-          ? JSON.parse(load.destination)
-          : load?.destination;
+      // const destinationData =
+      //   typeof load?.destination === "string"
+      //     ? JSON.parse(load.destination)
+      //     : load?.destination;
 
-      // Validate coordinates
-      if (
-        !originData?.lat ||
-        !originData?.lng ||
-        !destinationData?.lat ||
-        !destinationData?.lng
-      ) {
-        console.error("Missing origin or destination coordinates.");
-        return;
-      }
+      // // Validate coordinates
+      // if (
+      //   !originData?.lat ||
+      //   !originData?.lng ||
+      //   !destinationData?.lat ||
+      //   !destinationData?.lng
+      // ) {
+      //   console.error("Missing origin or destination coordinates.");
+      //   return;
+      // }
 
-      // Create Trip with proper structure
-      const createTrip = await prisma.trips.create({
-        data: {
-          driverId: updateBid.carrierId,
-          loadId,
-          vehicleId: driverVehicle.id,
-          estimatedDuration: 0.0,
-          distance: 0.0,
-          plannedRoute: {
-            distance: 0,
-            waypoints: [
-              {
-                lat: originData.lat,
-                lng: originData.lng,
-              },
-              {
-                lat: destinationData.lat,
-                lng: destinationData.lng,
-              },
-            ],
-          },
-        },
-      });
+      // // Create Trip with proper structure
+      // const createTrip = await prisma.trips.create({
+      //   data: {
+      //     driverId: updateBid.carrierId,
+      //     loadId,
+      //     vehicleId: driverVehicle.id,
+      //     estimatedDuration: 0.0,
+      //     distance: 0.0,
+      //     plannedRoute: {
+      //       distance: 0,
+      //       waypoints: [
+      //         {
+      //           lat: originData.lat,
+      //           lng: originData.lng,
+      //         },
+      //         {
+      //           lat: destinationData.lat,
+      //           lng: destinationData.lng,
+      //         },
+      //       ],
+      //     },
+      //   },
+      // });
 
-      console.log("Trip created successfully:", createTrip);
+      // console.log("Trip created successfully:", createTrip);
 
       io.to(receiverSocketId).emit("receiveAfterDriverBidViaSocket", updateBid);
       io.to(fromUserSocketId).emit("receiveAfterDriverBidViaSocket", updateBid);
     }
   );
 
-  socket.on("fixedAcceptLoad", async (loadId) => {
-    const updateLoad = await prisma.loads.update({
-      where: {
-        id: loadId,
-      },
-      data: {
-        status: "ASSIGNED",
-      },
-    });
+  socket.on("fixedAcceptLoad", async ({ loadId, toUser, fromUser }) => {
+    if (!loadId || !toUser || !fromUser) {
+      console.error("Invalid payload for fixedAcceptLoad", {
+        loadId,
+        toUser,
+        fromUser,
+      });
+      return;
+    }
+
+    try {
+      const receiverSocketId = onlineUsers.get(toUser);
+      const fromUserSocketId = onlineUsers.get(fromUser);
+
+      if (!receiverSocketId) {
+        const updateLoad = await prisma.loads.update({
+          where: {
+            id: loadId,
+          },
+          data: {
+            status: "ASSIGNED",
+          },
+        });
+
+        const createBid = await prisma.bid.create({
+          data: {
+            loadId,
+            carrierId: fromUser,
+            price: updateLoad.price,
+            status: "ACCEPTED",
+            vehicleId: null,
+            negotiateDriverPrice: updateLoad.price,
+            negotiateShipperPrice: updateLoad.price,
+            isDriverAccepted: true,
+            isShipperAccepted: true,
+            estimatedDuration: 0,
+          },
+        });
+        // const load = await prisma.loads.findUnique({
+        //   where: { id: loadId },
+        // });
+
+        // const originData =
+        //   typeof load?.origin === "string"
+        //     ? JSON.parse(load.origin)
+        //     : load?.origin;
+
+        // const destinationData =
+        //   typeof load?.destination === "string"
+        //     ? JSON.parse(load.destination)
+        //     : load?.destination;
+
+        // // Validate coordinates
+        // if (
+        //   !originData?.lat ||
+        //   !originData?.lng ||
+        //   !destinationData?.lat ||
+        //   !destinationData?.lng
+        // ) {
+        //   console.error("Missing origin or destination coordinates.");
+        //   return;
+        // }
+
+        // const createTrip = await prisma.trips.create({
+        //   data: {
+        //     driverId: createBid.carrierId,
+        //     loadId,
+        //     vehicleId: "",
+        //     estimatedDuration: 0.0,
+        //     distance: 0.0,
+        //     plannedRoute: {
+        //       distance: 0,
+        //       waypoints: [
+        //         {
+        //           lat: originData.lat,
+        //           lng: originData.lng,
+        //         },
+        //         {
+        //           lat: destinationData.lat,
+        //           lng: destinationData.lng,
+        //         },
+        //       ],
+        //     },
+        //   },
+        // });
+        io.to(receiverSocketId).emit("receiveFixedLoad", createBid);
+        io.to(fromUserSocketId).emit("receiveFixedLoad", createBid);
+        return;
+      }
+      const updateLoad = await prisma.loads.update({
+        where: {
+          id: loadId,
+        },
+        data: {
+          status: "ASSIGNED",
+        },
+      });
+
+      const createBid = await prisma.bid.create({
+        data: {
+          loadId,
+          carrierId: fromUser,
+          price: updateLoad.price,
+          status: "ACCEPTED",
+          vehicleId: null,
+          negotiateDriverPrice: updateLoad.price,
+          negotiateShipperPrice: updateLoad.price,
+          isDriverAccepted: true,
+          isShipperAccepted: true,
+          estimatedDuration: 0,
+        },
+      });
+      const load = await prisma.loads.findUnique({
+        where: { id: loadId },
+      });
+
+      // const originData =
+      //   typeof load?.origin === "string"
+      //     ? JSON.parse(load.origin)
+      //     : load?.origin;
+
+      // const destinationData =
+      //   typeof load?.destination === "string"
+      //     ? JSON.parse(load.destination)
+      //     : load?.destination;
+
+      // // Validate coordinates
+      // if (
+      //   !originData?.lat ||
+      //   !originData?.lng ||
+      //   !destinationData?.lat ||
+      //   !destinationData?.lng
+      // ) {
+      //   console.error("Missing origin or destination coordinates.");
+      //   return;
+      // }
+
+      // const createTrip = await prisma.trips.create({
+      //   data: {
+      //     driverId: createBid.carrierId,
+      //     loadId,
+      //     vehicleId: "",
+      //     estimatedDuration: 0.0,
+      //     distance: 0.0,
+      //     plannedRoute: {
+      //       distance: 0,
+      //       waypoints: [
+      //         {
+      //           lat: originData.lat,
+      //           lng: originData.lng,
+      //         },
+      //         {
+      //           lat: destinationData.lat,
+      //           lng: destinationData.lng,
+      //         },
+      //       ],
+      //     },
+      //   },
+      // });
+      io.to(receiverSocketId).emit("receiveFixedLoad", createBid);
+      io.to(fromUserSocketId).emit("receiveFixedLoad", createBid);
+    } catch (e) {
+      console.log(e);
+    }
   });
 
   socket.on("disconnect", () => {
