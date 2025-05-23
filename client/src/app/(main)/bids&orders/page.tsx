@@ -277,13 +277,15 @@ export default function BidsAndOthers() {
     ? filteredLoads.filter(
         (load) =>
           load.origin.city.toLowerCase().includes(originSearch) &&
-          load.destination.city.toLowerCase().includes(destinationSearch)
+          load.destination.city.toLowerCase().includes(destinationSearch) &&
+          load.status === "AVAILABLE"
       )
     : filteredLoads.filter(
         (load) =>
           load.shipperId === loggedUser?.userId &&
           load.origin.city.toLowerCase().includes(originSearch) &&
-          load.destination.city.toLowerCase().includes(destinationSearch)
+          load.destination.city.toLowerCase().includes(destinationSearch) &&
+          load.status === "AVAILABLE"
       );
 
   const loadsWithMatchingBids = filteredAvailableLoads.filter((load) =>
@@ -361,7 +363,6 @@ export default function BidsAndOthers() {
     <Shimmer />
   ) : (
     <>
-    
       <Row className="pr-4">
         <Col span={24} md={6}>
           <Heading name="Bids and Orders" />
@@ -383,9 +384,9 @@ export default function BidsAndOthers() {
       </Row>
 
       <div className="main-content">
-          <div className="bg-red-100 p-2 text-black rounded-md mb-2">
-              <b>2 Carriars</b> from <b>2 Bids</b> Responded.
-            </div>
+        <div className="bg-red-100 p-2 text-black rounded-md mb-2">
+          <b>2 Carriars</b> from <b>2 Bids</b> Responded.
+        </div>
         <div className="flex gap-4">
           <DatePicker.RangePicker onChange={handleDateChange} />
           <Select
@@ -420,7 +421,8 @@ export default function BidsAndOthers() {
           const relatedBids = bids.filter(
             (bid) =>
               bid.loadId === load.id &&
-              (bidStatusFilter === "ALL" || bid.status === bidStatusFilter)
+              (bidStatusFilter === "ALL" || bid.status === bidStatusFilter) &&
+              load.status === "AVAILABLE"
           );
 
           const pickupDate = new Date(load.pickupWindowStart);

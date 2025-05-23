@@ -397,6 +397,21 @@ export const getActiveBidsByCarrierId = async (carrierId: string) => {
     console.error(" got error in filter active bids by carrierId:", e);
   }
 };
+
+export const getDataForTripsAssigning = async (carrierId: string) => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/driverLocation/${carrierId}`,
+      {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+    return response.json();
+  } catch (e) {
+    console.error(" got error in filter active trips for assigning", e);
+  }
+};
 export const getLoadByLoadIdForAdmin = async (loadId: any) => {
   try {
     const response = await fetch(
@@ -459,6 +474,51 @@ export const getLoadBidPaymentTripByUserId = async (obj: any) => {
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/payments`,
       {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(obj),
+      }
+    );
+    return response.json();
+  } catch (error) {
+    console.log(error);
+  }
+};
+export const getActiveVehiclesByOwnerId = async (obj: any) => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/trucks`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(obj),
+      }
+    );
+    return response.json();
+  } catch (error) {
+    console.log(error);
+  }
+};
+export const updateVehicleStatus = async (obj: any) => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/trucks`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(obj),
+      }
+    );
+    return response.json();
+  } catch (error) {
+    console.log(error);
+  }
+};
+export const createTrip = async (obj: any) => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/trips`,
+      {
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(obj),
       }

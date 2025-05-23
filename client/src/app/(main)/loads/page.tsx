@@ -18,8 +18,13 @@ import React, { useState, useEffect, useContext, useLayoutEffect } from "react";
 import Heading from "@/app/util/Heading/index";
 import {
   createBid,
+  createTrip,
+  getActiveBidsByCarrierId,
+  getActiveVehiclesByOwnerId,
   getBids,
+  getDataForTripsAssigning,
   getLoadByLoadIdForAdmin,
+  updateVehicleStatus,
   useGetAllLoadsQuery,
 } from "@/state/api";
 import { getLoggedUserFromLS } from "@/app/util/getLoggedUserFromLS";
@@ -29,6 +34,7 @@ import { timeSincePosted } from "@/app/util/timeSincePosted";
 import { getStatusColor } from "@/app/util/statusColorLoads";
 import Shimmer from "../(components)/shimmerUi/Shimmer";
 import type { CheckboxGroupProps } from "antd/es/checkbox";
+import { DownOutlined, UpOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -65,6 +71,37 @@ const INDIAN_STATES = [
   "Uttarakhand",
   "West Bengal",
 ];
+interface Vehicle {
+  id: string;
+  registrationNumber: string;
+  make: string;
+  model: string;
+  year: number;
+  capacity: number; // in kg
+  dimensions: {
+    length: number;
+    width: number;
+    height: number;
+  };
+  vehicleType: string;
+  isActive: boolean;
+
+  // Ownership
+  ownerId: string;
+
+  // Additional vehicle details
+  insuranceNumber: string;
+  insuranceExpiry: Date;
+  fitnessCertExpiry: Date;
+  permitType?: string;
+
+  createdAt: Date;
+  updatedAt: Date;
+
+  // Relationships (simplified references)
+  trips?: any[]; // You can replace `any` with your `Trip` interface
+  devices?: any[]; // Replace with your `Device` interface
+}
 
 interface Bid {
   id: string;
@@ -95,17 +132,15 @@ interface Location {
   postalCode?: string;
 }
 
-interface Load {
+interface User {
   id: string;
-  origin: Location;
-  destination: Location;
-  shipperId: string;
-  status: string;
-  cargoType: string;
-  weight: number;
-  bidPrice: number;
-  price: number;
-  createdAt: string;
+  email: string;
+}
+
+interface DataWithOutTrips {
+  load: Load;
+  bid: Bid;
+  user: User;
 }
 interface Load {
   id: string;
@@ -138,7 +173,22 @@ const Loads = () => {
   const [selectedLoad, setSelectedLoad] = useState<Load | null>(null);
   const [bidPrice, setBidPrice] = useState<string>("");
   const [isLoadingSpin, setIsLoading] = useState(true);
-  const [open, setOpen] = React.useState<boolean>(true);
+  const [activeVehicles, setActiveVehicles] = useState<Vehicle[] | undefined>();
+  const [dataWithOutTrips, setDataForTrips] = useState<
+    DataWithOutTrips[] | undefined
+  >();
+  const [selectedTrucks, setSelectedTrucks] = useState<{
+    [key: string]: string;
+  }>({});
+
+  const [expandedLoadIds, setExpandedLoadIds] = useState<string[]>([]);
+  const toggleExpand = (id: string) => {
+    setExpandedLoadIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+    );
+  };
+
+  const [open, setOpen] = React.useState<boolean>(false);
 
   const { socket } = useContext(SocketContext) || {};
   const router = useRouter();
@@ -155,6 +205,19 @@ const Loads = () => {
     }
 
     const fetchBidsAndSetInitialLoads = async () => {
+      const getDataWithoutTrips = await getDataForTripsAssigning(
+        getLoggedUserFromLS().userId
+      );
+      if (getDataWithoutTrips.length > 0) {
+        setOpen(true);
+      }
+
+      const activeVehicles = await getActiveVehiclesByOwnerId({
+        ownerId: getLoggedUserFromLS().userId,
+      });
+
+      setActiveVehicles(activeVehicles);
+      setDataForTrips(getDataWithoutTrips);
       const bids = await getBids();
       setBids(bids);
 
@@ -221,7 +284,6 @@ const Loads = () => {
     if (socket) {
       const updateBidState = (updatedBid: Bid) => {
         message.success("price updated by Shipper");
-        console.log(updatedBid);
 
         setBids((prevBids) => {
           const index = prevBids.findIndex((b) => b.id === updatedBid.id);
@@ -337,7 +399,7 @@ const Loads = () => {
           fromUser: getLoggedUserFromLS().userId,
         });
       } else {
-        message.error("load already assigned to someone");
+        message.error("Bid is closed!");
       }
     } catch (error) {
       console.log(error);
@@ -364,7 +426,7 @@ const Loads = () => {
               : currentBid?.carrierId,
         });
       } else {
-        message.error("load already assigned to someone");
+        message.error("Bid is closed!");
       }
     } catch (error) {
       console.log(error);
@@ -385,6 +447,51 @@ const Loads = () => {
   const countOfBid = Bids.filter(
     (bid) => bid.carrierId === getLoggedUserFromLS().userId
   );
+  const handleConfirmLoad = async (load: Load, bid: Bid, loadId: string) => {
+    console.log(
+      "Confirmed load:",
+      load,
+      "with truck:",
+      bid,
+      selectedTrucks[load?.id]
+    );
+    const getDataWithoutTrips = await getDataForTripsAssigning(
+      getLoggedUserFromLS().userId
+    );
+
+    setDataForTrips(getDataWithoutTrips);
+
+    const createdTrip = await createTrip({
+      loadId,
+      driverId: bid.carrierId,
+      plannedRoute: {
+        distance: 0,
+        waypoints: [
+          {
+            lat: load.origin.lat,
+            lng: load.origin.lng,
+          },
+          {
+            lat: load.destination.lat,
+            lng: load.destination.lng,
+          },
+        ],
+      },
+      vehicleId: "",
+      estimatedDuration: 0,
+      distance: 0,
+    });
+
+    if (createdTrip) {
+      const updateVehicle = await updateVehicleStatus({
+        vehicleId: selectedTrucks[load.id],
+        newTrip: createdTrip,
+      });
+      console.log(updateVehicle);
+    } else {
+      message.error("trip not created");
+    }
+  };
 
   return isLoadingSpin ? (
     <Shimmer />
@@ -518,7 +625,7 @@ const Loads = () => {
                             bid.isDriverAccepted &&
                             bid.isShipperAccepted && (
                               <span className="max-h-10 text-green-800 text-sm">
-                                Load accepted by shipper
+                                Load accepted
                               </span>
                             )}
                           {load.status === "AVAILABLE" &&
@@ -537,10 +644,10 @@ const Loads = () => {
                             bid.negotiateDriverPrice > 0 &&
                             bid.negotiateShipperPrice > 0 && (
                               <span className="max-h-10 text-red-800 text-sm">
-                                Load assigned by someone
+                                Bid is closed!
                               </span>
                             )}
-                         
+
                           {bid.negotiateDriverPrice == 0 &&
                             bid.negotiateShipperPrice == 0 && (
                               <>
@@ -713,7 +820,7 @@ const Loads = () => {
                           currentUserBid.isDriverAccepted &&
                           currentUserBid.isShipperAccepted && (
                             <span className="max-h-10 text-green-800 text-sm">
-                              Load accepted by shipper
+                              Load accepted
                             </span>
                           )}
                       </>
@@ -777,38 +884,89 @@ const Loads = () => {
           </Form>
         </Modal>
       </div>
-
       <Modal
         title={<p>Load Confirmation</p>}
-        footer={
-          <Button type="primary" onClick={showLoading}>
-            Ok
-          </Button>
-        }
         open={open}
+        footer={null} // Remove global footer
         onCancel={() => setOpen(false)}
       >
-        <p>
-          <b>allahabad transport</b> has cofirmed you for the Load
-        </p>
-        <br />
-        <p>Attach Truck to that Load</p>
-        <div className="box flex justify-between">
-          <p>
-            <span className="labelStyle">Registration Number</span>
-            <br />
-            <span className="valueStyle">TN04 GH 3456</span>
-          </p>
-          <Radio></Radio>
-        </div>
-        <div className="box flex justify-between">
-          <p>
-            <span className="labelStyle">Registration Number</span>
-            <br />
-            <span className="valueStyle">TN04 GH 3456</span>
-          </p>
-          <Radio></Radio>
-        </div>
+        {Array.isArray(dataWithOutTrips) &&
+          dataWithOutTrips.map((data: any, index: number) => {
+            const loadId = data?.load?.id;
+            const isExpanded = expandedLoadIds.includes(loadId);
+
+            return (
+              <div key={loadId} className="mb-4 border p-4 rounded">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <b>{data?.user?.email}</b> has confirmed you for the load
+                    <br />
+                    {data?.load?.origin?.city} → {data?.load?.destination?.city}
+                  </div>
+
+                  <Button
+                    type="link"
+                    icon={isExpanded ? <UpOutlined /> : <DownOutlined />}
+                    onClick={() => toggleExpand(loadId)}
+                  >
+                    {isExpanded ? "Hide Details" : "Show Details"}
+                  </Button>
+                </div>
+
+                {isExpanded && (
+                  <div className="mt-4">
+                    <Radio.Group
+                      onChange={(e) =>
+                        setSelectedTrucks((prev) => ({
+                          ...prev,
+                          [loadId]: e.target.value,
+                        }))
+                      }
+                      value={selectedTrucks[loadId] || null}
+                    >
+                      {activeVehicles && activeVehicles?.length > 0 ? (
+                        activeVehicles?.map((vehicle, index) => {
+                          return (
+                            <div
+                              className="box flex justify-between w-100 my-2"
+                              key={index}
+                            >
+                              <p>
+                                <span className="labelStyle">
+                                  {vehicle.model}
+                                </span>
+                                <br />
+                                <span className="valueStyle">
+                                  {" "}
+                                  {vehicle.registrationNumber}
+                                </span>
+                              </p>
+                              <Radio value={vehicle.registrationNumber} />
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <>
+                          <Button>No vehicles found</Button>
+                        </>
+                      )}
+                    </Radio.Group>
+
+                    <Button
+                      type="primary"
+                      className="mt-4"
+                      onClick={() =>
+                        handleConfirmLoad(data.load, data.bid, loadId)
+                      }
+                      disabled={!selectedTrucks[loadId]}
+                    >
+                      Ok
+                    </Button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
       </Modal>
     </>
   );

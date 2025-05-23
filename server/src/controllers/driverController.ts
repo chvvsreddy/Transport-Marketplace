@@ -55,3 +55,51 @@ export const getBidsByCarrierId = async (req: Request, res: Response) => {
     res.status(404).json({ message: "Bids not found" });
   }
 };
+export const getBidsByCarrierIdForTripsAssigning = async (
+  req: Request,
+  res: Response
+) => {
+  const { carrierId } = req.params; 
+  try {
+    const bids = await prisma.bid.findMany({
+      where: {
+        carrierId,
+        status: "ACCEPTED",
+        isDriverAccepted: true,
+        isShipperAccepted: true,
+      },
+    });
+
+    if (bids.length === 0) {
+       res.status(200).json([]);
+    }
+
+    const results = await Promise.all(
+      bids.map(async (bid) => {
+        const [load, user] = await Promise.all([
+          prisma.loads.findFirst({
+            where: {
+              id: bid.loadId,
+              status: "ASSIGNED",
+            },
+          }),
+          prisma.users.findUnique({
+            where: {
+              id: carrierId,
+            },
+          }),
+        ]);
+
+        return load ? { load, bid, user } : null;
+      })
+    );
+
+    const filteredResults = results.filter(Boolean);
+
+    res.status(200).json(filteredResults);
+  } catch (error) {
+    console.error("Error fetching bids for trip assignment:", error);
+    res.status(500).json({ message: "Error retrieving bids" });
+  }
+};
+
