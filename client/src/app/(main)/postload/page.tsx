@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState,useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   Button,
@@ -31,8 +31,47 @@ import Heading from "@/app/util/Heading";
 import TextArea from "antd/es/input/TextArea";
 import Shimmer from "../(components)/shimmerUi/Shimmer";
 
+interface LocationData {
+  results?: {
+    formatted_address?: string;
+    geometry?: {
+      location?: {
+        lat: number;
+        lng: number;
+      };
+    };
+    address_components?: any[];
+  }[];
+  status: string;
+}
+
+
+// Define types for the debounced function
+type DebouncedFunction<T extends (...args: any[]) => void> = {
+  (...args: Parameters<T>): void;
+  cancel: () => void;
+};
+// Debounce function utility
+const debounce = <F extends (...args: any[]) => void>(
+  func: F,
+  delay: number
+): DebouncedFunction<F> => {
+  let timeoutId: ReturnType<typeof setTimeout>;
+  
+  const debounced = (...args: Parameters<F>) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => func(...args), delay);
+  };
+
+  debounced.cancel = () => clearTimeout(timeoutId);
+  
+  return debounced as DebouncedFunction<F>;
+};
+
 export default function PostLoad() {
   const [priceType, setPriceType] = useState<string>("FixPrice");
+  const [pincode, setPincode] = useState('');
+  const [location, setLocation] = useState<LocationData | null>(null)
 
   const router = useRouter();
   const [authorized, setAuthorized] = useState(false);
@@ -42,6 +81,29 @@ export default function PostLoad() {
   const [selectedTruckType, setSelectedTruckType] = useState<string>("Open");
   const [postStatus, setPostStatus] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Debounced API call with cleanup
+  const handleSearch = useCallback(    
+    debounce((pin: string) => {      
+      if (pin.length === 6 && /^\d+$/.test(pin)) {
+        const locationUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${pin}&key=AIzaSyAIig9tirleY1_y6nCKFG1Mu73HATXSmqQ`
+          fetch(locationUrl)
+        .then(response => response.json())
+        .then(data => setLocation(data));
+      }
+    }, 1000),
+    []
+  );
+
+  useEffect(() => {    
+    handleSearch(pincode);
+    return () => {
+      handleSearch.cancel();
+    };
+  }, [pincode, handleSearch]);
+
+
+
 
   const Goods_Types: any = {
     Open: [
@@ -241,15 +303,21 @@ export default function PostLoad() {
                   rules={[
                     {
                       required: true,
-                      message: "Please enter origin city name",
+                      message: "Please enter Postal Code",
                     },
                   ]}
                 >
                   <div className="flex gap-4">
-                    <Input placeholder="Postal Code" />
-                    <Input placeholder="City Name" />
+                  <Input  type="text" value={pincode} onChange={(e:any) => setPincode(e.target.value.replace(/\D/g, ''))} // Allow only numbers
+        placeholder="Enter 6-digit pincode" maxLength={6} />
+                   <Input type="text" placeholder="City Name" value={location?.results?.[0]?.address_components?.find((c: any) =>         c.types.includes('locality')
+      )?.long_name || ''} />
+                    
                   </div>
+                 
+                  
                 </Form.Item>
+           
                 {/* <Form.Item
                   label="From postal code"
                   name="postalCodeFrom"
