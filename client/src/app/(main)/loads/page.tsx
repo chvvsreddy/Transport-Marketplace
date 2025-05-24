@@ -35,6 +35,7 @@ import { getStatusColor } from "@/app/util/statusColorLoads";
 import Shimmer from "../(components)/shimmerUi/Shimmer";
 import type { CheckboxGroupProps } from "antd/es/checkbox";
 import { DownOutlined, UpOutlined } from "@ant-design/icons";
+import Link from "next/link";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -97,10 +98,8 @@ interface Vehicle {
 
   createdAt: Date;
   updatedAt: Date;
-
-  // Relationships (simplified references)
-  trips?: any[]; // You can replace `any` with your `Trip` interface
-  devices?: any[]; // Replace with your `Device` interface
+  trips?: any[];
+  devices?: any[];
 }
 
 interface Bid {
@@ -448,21 +447,11 @@ const Loads = () => {
     (bid) => bid.carrierId === getLoggedUserFromLS().userId
   );
   const handleConfirmLoad = async (load: Load, bid: Bid, loadId: string) => {
-    console.log(
-      "Confirmed load:",
-      load,
-      "with truck:",
-      bid,
-      selectedTrucks[load?.id]
+    const findVehicle = activeVehicles?.find(
+      (veh) => veh.registrationNumber === selectedTrucks[load.id]
     );
-    const getDataWithoutTrips = await getDataForTripsAssigning(
-      getLoggedUserFromLS().userId
-    );
-
-    setDataForTrips(getDataWithoutTrips);
-
-    const createdTrip = await createTrip({
-      loadId,
+    console.log({
+      loadId: load.id,
       driverId: bid.carrierId,
       plannedRoute: {
         distance: 0,
@@ -477,16 +466,53 @@ const Loads = () => {
           },
         ],
       },
-      vehicleId: "",
+      vehicleId: findVehicle?.id,
       estimatedDuration: 0,
       distance: 0,
     });
+    const getDataWithoutTrips = await getDataForTripsAssigning(
+      getLoggedUserFromLS().userId
+    );
 
-    if (createdTrip) {
+    // const findVehicle = activeVehicles?.find(
+    //   (veh) => veh.registrationNumber === selectedTrucks[load.id]
+    // );
+
+    setDataForTrips(getDataWithoutTrips);
+    console.log(
+      "Confirmed load:",
+      load,
+      "with truck:",
+      bid,
+      findVehicle?.registrationNumber
+    );
+    const createdTrip = await createTrip({
+      loadId: load.id,
+      driverId: bid.carrierId,
+      plannedRoute: {
+        distance: 0,
+        waypoints: [
+          {
+            lat: load.origin.lat,
+            lng: load.origin.lng,
+          },
+          {
+            lat: load.destination.lat,
+            lng: load.destination.lng,
+          },
+        ],
+      },
+      vehicleId: findVehicle?.id,
+      estimatedDuration: 0,
+      distance: 0,
+    });
+    console.log("new trip : ", createdTrip);
+    if (createdTrip.id) {
       const updateVehicle = await updateVehicleStatus({
-        vehicleId: selectedTrucks[load.id],
+        registrationNumber: selectedTrucks[load.id],
         newTrip: createdTrip,
       });
+      setOpen(false);
       console.log(updateVehicle);
     } else {
       message.error("trip not created");
@@ -947,7 +973,9 @@ const Loads = () => {
                         })
                       ) : (
                         <>
-                          <Button>No vehicles found</Button>
+                          <Link href="/trucks">
+                            <Button>ADD VEHICLE</Button>
+                          </Link>
                         </>
                       )}
                     </Radio.Group>
