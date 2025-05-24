@@ -2,21 +2,16 @@ import { useEffect, useState } from "react";
 import { Table, message } from "antd";
 import axios from "axios";
 import { getLoggedUserFromLS } from "@/app/util/getLoggedUserFromLS";
+import { fetchTrucksById } from "@/state/api";
 
 const ViewTrucks = () => {
   const [trucks, setTrucks] = useState([]);
   const loggedUserId = getLoggedUserFromLS().userId;
   const fetchTrucks = async () => {
-    try {
-      const response = await axios.put(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/trucks`,
-        { ownerId: loggedUserId }
-      );
-      setTrucks(response.data);
-    } catch (error) {
-      console.error(error);
-      message.error("Failed to fetch trucks.");
-    }
+    const trucksAll = await fetchTrucksById({
+      ownerId: getLoggedUserFromLS().userId,
+    });
+    setTrucks(trucksAll);
   };
 
   useEffect(() => {

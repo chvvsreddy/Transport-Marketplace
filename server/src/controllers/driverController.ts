@@ -59,7 +59,7 @@ export const getBidsByCarrierIdForTripsAssigning = async (
   req: Request,
   res: Response
 ) => {
-  const { carrierId } = req.params; 
+  const { carrierId } = req.params;
   try {
     const bids = await prisma.bid.findMany({
       where: {
@@ -71,7 +71,7 @@ export const getBidsByCarrierIdForTripsAssigning = async (
     });
 
     if (bids.length === 0) {
-       res.status(200).json([]);
+      res.status(200).json([]);
     }
 
     const results = await Promise.all(
@@ -90,7 +90,15 @@ export const getBidsByCarrierIdForTripsAssigning = async (
           }),
         ]);
 
-        return load ? { load, bid, user } : null;
+        const findLoadInTrips = await prisma.trips.findUnique({
+          where: {
+            loadId: load?.id,
+          },
+        });
+
+        if (findLoadInTrips === null) {
+          return load ? { load, bid, user } : null;
+        }
       })
     );
 
@@ -102,4 +110,3 @@ export const getBidsByCarrierIdForTripsAssigning = async (
     res.status(500).json({ message: "Error retrieving bids" });
   }
 };
-

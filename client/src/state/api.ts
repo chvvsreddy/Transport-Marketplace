@@ -498,7 +498,8 @@ export const getActiveVehiclesByOwnerId = async (obj: any) => {
     console.log(error);
   }
 };
-export const updateVehicleStatus = async (obj: any) => {
+
+export const fetchTrucksById = async (obj: any) => {
   try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/trucks`,
@@ -513,12 +514,27 @@ export const updateVehicleStatus = async (obj: any) => {
     console.log(error);
   }
 };
+export const updateVehicleStatus = async (obj: any) => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/vehicleStatus`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(obj),
+      }
+    );
+    return response.json();
+  } catch (error) {
+    console.log(error);
+  }
+};
 export const createTrip = async (obj: any) => {
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/trips`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/createTrip`,
       {
-        method: "PATCH",
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(obj),
       }

@@ -22,7 +22,8 @@ import allBidsRoutes from "./routes/allBidsRoutes";
 import vehicleRoutes from "./routes/vehicleRoutes";
 import tripRoutes from "./routes/tripRoutes";
 import paymentRoutes from "./routes/paymentRoutes";
-
+import createTripRoutes from "./routes/createTripRoutes";
+import vehicleStatusUpdate from "./routes/vehicleStatusRoutes";
 // Configurations
 dotenv.config();
 const app = express();
@@ -53,6 +54,8 @@ app.use("/bids&orders", allBidsRoutes);
 app.use("/trucks", vehicleRoutes);
 app.use("/trips", tripRoutes);
 app.use("/payments", paymentRoutes);
+app.use("/createTrip", createTripRoutes);
+app.use("/vehicleStatus", vehicleStatusUpdate);
 
 // Socket.IO Configuration
 const io = new Server(server, {
@@ -675,8 +678,6 @@ io.on("connection", (socket) => {
       console.log(e);
     }
   });
-
- 
 
   socket.on("disconnect", () => {
     console.log("Client disconnected:", socket.id);

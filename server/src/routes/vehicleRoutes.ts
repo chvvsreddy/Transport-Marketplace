@@ -1,12 +1,13 @@
 import { Router } from "express";
 import {
   createVehicle,
+  getActiveVehiclesById,
   getAllVehiclesById,
-  updateVehicle,
 } from "../controllers/vehicleController";
 
 const router = Router();
 router.post("/", createVehicle);
-router.put("/", getAllVehiclesById);
-router.patch("/", updateVehicle);
+router.patch("/", getAllVehiclesById);
+router.put("/", getActiveVehiclesById);
+
 export default router;
