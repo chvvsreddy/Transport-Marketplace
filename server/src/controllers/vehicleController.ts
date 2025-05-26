@@ -56,7 +56,7 @@ export const getActiveVehiclesById = async (req: Request, res: Response) => {
     const allVehicles = await prisma.vehicle.findMany({
       where: {
         ownerId,
-        isActive: true,
+        isActive: false,
       },
     });
 

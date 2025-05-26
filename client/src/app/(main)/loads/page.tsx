@@ -19,7 +19,6 @@ import Heading from "@/app/util/Heading/index";
 import {
   createBid,
   createTrip,
-  getActiveBidsByCarrierId,
   getActiveVehiclesByOwnerId,
   getBids,
   getDataForTripsAssigning,
@@ -78,7 +77,7 @@ interface Vehicle {
   make: string;
   model: string;
   year: number;
-  capacity: number; // in kg
+  capacity: number;
   dimensions: {
     length: number;
     width: number;
@@ -87,10 +86,8 @@ interface Vehicle {
   vehicleType: string;
   isActive: boolean;
 
-  // Ownership
   ownerId: string;
 
-  // Additional vehicle details
   insuranceNumber: string;
   insuranceExpiry: Date;
   fitnessCertExpiry: Date;
@@ -231,16 +228,28 @@ const Loads = () => {
           async ({ coords: { latitude: lat, longitude: lng } }) => {
             try {
               const geoRes = await fetch(
-                `${process.env.NEXT_PUBLIC_OPEN_CAGE_MAP_API}q=${lat}+${lng}&key=${process.env.NEXT_PUBLIC_OPEN_CAGE_MAP_API_KEY}`
+                `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`
               );
               const geoData = await geoRes.json();
-              const stateName = geoData?.results?.[0]?.components?.state || "";
-              const address = geoData?.results?.[0]?.formatted || "";
+
+              let stateName = "";
+              let formattedAddress = "";
+
+              if (geoData.status === "OK" && geoData.results.length > 0) {
+                formattedAddress = geoData.results[0].formatted_address;
+
+                const addressComponents = geoData.results[0].address_components;
+                const stateComponent = addressComponents.find(
+                  (component: any) =>
+                    component.types.includes("administrative_area_level_1")
+                );
+                stateName = stateComponent ? stateComponent.long_name : "";
+              }
 
               const updatedLocation: Location = {
                 lat,
                 lng,
-                address,
+                address: formattedAddress,
                 state: stateName,
               };
               setLocation(updatedLocation);
@@ -254,6 +263,7 @@ const Loads = () => {
                 );
                 setFilteredLoads(filtered);
               }
+
               await fetch(
                 `${process.env.NEXT_PUBLIC_API_BASE_URL}/driverLocation`,
                 {
@@ -632,7 +642,8 @@ const Loads = () => {
                     <div className="flex justify-end">
                       {isBidLoad && (
                         <>
-                          {bid &&
+                          {load.status === "AVAILABLE" &&
+                            bid &&
                             bid.negotiateDriverPrice > 0 &&
                             bid.negotiateShipperPrice == 0 && (
                               <span className="max-h-10 text-red-800 text-sm">
@@ -652,6 +663,14 @@ const Loads = () => {
                             bid.isShipperAccepted && (
                               <span className="max-h-10 text-green-800 text-sm">
                                 Load accepted
+                              </span>
+                            )}
+                          {load.status === "ASSIGNED" &&
+                            bid &&
+                            bid.isDriverAccepted == false &&
+                            bid.isShipperAccepted == false && (
+                              <span className="max-h-10 text-red-800 text-sm">
+                                Bid closed!
                               </span>
                             )}
                           {load.status === "AVAILABLE" &&

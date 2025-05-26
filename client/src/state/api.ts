@@ -309,18 +309,17 @@ export const getTripsByLoadId = async (obj: any) => {
 };
 export const createLoad = async (obj: any) => {
   try {
-    const getLatLngFromAPI = async (location: any) => {
-      const query = `${location.city}+${location.postalCode}`;
-      const url = `${
-        process.env.NEXT_PUBLIC_OPEN_CAGE_MAP_API
-      }q=${encodeURIComponent(query)}&key=${
-        process.env.NEXT_PUBLIC_OPEN_CAGE_MAP_API_KEY
-      }`;
+    const getLatLngFromGoogleAPI = async (location: any) => {
+      const fullAddress = `${location.address}, ${location.city}, ${location.state}, ${location.postalCode}, ${location.country}`;
+      const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+        fullAddress
+      )}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`;
+
       const res = await fetch(url);
       const data = await res.json();
 
-      if (data?.results?.length > 0 && data.results[0].geometry) {
-        const { lat, lng } = data.results[0].geometry;
+      if (data?.results?.length > 0 && data.results[0].geometry?.location) {
+        const { lat, lng } = data.results[0].geometry.location;
         return { lat, lng };
       } else {
         console.warn("No geolocation results for:", location);
@@ -328,7 +327,7 @@ export const createLoad = async (obj: any) => {
       }
     };
 
-    const { lat: originLat, lng: originLng } = await getLatLngFromAPI(
+    const { lat: originLat, lng: originLng } = await getLatLngFromGoogleAPI(
       obj.origin
     );
     obj.origin = {
@@ -337,7 +336,7 @@ export const createLoad = async (obj: any) => {
       lng: originLng,
     };
 
-    const { lat: destLat, lng: destLng } = await getLatLngFromAPI(
+    const { lat: destLat, lng: destLng } = await getLatLngFromGoogleAPI(
       obj.destination
     );
     obj.destination = {
@@ -362,6 +361,8 @@ export const createLoad = async (obj: any) => {
     throw error;
   }
 };
+
+
 
 export const getLoadByLoadId = async (loadId: any) => {
   try {

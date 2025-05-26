@@ -9,7 +9,9 @@ import { UserProvider } from "../util/UserContext";
 import { SocketProvider } from "../util/SocketContext";
 import { useRouter } from "next/navigation";
 import Shimmer from "./(components)/shimmerUi/Shimmer";
+import { LoadScript } from "@react-google-maps/api";
 
+const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!;
 const AdminSidebar = dynamic(
   () => import("./(components)/admin/adminSidebar/adminsidebar"),
   { ssr: false }

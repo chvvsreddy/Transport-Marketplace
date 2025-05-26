@@ -17,6 +17,7 @@ import { UploadOutlined } from "@ant-design/icons";
 import type { UploadProps } from "antd";
 import { Button, Upload } from "antd";
 import Shimmer from "./shimmerUi/Shimmer";
+import MapComponent from "./MapComponent";
 const props: UploadProps = {
   action: "//jsonplaceholder.typicode.com/posts/",
   listType: "picture",
@@ -406,17 +407,13 @@ export default function SingleLoad() {
                     </Upload>
                   </div>
                   <div className="p-3 border-2 rounded-md border-neutral-200 mb-2 map-bg">
-                    <div className="bg-white rounded-md p-1 px-2 shadow-neutral-300 shadow-md flex justify-between">
-                      <p>
-                        Current Location :<b> Zumeerabad</b>
-                      </p>
-                      <p>
-                        Distance to Drive :<b> 400km</b>
-                      </p>
-                      <p>
-                        Est Time to Reach :<b> 12Hrs</b>
-                      </p>
-                    </div>
+                    <MapComponent
+                      origin={{ lat: load.origin.lat, lng: load.origin.lng }}
+                      destination={{
+                        lat: load.destination.lat,
+                        lng: load.destination.lng,
+                      }}
+                    />
                   </div>
                   <div className="p-3 border-2 rounded-md border-neutral-200">
                     <h6 className="mb-2"> Post-Trip Documents</h6>

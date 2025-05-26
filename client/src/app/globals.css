@@ -225,7 +225,6 @@
     @apply border-neutral-400 bg-white font-semibold
   }
 
-    .map-bg{background: url(../../public/map.webp);min-height:300px;}
     .main-content{
       @apply bg-white p-4 m-4 rounded-md mt-4 border-neutral-300 border-1    }
     .labelStyle {font-size: 12px;color: #888}
