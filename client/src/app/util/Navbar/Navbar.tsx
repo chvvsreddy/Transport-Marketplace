@@ -9,10 +9,28 @@ import { useRouter } from "next/navigation";
 import { useSearch } from "../SearchContext";
 import { Avatar, message } from "antd";
 import { UserOutlined } from "@ant-design/icons";
+import { getNotificationsByUserId } from "@/state/api";
+import { getLoggedUserFromLS } from "../getLoggedUserFromLS";
+import socket from "../socket";
+
+export interface Notification {
+  id: string;
+  userId: string;
+  type: string;
+  title: string;
+  message: string;
+  isRead: boolean;
+  createdAt: Date;
+  usersId?: string | null;
+}
 
 const Navbar = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [latestNotifications, setLatestNotifications] = useState<
+    Notification[] | []
+  >();
   const settingsRef = useRef<HTMLDivElement>(null);
+  const [countOfNotifications, setCountOfNotifications] = useState(0);
 
   const { setSearchTerm } = useSearch();
 
@@ -33,6 +51,68 @@ const Navbar = () => {
     (state) => state.global.isSidebarCollapsed
   );
   const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
+
+  const [notifOpen, setNotifOpen] = useState(false);
+  const notifRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    async function fetchNotifications() {
+      const notifications = await getNotificationsByUserId(
+        getLoggedUserFromLS().userId
+      );
+      setLatestNotifications(notifications);
+      setCountOfNotifications(notifications.length);
+    }
+    fetchNotifications();
+  }, []);
+
+  const NOTIFICATION_EVENTS = [
+    "receiveBidPriceNotification",
+    "receiveLoadAcceptanceNotification",
+    "receiveNewBidNotification",
+    "receiveLoadAcceptanceByShipperNotification",
+    "receiveFixedLoadAcceptanceNotification",
+  ];
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleNotification = (notification: any) => {
+      console.log("🔔 notification received:", notification);
+      setLatestNotifications((prev = []) => [notification, ...prev]);
+      setCountOfNotifications((prev) => prev + 1);
+    };
+
+    NOTIFICATION_EVENTS.forEach((eventName) => {
+      socket.on(eventName, handleNotification);
+    });
+
+    socket.on("message", (data) => {
+      console.log("Generic socket message:", data);
+    });
+
+    return () => {
+      NOTIFICATION_EVENTS.forEach((eventName) => {
+        socket.off(eventName, handleNotification);
+      });
+      socket.off("message");
+    };
+  }, [socket]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        notifRef.current &&
+        !notifRef.current.contains(event.target as Node)
+      ) {
+        setNotifOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("token");
@@ -123,11 +203,47 @@ const Navbar = () => {
             )}
           </button>
 
-          <div className="relative">
-            <Bell className="cursor-pointer text-gray-500" size={24} />
-            <span className="absolute -top-2 -right-2 inline-flex items-center justify-center px-[0.4rem] py-1 text-xs font-semibold leading-none text-red-100 bg-red-400 rounded-full">
-              0
-            </span>
+          {/* Notifications Bell with Toggle Dropdown */}
+          <div className="relative" ref={notifRef}>
+            <button
+              onClick={() => {
+                setCountOfNotifications(0);
+                setNotifOpen((prev) => !prev);
+              }}
+            >
+              <Bell className="cursor-pointer text-gray-500" size={24} />
+              <span className="absolute -top-2 -right-2 inline-flex items-center justify-center px-[0.4rem] py-1 text-xs font-semibold leading-none text-red-100 bg-red-400 rounded-full">
+                {countOfNotifications}
+              </span>
+            </button>
+            {notifOpen && (
+              <div className="absolute right-0 mt-2 w-96 bg-white rounded-2xl shadow-2xl z-50 border border-gray-200 max-h-96 overflow-y-auto">
+                <div className="px-6 py-4 text-base font-semibold text-gray-800 border-b bg-gray-50 rounded-t-2xl">
+                  🔔 Notifications
+                </div>
+
+                {latestNotifications != undefined &&
+                latestNotifications?.length > 0 ? (
+                  latestNotifications.map((notif) => (
+                    <div
+                      className="px-6 py-4 hover:bg-gray-100 cursor-pointer border-b last:border-b-0 transition-colors"
+                      key={notif.id}
+                    >
+                      <div className="text-sm font-semibold text-gray-900">
+                        {notif.message}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {new Date(notif.createdAt).toLocaleString()}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="px-6 py-4 text-sm text-gray-500 text-center">
+                    No new notifications
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <hr className="w-0 h-7 border border-solid border-l border-gray-300 mx-3" />

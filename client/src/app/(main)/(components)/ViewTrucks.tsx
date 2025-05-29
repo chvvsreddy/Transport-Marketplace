@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { Table, message } from "antd";
-import axios from "axios";
+import { Table } from "antd";
 import { getLoggedUserFromLS } from "@/app/util/getLoggedUserFromLS";
 import { fetchTrucksById } from "@/state/api";
 
@@ -46,6 +45,10 @@ const ViewTrucks = () => {
     {
       title: "Insurance Number",
       dataIndex: "insuranceNumber",
+    },
+    {
+      title: "Status",
+      dataIndex: "isActive",
     },
   ];
 

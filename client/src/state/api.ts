@@ -362,8 +362,6 @@ export const createLoad = async (obj: any) => {
   }
 };
 
-
-
 export const getLoadByLoadId = async (loadId: any) => {
   try {
     const response = await fetch(
@@ -431,43 +429,6 @@ export const getLoadByLoadIdForAdmin = async (loadId: any) => {
     console.error("load getting By LoadId for admin, got error:", error);
   }
 };
-
-// const getDistanceAndTimeBetweenTwoLocations = async (location: any) => {
-//   try {
-//     const response = await fetch(
-//       `${process.env.NEXT_PUBLIC_OPEN_ROUTE_SERVICE_API}`,
-//       {
-//         method: "POST",
-//         headers: {
-//           Authorization: `${process.env.NEXT_PUBLIC_OPEN_ROUTE_SERVICE_API_KEY}`,
-//           "Content-Type": "application/json",
-//         },
-//         body: JSON.stringify({ locations: location }),
-//       }
-//     );
-
-//     const data = await response.json();
-
-//     const distances = data.distances;
-//     const durations = data.durations;
-
-//     const distanceInKm = (distances[0][1] / 1000).toFixed(2);
-
-//     const totalSeconds = durations[0][1];
-//     const hours = Math.floor(totalSeconds / 3600);
-//     const minutes = Math.floor((totalSeconds % 3600) / 60);
-
-//     const durationString = `${hours} hours ${minutes} minutes`;
-
-//     return {
-//       distanceInKm: Number(distanceInKm),
-//       duration: durationString,
-//     };
-//   } catch (error: any) {
-//     console.error("Error fetching matrix:", error.message);
-//     return null;
-//   }
-// };
 
 export const getLoadBidPaymentTripByUserId = async (obj: any) => {
   try {
@@ -538,6 +499,21 @@ export const createTrip = async (obj: any) => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(obj),
+      }
+    );
+    return response.json();
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getNotificationsByUserId = async (userId: any) => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/notifications/${userId}`,
+      {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
       }
     );
     return response.json();
