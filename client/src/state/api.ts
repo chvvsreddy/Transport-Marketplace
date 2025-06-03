@@ -445,6 +445,21 @@ export const getLoadBidPaymentTripByUserId = async (obj: any) => {
     console.log(error);
   }
 };
+
+export const getUserCompanyDetails = async (userId: string) => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/Register/companyDetails/${userId}`,
+      {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+    return response.json();
+  } catch (e) {
+    console.error(" got error getting user for comapny details", e);
+  }
+};
 export const getActiveVehiclesByOwnerId = async (obj: any) => {
   try {
     const response = await fetch(
@@ -506,7 +521,21 @@ export const createTrip = async (obj: any) => {
     console.log(error);
   }
 };
-
+export const createCompanyDetailsToUser = async (obj: any) => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/Register/companyDetails`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(obj),
+      }
+    );
+    return response.json();
+  } catch (error) {
+    console.log(error);
+  }
+};
 export const getNotificationsByUserId = async (userId: any) => {
   try {
     const response = await fetch(
@@ -514,6 +543,22 @@ export const getNotificationsByUserId = async (userId: any) => {
       {
         method: "GET",
         headers: { "Content-Type": "application/json" },
+      }
+    );
+    return response.json();
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const upadteNotifs = async (obj: any) => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/notifications`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(obj),
       }
     );
     return response.json();

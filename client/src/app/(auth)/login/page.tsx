@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { checkUser } from "@/state/api";
+import { checkUser, getUserCompanyDetails } from "@/state/api";
 import { useRouter } from "next/navigation";
 import { message } from "antd";
 
@@ -25,7 +25,11 @@ export default function LoginPage() {
 
     try {
       const res = await checkUser({ email, password });
+      const data = await getUserCompanyDetails(res.userId);
 
+      if(data === null) {
+        return router.push(`/Register/${res.type}?userId=${res.userId}`);
+      }
       if (res?.userId) {
         localStorage.setItem("token", JSON.stringify(res));
         // const routeMap: Record<string, string> = {

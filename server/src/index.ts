@@ -25,6 +25,7 @@ import paymentRoutes from "./routes/paymentRoutes";
 import createTripRoutes from "./routes/createTripRoutes";
 import vehicleStatusUpdate from "./routes/vehicleStatusRoutes";
 import notificationRoutes from "./routes/notificationRoutes";
+import companyDetailsRoutes from "./routes/companyDetailsRegisterRoutes";
 // Configurations
 dotenv.config();
 const app = express();
@@ -58,6 +59,7 @@ app.use("/payments", paymentRoutes);
 app.use("/createTrip", createTripRoutes);
 app.use("/vehicleStatus", vehicleStatusUpdate);
 app.use("/notifications", notificationRoutes);
+app.use("/Register/companyDetails", companyDetailsRoutes);
 
 // Socket.IO Configuration
 const io = new Server(server, {

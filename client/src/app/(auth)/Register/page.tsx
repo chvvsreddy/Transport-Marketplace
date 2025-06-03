@@ -9,16 +9,15 @@ import { useRouter } from "next/navigation";
 import { message, Radio } from "antd";
 
 const UserType = {
-  SHIPPER_COMPANY: "Shipper Company",
-  INDIVIDUAL_SHIPPER: "Individual Shipper",
-  LOGISTICS_COMPANY: "Logistics Company",
-  INDIVIDUAL_DRIVER: "Individual Driver",
-  ADMIN: "Admin",
+  ShipperCompany: "SHIPPER_COMPANY",
+  ShipperIndividual: "INDIVIDUAL_SHIPPER",
+  CarrierCompany: "LOGISTICS_COMPANY",
+  CarrierIndividual: "INDIVIDUAL_DRIVER",
 };
 
 export default function RegisterPage() {
-  const [userType1, setUserType1] = useState('Carriar')
-  const [userType2, setUserType2] = useState('Company')
+  const [userType1, setUserType1] = useState("");
+  const [userType2, setUserType2] = useState("");
   const [formData, setFormData] = useState({
     email: "",
     passwordHash: "",
@@ -37,23 +36,32 @@ export default function RegisterPage() {
     }));
   };
 
+
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
-    try {
-      const res = await createUser(formData);
+    const userTypeKey = userType1 + userType2;
+    const type = UserType[userTypeKey as keyof typeof UserType];
 
+    const dataToSubmit = {
+      ...formData,
+      type,
+    };
+
+
+    try {
+      const res = await createUser(dataToSubmit);
       if (res.id) {
-        router.push("/login");
         message.success("account created successfully");
+        router.push(`/Register/${res.type}?userId=${res.id}`);
       } else {
         message.error("Registration failed. Please try again.");
-        throw new Error("Registration failed. Please try again.");
       }
     } catch (error: any) {
       setError(error.message);
+    } finally {
       setLoading(false);
     }
   };
@@ -126,30 +134,43 @@ export default function RegisterPage() {
                   />
                 </Link>
               </div>
-
               <h2 className="mt-6 text-center text-2xl/9 font-bold tracking-tight text-gray-900">
                 Create new account
               </h2>
 
               <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
                 <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                <label htmlFor="User Type"  className="block text-sm/6 font-medium text-gray-900 mb-2" >
+                  <div>
+                    <label
+                      htmlFor="User Type"
+                      className="block text-sm/6 font-medium text-gray-900 mb-2"
+                    >
                       User Type
                     </label>
                     <div className="flex gap-3">
-                  <Radio.Group value={userType1} onChange={(e) => setUserType1(e.target.value)}>
-                    <Radio.Button value="Carriar">Carriar</Radio.Button>
-                    <Radio.Button value="Shipper">Shipper</Radio.Button>
-                  </Radio.Group>
-                  <Radio.Group value={userType2} onChange={(e) => setUserType2(e.target.value)}>
-                    <Radio.Button value="Company">Company</Radio.Button>
-                    <Radio.Button value="Individual">Individual</Radio.Button>
-                </Radio.Group>
-                </div>
-                </div>
-                  <div> 
-                    <label htmlFor="email"  className="block text-sm/6 font-medium text-gray-900" >
+                      <Radio.Group
+                        value={userType1}
+                        onChange={(e) => setUserType1(e.target.value)}
+                      >
+                        <Radio.Button value="Carrier">Carrier</Radio.Button>
+                        <Radio.Button value="Shipper">Shipper</Radio.Button>
+                      </Radio.Group>
+                      <Radio.Group
+                        value={userType2}
+                        onChange={(e) => setUserType2(e.target.value)}
+                      >
+                        <Radio.Button value="Company">Company</Radio.Button>
+                        <Radio.Button value="Individual">
+                          Individual
+                        </Radio.Button>
+                      </Radio.Group>
+                    </div>
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="email"
+                      className="block text-sm/6 font-medium text-gray-900"
+                    >
                       Email address
                     </label>
                     <div className="mt-2">
@@ -165,22 +186,33 @@ export default function RegisterPage() {
                       />
                     </div>
                   </div>
-                  <div> 
-                    <label htmlFor="mobile" className="block text-sm/6 font-medium text-gray-900" >
-                        Mobile No </label>            
+                  <div>
+                    <label
+                      htmlFor="mobile"
+                      className="block text-sm/6 font-medium text-gray-900"
+                    >
+                      Mobile No{" "}
+                    </label>
                     <div className="mt-2">
-                      <input id="mobile" name="phone" type="text" required
+                      <input
+                        id="mobile"
+                        name="phone"
+                        type="text"
+                        required
                         value={formData.phone}
                         onChange={handleChange}
                         className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
                       />
                     </div>
-
-
                   </div>
                   <div>
-                      <label htmlFor="password" className="block text-sm/6 font-medium text-gray-900" > Password
-                      </label>
+                    <label
+                      htmlFor="password"
+                      className="block text-sm/6 font-medium text-gray-900"
+                    >
+                      {" "}
+                      Password
+                    </label>
                     <div className="mt-2">
                       <input
                         id="password"
@@ -194,35 +226,48 @@ export default function RegisterPage() {
                       />
                     </div>
 
-                   
-                    <div className="flex items-center justify-between">
-                      <label
-                        htmlFor="userType"
-                        className="block text-sm/6 font-medium text-gray-900 pt-6"
+                    {/* <div className="flex items-center justify-between">
+                    <label
+                      htmlFor="userType"
+                      className="block text-sm/6 font-medium text-gray-900 pt-6"
+                    >
+                      Type
+                    </label>
+                    <div className="mt-2">
+                      <select
+                        id="userType"
+                        name="type"
+                        value={formData.type}
+                        onChange={handleChange}
+                        required
+                        className="block w-full mt-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                       >
-                        Type
-                      </label>
-                      <div className="mt-2">
-                        <select
-                          id="userType"
-                          name="type"
-                          value={formData.type}
-                          onChange={handleChange}
-                          required
-                          className="block w-full mt-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                        >
-                          <option value="" disabled>
-                            Select a user type
+                        <option value="" disabled>
+                          Select a user type
+                        </option>
+                        {Object.entries(UserType).map(([key, value]) => (
+                          <option key={key} value={key}>
+                            {value}
                           </option>
-                          {Object.entries(UserType).map(([key, value]) => (
-                            <option key={key} value={key}>
-                              {value}
-                            </option>
-                          ))}
-                        </select>
+                        ))}
+                      </select>
+                    </div>
+                  </div> */}
+                    <div className="flex justify-end mt-2">
+                      <div className="w-[30px] h-[30px] rounded-full bg-gray-200 flex items-center justify-center cursor-pointer">
+                        <svg
+                          className="w-3 h-3"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="black"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <polyline points="9 18 15 12 9 6" />
+                        </svg>
                       </div>
                     </div>
-
                     <button
                       type="submit"
                       className="flex w-full justify-center button-primary mt-6"

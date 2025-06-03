@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import { useSearch } from "../SearchContext";
 import { Avatar, message } from "antd";
 import { UserOutlined } from "@ant-design/icons";
-import { getNotificationsByUserId } from "@/state/api";
+import { getNotificationsByUserId, upadteNotifs } from "@/state/api";
 import { getLoggedUserFromLS } from "../getLoggedUserFromLS";
 import socket from "../socket";
 
@@ -209,6 +209,12 @@ const Navbar = () => {
               onClick={() => {
                 setCountOfNotifications(0);
                 setNotifOpen((prev) => !prev);
+                async function update() {
+                  const res = await upadteNotifs({
+                    userId: getLoggedUserFromLS().userId,
+                  });
+                }
+                update();
               }}
             >
               <Bell className="cursor-pointer text-gray-500" size={24} />

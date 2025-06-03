@@ -10,6 +10,7 @@ import { SocketProvider } from "../util/SocketContext";
 import { useRouter } from "next/navigation";
 import Shimmer from "./(components)/shimmerUi/Shimmer";
 import { LoadScript } from "@react-google-maps/api";
+import { RegistrationProvider } from "../util/RegistrationContext";
 
 const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!;
 const AdminSidebar = dynamic(
@@ -153,7 +154,9 @@ const DashboardWrapper = ({ children }: { children: React.ReactNode }) => {
       <SearchProvider>
         <UserProvider>
           <SocketProvider>
-            <DashboardLayout>{children}</DashboardLayout>
+            <RegistrationProvider>
+              <DashboardLayout>{children}</DashboardLayout>
+            </RegistrationProvider>
           </SocketProvider>
         </UserProvider>
       </SearchProvider>
