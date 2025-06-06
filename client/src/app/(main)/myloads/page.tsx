@@ -4,10 +4,18 @@ import { getLoggedUserFromLS } from "@/app/util/getLoggedUserFromLS";
 import { getLoads, getLoadsById } from "@/state/api";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Typography, Flex, Button, Divider, Select, Input, Row, Col } from "antd";
+import {
+  Typography,
+  Flex,
+  Button,
+  Divider,
+  Select,
+  Input,
+  Row,
+  Col,
+} from "antd";
 import LoadCard from "@/app/util/LoadCard";
 import Heading from "@/app/util/Heading";
-
 
 const { Option } = Select;
 
@@ -29,6 +37,7 @@ interface Load {
   id: string;
   origin: Location;
   destination: Location;
+  shipperId: string;
   specialRequirements: string;
   cargoType: string;
   trucks: number;
@@ -110,96 +119,124 @@ export default function MyLoads() {
     currentPage * ITEMS_PER_PAGE
   );
 
+  const currentLoads = isAdmin
+    ? loads
+    : loads.filter((load) => load.shipperId === getLoggedUserFromLS().userId);
+
+  const currentAvailableLoads = currentLoads.filter(
+    (load) => load.status === "AVAILABLE"
+  );
+
+  const currentPendingLoads = currentLoads.filter(
+    (load) => load.status === "PENDING"
+  );
+
+  const currentAssignedLoads = currentLoads.filter(
+    (load) => load.status === "ASSIGNED"
+  );
+
+  const currentInTransitLoads = currentLoads.filter(
+    (load) => load.status === "IN_TRANSIT"
+  );
+
+  const currentDeliveredLoads = currentLoads.filter(
+    (load) => load.status === "DELIVERED"
+  );
+
+  const currentCancelledLoads = currentLoads.filter(
+    (load) => load.status === "CANCELLED"
+  );
   return (
     <>
-    <Row className="pr-4">
+      <Row className="pr-4">
         <Col span={24} md={6}>
-          <Heading name= {isAdmin ? "All Loads (Admin View)" : "My Loads"} />
+          <Heading name={isAdmin ? "All Loads (Admin View)" : "My Loads"} />
         </Col>
         <Col span={24} md={18}>
           <div className="flex md:justify-end gap-2 md:mt-0 overflow-auto ml-4">
-            <div className="page-filter-tabs active">              
-                5 All             
+            <div className="page-filter-tabs active">
+              {" "}
+              {currentLoads.length} All
             </div>
             <div className="page-filter-tabs">
-                1 Available
+              {currentAvailableLoads.length} Available
             </div>
             <div className="page-filter-tabs">
-                2 Pending
+              {currentPendingLoads.length} Pending
             </div>
             <div className="page-filter-tabs">
-               1 Assigned
-            </div>  
-            <div className="page-filter-tabs">
-               1 InTransit
+              {currentAssignedLoads.length} Assigned
             </div>
             <div className="page-filter-tabs">
-               2 Delivered
-            </div>  
+              {currentInTransitLoads.length} InTransit
+            </div>
             <div className="page-filter-tabs">
-               1 Cancelled
-            </div>           
+              {currentDeliveredLoads.length} Delivered
+            </div>
+            <div className="page-filter-tabs">
+              {currentCancelledLoads.length} Cancelled
+            </div>
           </div>
         </Col>
       </Row>
 
       <div className="main-content">
-      <Flex align="center" gap={12} style={{ marginBottom: 16 }}>
-        <Typography.Text strong>Status:</Typography.Text>
-        <Select
-          value={selectedStatus}
-          onChange={(val) => {
-            setSelectedStatus(val);
-            setCurrentPage(1);
-          }}
-          style={{ width: 200 }}
-        >
-          <Option value="ALL">All</Option>
-          <Option value="AVAILABLE">Available</Option>
-          <Option value="PENDING">Pending</Option>
-          <Option value="ASSIGNED">Assigned</Option>
-          <Option value="IN_TRANSIT">In Transit</Option>
-          <Option value="DELIVERED">Delivered</Option>
-          <Option value="CANCELLED">Cancelled</Option>
-        </Select>
+        <Flex align="center" gap={12} style={{ marginBottom: 16 }}>
+          <Typography.Text strong>Status:</Typography.Text>
+          <Select
+            value={selectedStatus}
+            onChange={(val) => {
+              setSelectedStatus(val);
+              setCurrentPage(1);
+            }}
+            style={{ width: 200 }}
+          >
+            <Option value="ALL">All</Option>
+            <Option value="AVAILABLE">Available</Option>
+            <Option value="PENDING">Pending</Option>
+            <Option value="ASSIGNED">Assigned</Option>
+            <Option value="IN_TRANSIT">In Transit</Option>
+            <Option value="DELIVERED">Delivered</Option>
+            <Option value="CANCELLED">Cancelled</Option>
+          </Select>
 
-        <Input
-          placeholder="Search by origin city"
-          value={originSearchQuery}
-          onChange={(e) => setOriginSearchQuery(e.target.value)}
-          style={{ width: 200 }}
-        />
+          <Input
+            placeholder="Search by origin city"
+            value={originSearchQuery}
+            onChange={(e) => setOriginSearchQuery(e.target.value)}
+            style={{ width: 200 }}
+          />
 
-        <Input
-          placeholder="Search by destination city"
-          value={destinationSearchQuery}
-          onChange={(e) => setDestinationSearchQuery(e.target.value)}
-          style={{ width: 200 }}
-        />
-      </Flex>
-
-      {paginatedLoads.map((load) => (
-        <LoadCard key={load.id} load={load} />
-      ))}
-
-      {filteredLoads.length > ITEMS_PER_PAGE && (
-        <Flex
-          justify="center"
-          align="center"
-          gap={16}
-          style={{ marginTop: 24 }}
-        >
-          <Button onClick={handlePrev} disabled={currentPage === 1}>
-            Prev
-          </Button>
-          <Typography.Text>
-            Page {currentPage} of {totalPages}
-          </Typography.Text>
-          <Button onClick={handleNext} disabled={currentPage === totalPages}>
-            Next
-          </Button>
+          <Input
+            placeholder="Search by destination city"
+            value={destinationSearchQuery}
+            onChange={(e) => setDestinationSearchQuery(e.target.value)}
+            style={{ width: 200 }}
+          />
         </Flex>
-      )}
+
+        {paginatedLoads.map((load) => (
+          <LoadCard key={load.id} load={load} />
+        ))}
+
+        {filteredLoads.length > ITEMS_PER_PAGE && (
+          <Flex
+            justify="center"
+            align="center"
+            gap={16}
+            style={{ marginTop: 24 }}
+          >
+            <Button onClick={handlePrev} disabled={currentPage === 1}>
+              Prev
+            </Button>
+            <Typography.Text>
+              Page {currentPage} of {totalPages}
+            </Typography.Text>
+            <Button onClick={handleNext} disabled={currentPage === totalPages}>
+              Next
+            </Button>
+          </Flex>
+        )}
       </div>
     </>
   );

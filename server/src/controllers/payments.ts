@@ -7,14 +7,17 @@ export const getLoadBidTripPaymentByUserIdFilter = async (
   req: Request,
   res: Response
 ) => {
-  const { userId } = req.body;
+  const { userId, type } = req.body;
 
   try {
-    const loads = await prisma.loads.findMany({
-      where: {
-        shipperId: userId,
-      },
-    });
+    const loads =
+      type === "ADMIN"
+        ? await prisma.loads.findMany({})
+        : await prisma.loads.findMany({
+            where: {
+              shipperId: userId,
+            },
+          });
 
     const result = await Promise.all(
       loads.map(async (load) => {

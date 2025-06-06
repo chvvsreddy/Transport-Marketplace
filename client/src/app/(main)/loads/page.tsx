@@ -484,10 +484,6 @@ const Loads = () => {
       getLoggedUserFromLS().userId
     );
 
-    // const findVehicle = activeVehicles?.find(
-    //   (veh) => veh.registrationNumber === selectedTrucks[load.id]
-    // );
-
     setDataForTrips(getDataWithoutTrips);
     console.log(
       "Confirmed load:",

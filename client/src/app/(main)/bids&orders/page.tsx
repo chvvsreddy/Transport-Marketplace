@@ -274,12 +274,7 @@ export default function BidsAndOthers() {
   }, [destinationInput]);
 
   const filteredAvailableLoads = isAdmin
-    ? filteredLoads.filter(
-        (load) =>
-          load.origin.city.toLowerCase().includes(originSearch) &&
-          load.destination.city.toLowerCase().includes(destinationSearch) &&
-          load.status === "AVAILABLE"
-      )
+    ? filteredLoads
     : filteredLoads.filter(
         (load) =>
           load.shipperId === loggedUser?.userId &&
@@ -421,8 +416,7 @@ export default function BidsAndOthers() {
           const relatedBids = bids.filter(
             (bid) =>
               bid.loadId === load.id &&
-              (bidStatusFilter === "ALL" || bid.status === bidStatusFilter) &&
-              load.status === "AVAILABLE"
+              (bidStatusFilter === "ALL" || bid.status === bidStatusFilter)
           );
 
           const pickupDate = new Date(load.pickupWindowStart);

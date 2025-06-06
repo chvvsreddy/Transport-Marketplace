@@ -48,7 +48,10 @@ export default function Payments() {
     const fetchPayments = async () => {
       setLoading(true);
       try {
-        const result = await getLoadBidPaymentTripByUserId({ userId });
+        const result = await getLoadBidPaymentTripByUserId({
+          userId,
+          type: getLoggedUserFromLS().type,
+        });
         setData(result || []);
       } catch (err: any) {
         setError("Failed to load payments.");
@@ -160,6 +163,11 @@ export default function Payments() {
                     <span className="valueStyle">
                       {tripId === `no-trip-${idx}` ? "N/A" : tripId}
                     </span>
+                  </p>
+                  <p>
+                    <span className="labelStyle">Load Price</span>
+                    <br />
+                    <span className="valueStyle">{load.price}</span>
                   </p>
                   <button
                     onClick={() => toggleTrip(tripId)}
