@@ -279,8 +279,7 @@ export default function BidsAndOthers() {
         (load) =>
           load.shipperId === loggedUser?.userId &&
           load.origin.city.toLowerCase().includes(originSearch) &&
-          load.destination.city.toLowerCase().includes(destinationSearch) &&
-          load.status === "AVAILABLE"
+          load.destination.city.toLowerCase().includes(destinationSearch) 
       );
 
   const loadsWithMatchingBids = filteredAvailableLoads.filter((load) =>
