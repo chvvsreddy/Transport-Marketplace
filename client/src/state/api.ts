@@ -1,3 +1,4 @@
+import getTokenIdFromLs from "@/app/util/getTokenIdFromLS";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export interface allLoads {
@@ -40,7 +41,16 @@ export interface AllUsers {
 }
 
 export const api = createApi({
-  baseQuery: fetchBaseQuery({ baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL }),
+  baseQuery: fetchBaseQuery({
+    baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL,
+    prepareHeaders: (headers, { }) => {
+      const token = getTokenIdFromLs();
+      if (token) {
+        headers.set('Authorization', `Bearer ${token}`);
+      }
+      return headers;
+    },
+  }),
   reducerPath: "api",
   tagTypes: ["AllLoads", "AllUsers"],
   endpoints: (build) => ({
@@ -49,7 +59,7 @@ export const api = createApi({
       providesTags: ["AllLoads"],
     }),
     getAllUsers: build.query<AllUsers, void>({
-      query: () => "allUsers",
+      query: () => "/allUsers",
       providesTags: ["AllUsers"],
     }),
   }),
@@ -79,7 +89,6 @@ export const checkUser = async (obj: userDetails) => {
         body: JSON.stringify(obj),
       }
     );
-
     const data = await response.json();
     return data;
   } catch (error) {
@@ -108,6 +117,7 @@ export const createUser = async (obj: User) => {
 };
 
 export const getUser = async (obj: string) => {
+  const token = getTokenIdFromLs();
   try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile?userId=${obj}`,
@@ -115,6 +125,7 @@ export const getUser = async (obj: string) => {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
+           "Authorization": `Bearer ${token}`
         },
       }
     );
@@ -137,12 +148,14 @@ export const createBid = async ({
   price: number;
   negotiateDriverPrice: number;
 }) => {
+  const token = getTokenIdFromLs();
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_BASE_URL}/bids&orders`,
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+         "Authorization": `Bearer ${token}`
       },
       body: JSON.stringify({ loadId, userId, price, negotiateDriverPrice }),
     }
@@ -156,6 +169,7 @@ export const createBid = async ({
 };
 
 export const getAllUsers = async () => {
+  const token = getTokenIdFromLs();
   try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/allUsers`,
@@ -163,6 +177,7 @@ export const getAllUsers = async () => {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
+           "Authorization": `Bearer ${token}`
         },
       }
     );
@@ -175,6 +190,7 @@ export const getAllUsers = async () => {
 };
 
 export const getLoads = async () => {
+  const token = getTokenIdFromLs()
   try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/allLoads`,
@@ -182,6 +198,7 @@ export const getLoads = async () => {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
+           "Authorization": `Bearer ${token}`
         },
       }
     );
@@ -195,12 +212,14 @@ export const getLoads = async () => {
 
 export const getBids = async () => {
   try {
+    const token = getTokenIdFromLs();
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/bids&orders`,
       {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
+           "Authorization": `Bearer ${token}`
         },
       }
     );
@@ -213,12 +232,14 @@ export const getBids = async () => {
 };
 export const updateBid = async (obj: any) => {
   try {
+    const token = getTokenIdFromLs()
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/bids&orders`,
       {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+           "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify(obj),
       }
@@ -232,12 +253,14 @@ export const updateBid = async (obj: any) => {
 };
 export const updateBidStatus = async (obj: any) => {
   try {
+    const token = getTokenIdFromLs()
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/bids&orders`,
       {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
+           "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify(obj),
       }
@@ -251,12 +274,14 @@ export const updateBidStatus = async (obj: any) => {
 };
 export const getLoadsById = async (obj: any) => {
   try {
+    const token = getTokenIdFromLs()
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/allLoads`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+           "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify(obj),
       }
@@ -271,12 +296,14 @@ export const getLoadsById = async (obj: any) => {
 
 export const getBidsByLoadId = async (obj: any) => {
   try {
+    const token = getTokenIdFromLs()
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/trips`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+           "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify(obj),
       }
@@ -290,12 +317,14 @@ export const getBidsByLoadId = async (obj: any) => {
 };
 export const getTripsByLoadId = async (obj: any) => {
   try {
+    const token = getTokenIdFromLs()
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/trips`,
       {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+           "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify(obj),
       }
@@ -309,6 +338,7 @@ export const getTripsByLoadId = async (obj: any) => {
 };
 export const createLoad = async (obj: any) => {
   try {
+    const token = getTokenIdFromLs()
     const getLatLngFromGoogleAPI = async (location: any) => {
       const fullAddress = `${location.address}, ${location.city}, ${location.state}, ${location.postalCode}, ${location.country}`;
       const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
@@ -349,7 +379,10 @@ export const createLoad = async (obj: any) => {
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/postload`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" ,
+          "Authorization": `Bearer ${token}`,
+        },
+        
         body: JSON.stringify(obj),
       }
     );
@@ -363,6 +396,7 @@ export const createLoad = async (obj: any) => {
 };
 
 export const getLoadByLoadId = async (loadId: any) => {
+ const token = getTokenIdFromLs();
   try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/myLoads/${loadId}`,
@@ -370,10 +404,10 @@ export const getLoadByLoadId = async (loadId: any) => {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
         },
       }
     );
-
     const data = await response.json();
     return data;
   } catch (error) {
@@ -382,12 +416,14 @@ export const getLoadByLoadId = async (loadId: any) => {
 };
 
 export const getActiveBidsByCarrierId = async (carrierId: string) => {
+
   try {
+    const token = getTokenIdFromLs()
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/driverLocation`,
       {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json","Authorization": `Bearer ${token}`, },
         body: JSON.stringify({ carrierId }),
       }
     );
@@ -399,11 +435,12 @@ export const getActiveBidsByCarrierId = async (carrierId: string) => {
 
 export const getDataForTripsAssigning = async (carrierId: string) => {
   try {
+    const token = getTokenIdFromLs()
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/driverLocation/${carrierId}`,
       {
         method: "GET",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json","Authorization": `Bearer ${token}`, },
       }
     );
     return response.json();
@@ -413,12 +450,14 @@ export const getDataForTripsAssigning = async (carrierId: string) => {
 };
 export const getLoadByLoadIdForAdmin = async (loadId: any) => {
   try {
+    const token = getTokenIdFromLs()
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/myLoads/${loadId}`,
       {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
         },
       }
     );
@@ -432,11 +471,12 @@ export const getLoadByLoadIdForAdmin = async (loadId: any) => {
 
 export const getLoadBidPaymentTripByUserId = async (obj: any) => {
   try {
+    const token = getTokenIdFromLs()
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/payments`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json","Authorization": `Bearer ${token}`, },
         body: JSON.stringify(obj),
       }
     );
@@ -448,11 +488,12 @@ export const getLoadBidPaymentTripByUserId = async (obj: any) => {
 
 export const getUserCompanyDetails = async (userId: string) => {
   try {
+   
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/Register/companyDetails/${userId}`,
       {
         method: "GET",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", },
       }
     );
     return response.json();
@@ -462,11 +503,12 @@ export const getUserCompanyDetails = async (userId: string) => {
 };
 export const getActiveVehiclesByOwnerId = async (obj: any) => {
   try {
+    const token = getTokenIdFromLs()
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/trucks`,
       {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json","Authorization": `Bearer ${token}`, },
         body: JSON.stringify(obj),
       }
     );
@@ -478,11 +520,12 @@ export const getActiveVehiclesByOwnerId = async (obj: any) => {
 
 export const fetchTrucksById = async (obj: any) => {
   try {
+    const token = getTokenIdFromLs()
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/trucks`,
       {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json","Authorization": `Bearer ${token}`,},
         body: JSON.stringify(obj),
       }
     );
@@ -492,12 +535,13 @@ export const fetchTrucksById = async (obj: any) => {
   }
 };
 export const updateVehicleStatus = async (obj: any) => {
+  const token = getTokenIdFromLs()
   try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/vehicleStatus`,
       {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json","Authorization": `Bearer ${token}`, },
         body: JSON.stringify(obj),
       }
     );
@@ -508,11 +552,12 @@ export const updateVehicleStatus = async (obj: any) => {
 };
 export const createTrip = async (obj: any) => {
   try {
+    const token = getTokenIdFromLs()
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/createTrip`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json","Authorization": `Bearer ${token}`, },
         body: JSON.stringify(obj),
       }
     );
@@ -538,11 +583,12 @@ export const createCompanyDetailsToUser = async (obj: any) => {
 };
 export const getNotificationsByUserId = async (userId: any) => {
   try {
+    const token = getTokenIdFromLs()
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/notifications/${userId}`,
       {
         method: "GET",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json","Authorization": `Bearer ${token}`, },
       }
     );
     return response.json();
@@ -553,11 +599,12 @@ export const getNotificationsByUserId = async (userId: any) => {
 
 export const upadteNotifs = async (obj: any) => {
   try {
+    const token = getTokenIdFromLs()
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/notifications`,
       {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json","Authorization": `Bearer ${token}`, },
         body: JSON.stringify(obj),
       }
     );

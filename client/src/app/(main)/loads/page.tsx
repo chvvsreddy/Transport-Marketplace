@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Card,
   Row,
   Col,
   Select,
@@ -35,6 +34,7 @@ import Shimmer from "../(components)/shimmerUi/Shimmer";
 import type { CheckboxGroupProps } from "antd/es/checkbox";
 import { DownOutlined, UpOutlined } from "@ant-design/icons";
 import Link from "next/link";
+import getTokenIdFromLs from "@/app/util/getTokenIdFromLS";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -188,7 +188,7 @@ const Loads = () => {
 
   const { socket } = useContext(SocketContext) || {};
   const router = useRouter();
-
+  const token = getTokenIdFromLs()
   const showLoading = () => {
     setOpen(false);
   };
@@ -268,7 +268,7 @@ const Loads = () => {
                 `${process.env.NEXT_PUBLIC_API_BASE_URL}/driverLocation`,
                 {
                   method: "POST",
-                  headers: { "Content-Type": "application/json" },
+                  headers: { "Content-Type": "application/json" ,"Authorization": `Bearer ${token}`},
                   body: JSON.stringify({
                     driverUserId: getLoggedUserFromLS().userId,
                     coordinates: updatedLocation,
@@ -358,6 +358,10 @@ const Loads = () => {
     if (selectedLoad && socket) {
       const userId = getLoggedUserFromLS()?.userId;
       const priceNum = Number(bidPrice);
+
+      if(priceNum<=0){
+        return message.error("amount should be greater then zero")
+      }
 
       const existingBid = Bids.find(
         (bid) => bid.loadId === selectedLoad.id && bid.carrierId === userId

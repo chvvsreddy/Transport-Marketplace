@@ -5,10 +5,11 @@ import {
   updateBid,
   updateBidStatus,
 } from "../controllers/allBids";
+import { authenticateToken } from "../authMiddleware";
 
 const router = Router();
-router.get("/", getAllBids);
-router.post("/", createBid);
-router.put("/", updateBid);
-router.patch("/", updateBidStatus);
+router.get("/",authenticateToken, getAllBids);
+router.post("/",authenticateToken, createBid);
+router.put("/",authenticateToken, updateBid);
+router.patch("/", authenticateToken,updateBidStatus);
 export default router;

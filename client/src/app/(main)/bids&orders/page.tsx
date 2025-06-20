@@ -214,6 +214,10 @@ export default function BidsAndOthers() {
     const findUserIdByLoad = loads.find(
       (load) => load.id === selectedBid.loadId
     );
+
+    if(negotiatedPrice<=0){
+      return message.error("amount should be greater than zero")
+    }
     if (socket?.id) {
       socket?.emit("updateBidAmount", {
         bidId: selectedBid.id,

@@ -8,6 +8,7 @@ import { Server } from "socket.io";
 import http from "http";
 import { PrismaClient } from "@prisma/client";
 
+
 // Route Imports
 import allLoadsRoute from "./routes/allLoadsRoutes";
 import allUsersRoute from "./routes/allUsersRoutes";

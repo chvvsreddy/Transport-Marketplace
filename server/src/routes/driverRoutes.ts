@@ -4,8 +4,9 @@ import {
   getBidsByCarrierIdForTripsAssigning,
   updateDriverLocation,
 } from "../controllers/driverController";
+import { authenticateToken } from "../authMiddleware";
 const router = Router();
-router.post("/", updateDriverLocation);
-router.put("/", getBidsByCarrierId);
-router.get("/:carrierId", getBidsByCarrierIdForTripsAssigning);
+router.post("/",authenticateToken,updateDriverLocation);
+router.put("/",authenticateToken, getBidsByCarrierId);
+router.get("/:carrierId", authenticateToken,getBidsByCarrierIdForTripsAssigning);
 export default router;
