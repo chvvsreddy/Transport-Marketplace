@@ -6,22 +6,19 @@ import dynamic from "next/dynamic";
 import { useUser } from "@/app/util/UserContext";
 import { Button } from "antd";
 import LoadTable from "./LoadsDash";
-import MonthlyLoadCard from "./components/MontlyLoads";
+import { format, parse } from "date-fns";
 import MonthlyLoadsChart from "./components/MontlyLoads";
 import BidPriceTrendChart from "./components/BidPriceTrend";
 import BidStatusBarChart from "./components/BidStatusBarChart";
+import { getLoggedUserFromLS } from "@/app/util/getLoggedUserFromLS";
+
 const Heading = dynamic(() => import("@/app/util/Heading/index"), {
   loading: () => <h2>Loading Heading...</h2>,
 });
 const StatCard = dynamic(() => import("./StatCard"), {
   loading: () => <p>Loading Stat Card...</p>,
 });
-const CardRevenueSummary = dynamic(() => import("./CardRevenueSummary"), {
-  loading: () => <p>Loading Revenue Summary...</p>,
-});
-const CardPerformance = dynamic(() => import("./CardPerformance"), {
-  loading: () => <p>Loading Performance...</p>,
-});
+
 const mockLoadData = [
   { date: "Jun 1", count: 5 },
   { date: "Jun 2", count: 7 },
@@ -54,21 +51,28 @@ const Dashboard = () => {
     phone: "",
     type: "",
   });
-  const [selectedMonth, setSelectedMonth] = useState(() => {
-    const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
-      2,
-      "0"
-    )}`;
-  });
+  const [selectedDate, setSelectedDate] = useState(
+    () => {
+      return format(new Date(), "dd-MM-yyyy");
+    } // e.g., "07-07-2025"
+  );
 
+  const [dashboardData, setDashBoardData] = useState([]);
   const router = useRouter();
   const { setUser } = useUser();
-
+  const query = `
+  query GetLoadsCountByDate($input: LoadStatsInput!) {
+    getLoadsCountByDate(input: $input) {
+      totalLoads
+      countOfCompleted
+      countOfIntransit
+    }
+  }
+`;
   useLayoutEffect(() => {
-    const storedUser = localStorage.getItem("token");
+    const storedUser = getLoggedUserFromLS();
     if (storedUser) {
-      const userObj = JSON.parse(storedUser);
+      const userObj = storedUser;
       setLoggedUser(userObj);
       setUser(userObj);
       if (userObj.type === "INDIVIDUAL_DRIVER") {
@@ -77,7 +81,27 @@ const Dashboard = () => {
     } else {
       router.push("/login");
     }
-  }, []);
+
+    async function fetchDashboardData() {
+      const response = await fetch("http://localhost:8000/graphql", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          query,
+          variables: {
+            input: {
+              startDate: selectedDate,
+            },
+          },
+        }),
+      });
+      const result = await response.json();
+      console.log(result?.data?.getLoadsCountByDate);
+    }
+    fetchDashboardData();
+  }, [selectedDate]);
 
   //   useEffect(() => {
   //   const fetchData = async () => {
@@ -103,7 +127,7 @@ const Dashboard = () => {
     totalRevenue: 250000,
     pendingRevenue: 50000,
   };
-
+  console.log("Selected month : ", selectedDate);
   return (
     <>
       <Heading name="Dashboard" />
@@ -126,13 +150,20 @@ const Dashboard = () => {
         </label>
         <div className="relative">
           <input
-            id="month"
-            type="month"
-            value={selectedMonth}
-            onChange={(e) => setSelectedMonth(e.target.value)}
+            id="date"
+            type="date"
+            // Convert "dd-MM-yyyy" back to "yyyy-MM-dd" for input value
+            value={format(
+              parse(selectedDate, "dd-MM-yyyy", new Date()),
+              "yyyy-MM-dd"
+            )}
+            onChange={(e) => {
+              const inputDate = e.target.value; // e.g., "2025-07-07"
+              const formatted = format(new Date(inputDate), "dd-MM-yyyy"); // "07-07-2025"
+              setSelectedDate(formatted);
+            }}
             className="w-35 border border-none shadow-none px-4 py-3 text-base text-gray-700 shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
           />
-        
         </div>
       </div>
 
@@ -141,29 +172,28 @@ const Dashboard = () => {
           <div>
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Loads</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6 w-full mb-5">
-                <div className="bg-white rounded shadow-md p-5 flex flex-col items-start">
-                  <p className="text-gray-500 text-sm">Total Loads</p>
-                  <h3 className="text-2xl font-bold mt-1">{data.totalLoads}</h3>
-                </div>
-                <div className="bg-white rounded shadow-md p-5 flex flex-col items-start">
-                  <p className="text-gray-500 text-sm">Completed Loads</p>
-                  <h3 className="text-2xl font-bold text-green-500 mt-1">
-                    {data.completedLoads}
-                  </h3>
-                </div>
-                <div className="bg-white rounded shadow-md p-5 flex flex-col items-start">
-                  <p className="text-gray-500 text-sm">In Transit</p>
-                  <h3 className="text-2xl font-bold text-yellow-500 mt-1">
-                    {data.inTransitLoads}
-                  </h3>
-                </div>
+              <div className="bg-white rounded shadow-md p-5 flex flex-col items-start">
+                <p className="text-gray-500 text-sm">Total Loads</p>
+                <h3 className="text-2xl font-bold mt-1">{data.totalLoads}</h3>
               </div>
+              <div className="bg-white rounded shadow-md p-5 flex flex-col items-start">
+                <p className="text-gray-500 text-sm">Completed Loads</p>
+                <h3 className="text-2xl font-bold text-green-500 mt-1">
+                  {data.completedLoads}
+                </h3>
+              </div>
+              <div className="bg-white rounded shadow-md p-5 flex flex-col items-start">
+                <p className="text-gray-500 text-sm">In Transit</p>
+                <h3 className="text-2xl font-bold text-yellow-500 mt-1">
+                  {data.inTransitLoads}
+                </h3>
+              </div>
+            </div>
             <div className="bg-white rounded shadow-md p-5 flex flex-col items-start">
-              
               <div className="w-full">
-                      <h2 className="text-lg font-semibold text-gray-700 mb-3">
-                    Loads Trend
-                  </h2>
+                <h2 className="text-lg font-semibold text-gray-700 mb-3">
+                  Loads Trend
+                </h2>
                 <MonthlyLoadsChart data={mockLoadData} />
               </div>
             </div>
@@ -171,35 +201,34 @@ const Dashboard = () => {
           <div>
             <h2 className="text-xl font-semibold text-gray-800 mb-4">
               Revenue
-            </h2> 
+            </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6 w-full mb-5">
-                <div className="bg-white rounded shadow-md p-5 flex flex-col items-start">
-                  <p className="text-gray-500 text-sm">Total Revenue</p>
-                  <h3 className="text-2xl font-bold mt-1">
-                    ₹{data.totalRevenue}
-                  </h3>
-                </div>
-                <div className="bg-white rounded shadow-md p-5 flex flex-col items-start">
-                  <p className="text-gray-500 text-sm">Fullfilled Revenue</p>
-                  <h3 className="text-2xl font-bold text-green-500 mt-1">
-                    ₹{data.pendingRevenue}
-                  </h3>
-                </div>
-                <div className="bg-white rounded shadow-md p-5 flex flex-col items-start">
-                  <p className="text-gray-500 text-sm">Pending Revenue</p>
-                  <h3 className="text-2xl font-bold text-red-500 mt-1">
-                    ₹{data.pendingRevenue}
-                  </h3>
-                </div>
+              <div className="bg-white rounded shadow-md p-5 flex flex-col items-start">
+                <p className="text-gray-500 text-sm">Total Revenue</p>
+                <h3 className="text-2xl font-bold mt-1">
+                  ₹{data.totalRevenue}
+                </h3>
               </div>
+              <div className="bg-white rounded shadow-md p-5 flex flex-col items-start">
+                <p className="text-gray-500 text-sm">Fullfilled Revenue</p>
+                <h3 className="text-2xl font-bold text-green-500 mt-1">
+                  ₹{data.pendingRevenue}
+                </h3>
+              </div>
+              <div className="bg-white rounded shadow-md p-5 flex flex-col items-start">
+                <p className="text-gray-500 text-sm">Pending Revenue</p>
+                <h3 className="text-2xl font-bold text-red-500 mt-1">
+                  ₹{data.pendingRevenue}
+                </h3>
+              </div>
+            </div>
             <div className="bg-white rounded shadow-md p-5 flex flex-col items-start">
-             
-               <div className="w-full">
+              <div className="w-full">
                 <h2 className="text-lg font-semibold text-gray-700 mb-3">
                   Revenue Trend
                 </h2>
-               <MonthlyLoadsChart data={mockLoadData} />
-            </div>
+                <MonthlyLoadsChart data={mockLoadData} />
+              </div>
             </div>
           </div>
         </div>
@@ -217,53 +246,52 @@ const Dashboard = () => {
         <CardPerformance />
       </div> */}
 
-
       <div className="px-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
         <BidPriceTrendChart data={bidPriceData} />
         <BidStatusBarChart data={bidStatusData} />
         <div className="px-6">
           <div className="mb-4">
-                <StatCard
-          title="Customer & Expenses"
-          primaryIcon={<Package className="text-blue-600 w-6 h-6" />}
-          dateRange=""
-          details={[
-            {
-              title: "Customer Growth",
-              amount: "175.00",
-              changePercentage: 131,
-              IconComponent: TrendingUp,
-            },
-            {
-              title: "Expenses",
-              amount: "10.00",
-              changePercentage: -56,
-              IconComponent: TrendingDown,
-            },
-          ]}
-        />
+            <StatCard
+              title="Customer & Expenses"
+              primaryIcon={<Package className="text-blue-600 w-6 h-6" />}
+              dateRange=""
+              details={[
+                {
+                  title: "Customer Growth",
+                  amount: "175.00",
+                  changePercentage: 131,
+                  IconComponent: TrendingUp,
+                },
+                {
+                  title: "Expenses",
+                  amount: "10.00",
+                  changePercentage: -56,
+                  IconComponent: TrendingDown,
+                },
+              ]}
+            />
           </div>
-      
-        <StatCard
-          title="Sales & Discount"
-          primaryIcon={<Tag className="text-blue-600 w-6 h-6" />}
-          dateRange=""
-          details={[
-            {
-              title: "Sales",
-              amount: "1000.00",
-              changePercentage: 20,
-              IconComponent: TrendingUp,
-            },
-            {
-              title: "Discount",
-              amount: "200.00",
-              changePercentage: -10,
-              IconComponent: TrendingDown,
-            },
-          ]}
-        />
-      </div>
+
+          <StatCard
+            title="Sales & Discount"
+            primaryIcon={<Tag className="text-blue-600 w-6 h-6" />}
+            dateRange=""
+            details={[
+              {
+                title: "Sales",
+                amount: "1000.00",
+                changePercentage: 20,
+                IconComponent: TrendingUp,
+              },
+              {
+                title: "Discount",
+                amount: "200.00",
+                changePercentage: -10,
+                IconComponent: TrendingDown,
+              },
+            ]}
+          />
+        </div>
       </div>
     </>
   );

@@ -1,0 +1,13 @@
+input LoadStatsInput {
+  startDate: String!
+}
+
+type Dashboard {
+  totalLoads: Int!
+  countOfCompleted: Int!
+  countOfIntransit: Int!
+}
+
+type Query {
+  getLoadsCountByDate(input: LoadStatsInput!): Dashboard!
+}

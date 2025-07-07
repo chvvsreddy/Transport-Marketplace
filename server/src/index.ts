@@ -7,7 +7,8 @@ import morgan from "morgan";
 import { Server } from "socket.io";
 import http from "http";
 import { PrismaClient } from "@prisma/client";
-
+import { createYoga } from "graphql-yoga";
+import { schema } from "./merge";
 
 // Route Imports
 import allLoadsRoute from "./routes/allLoadsRoutes";
@@ -34,6 +35,11 @@ const server = http.createServer(app);
 const prisma = new PrismaClient();
 const onlineUsers = new Map();
 
+const yoga = createYoga({
+  schema,
+  graphqlEndpoint: "/graphql",
+   graphiql: true, 
+});
 // Middleware
 app.use(express.json());
 app.use(helmet());
@@ -61,6 +67,13 @@ app.use("/createTrip", createTripRoutes);
 app.use("/vehicleStatus", vehicleStatusUpdate);
 app.use("/notifications", notificationRoutes);
 app.use("/Register/companyDetails", companyDetailsRoutes);
+
+//graphql setup
+app.use("/graphql",  (req, res, next) => {
+    res.removeHeader("Content-Security-Policy");
+    next();
+  },yoga);
+
 
 // Socket.IO Configuration
 const io = new Server(server, {

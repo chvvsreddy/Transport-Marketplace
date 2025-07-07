@@ -31,7 +31,6 @@ import { useRouter } from "next/navigation";
 import { timeSincePosted } from "@/app/util/timeSincePosted";
 import { getStatusColor } from "@/app/util/statusColorLoads";
 import Shimmer from "../(components)/shimmerUi/Shimmer";
-import type { CheckboxGroupProps } from "antd/es/checkbox";
 import { DownOutlined, UpOutlined } from "@ant-design/icons";
 import Link from "next/link";
 import getTokenIdFromLs from "@/app/util/getTokenIdFromLS";
@@ -189,9 +188,7 @@ const Loads = () => {
   const { socket } = useContext(SocketContext) || {};
   const router = useRouter();
   const token = getTokenIdFromLs()
-  const showLoading = () => {
-    setOpen(false);
-  };
+
 
   useLayoutEffect(() => {
     if (getLoggedUserFromLS().userId) {

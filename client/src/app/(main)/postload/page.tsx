@@ -146,6 +146,7 @@ export default function PostLoad() {
   );
   useLayoutEffect(() => {
     const userObj = getLoggedUserFromLS();
+    console.log("step 1 : ",userObj);
     if (
       !userObj ||
       !(
@@ -157,6 +158,7 @@ export default function PostLoad() {
     } else {
       setAuthorized(true);
     }
+    console.log("step 2 : ",userObj);
   }, [router]);
 
   const acOptionValue = useWatch("acOption", form);
@@ -180,7 +182,7 @@ export default function PostLoad() {
     }
 
     const payload = {
-      shipperId: getLoggedUserFromLS().userId,
+      shipperId: getLoggedUserFromLS()?.userId,
       origin: {
         city: values.fromCity,
         lat: "",

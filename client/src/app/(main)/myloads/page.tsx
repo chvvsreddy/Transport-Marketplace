@@ -4,16 +4,7 @@ import { getLoggedUserFromLS } from "@/app/util/getLoggedUserFromLS";
 import { getLoads, getLoadsById } from "@/state/api";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import {
-  Typography,
-  Flex,
-  Button,
-  Divider,
-  Select,
-  Input,
-  Row,
-  Col,
-} from "antd";
+import { Typography, Flex, Button, Select, Input, Row, Col } from "antd";
 import LoadCard from "@/app/util/LoadCard";
 import Heading from "@/app/util/Heading";
 

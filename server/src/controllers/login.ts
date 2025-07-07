@@ -32,7 +32,7 @@ export const checkUser = async (req: Request, res: Response): Promise<any> => {
     if (!process.env.JWT_SECRET) {
   throw new Error("JWT_SECRET is not defined");
   }
-  const token = jwt.sign({ userId: checkedUser.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+  const token = jwt.sign({ userId: checkedUser.id,type:checkedUser.type}, process.env.JWT_SECRET, { expiresIn: '1h' });
    res.json({ token,type:checkedUser.type,userId:checkedUser.id });
   } catch (error) {
     console.error(error);
