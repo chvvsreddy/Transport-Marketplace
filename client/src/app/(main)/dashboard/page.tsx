@@ -117,12 +117,12 @@ const Dashboard = () => {
         </div>
         <img src="/advt-1.jpg" alt="" />
       </div>
-      <div className="px-6 pb-6 flex items-center justify-end gap-4 mt-6">
+      <div className="px-6 pb-6 flex items-center justify-end gap-4 mt-6 ">
         <label
           htmlFor="month"
           className="text-base font-semibold text-gray-800"
         >
-          📅 Select Month:
+          Select Month:
         </label>
         <div className="relative">
           <input
@@ -130,55 +130,81 @@ const Dashboard = () => {
             type="month"
             value={selectedMonth}
             onChange={(e) => setSelectedMonth(e.target.value)}
-            className="w-52 border border-gray-300 rounded-xl px-4 py-3 text-base text-gray-700 shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+            className="w-35 border border-none shadow-none px-4 py-3 text-base text-gray-700 shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
           />
-          <span className="absolute right-4 top-3 text-gray-400 pointer-events-none">
-            ⬇
-          </span>
+        
         </div>
       </div>
 
       <section className="px-6 py-4">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">This Month</h2>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-          <div className="bg-white rounded-xl shadow-md p-5 flex flex-col items-start">
-            <p className="text-gray-500 text-sm">Total Loads</p>
-            <h3 className="text-2xl font-bold text-blue-600 mt-1">
-              {data.totalLoads}
-            </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-6">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">Loads</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6 w-full mb-5">
+                <div className="bg-white rounded shadow-md p-5 flex flex-col items-start">
+                  <p className="text-gray-500 text-sm">Total Loads</p>
+                  <h3 className="text-2xl font-bold mt-1">{data.totalLoads}</h3>
+                </div>
+                <div className="bg-white rounded shadow-md p-5 flex flex-col items-start">
+                  <p className="text-gray-500 text-sm">Completed Loads</p>
+                  <h3 className="text-2xl font-bold text-green-500 mt-1">
+                    {data.completedLoads}
+                  </h3>
+                </div>
+                <div className="bg-white rounded shadow-md p-5 flex flex-col items-start">
+                  <p className="text-gray-500 text-sm">In Transit</p>
+                  <h3 className="text-2xl font-bold text-yellow-500 mt-1">
+                    {data.inTransitLoads}
+                  </h3>
+                </div>
+              </div>
+            <div className="bg-white rounded shadow-md p-5 flex flex-col items-start">
+              
+              <div className="w-full">
+                      <h2 className="text-lg font-semibold text-gray-700 mb-3">
+                    Loads Trend
+                  </h2>
+                <MonthlyLoadsChart data={mockLoadData} />
+              </div>
+            </div>
           </div>
-
-          <div className="bg-white rounded-xl shadow-md p-5 flex flex-col items-start">
-            <p className="text-gray-500 text-sm">Completed Loads</p>
-            <h3 className="text-2xl font-bold text-green-600 mt-1">
-              {data.completedLoads}
-            </h3>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-md p-5 flex flex-col items-start">
-            <p className="text-gray-500 text-sm">In Transit</p>
-            <h3 className="text-2xl font-bold text-yellow-500 mt-1">
-              {data.inTransitLoads}
-            </h3>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-md p-5 flex flex-col items-start">
-            <p className="text-gray-500 text-sm">Revenue</p>
-            <h3 className="text-2xl font-bold text-green-700 mt-1">
-              ₹{data.totalRevenue}
-            </h3>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-md p-5 flex flex-col items-start">
-            <p className="text-gray-500 text-sm">Pending Revenue</p>
-            <h3 className="text-2xl font-bold text-red-500 mt-1">
-              ₹{data.pendingRevenue}
-            </h3>
+          <div>
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              Revenue
+            </h2> 
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6 w-full mb-5">
+                <div className="bg-white rounded shadow-md p-5 flex flex-col items-start">
+                  <p className="text-gray-500 text-sm">Total Revenue</p>
+                  <h3 className="text-2xl font-bold mt-1">
+                    ₹{data.totalRevenue}
+                  </h3>
+                </div>
+                <div className="bg-white rounded shadow-md p-5 flex flex-col items-start">
+                  <p className="text-gray-500 text-sm">Fullfilled Revenue</p>
+                  <h3 className="text-2xl font-bold text-green-500 mt-1">
+                    ₹{data.pendingRevenue}
+                  </h3>
+                </div>
+                <div className="bg-white rounded shadow-md p-5 flex flex-col items-start">
+                  <p className="text-gray-500 text-sm">Pending Revenue</p>
+                  <h3 className="text-2xl font-bold text-red-500 mt-1">
+                    ₹{data.pendingRevenue}
+                  </h3>
+                </div>
+              </div>
+            <div className="bg-white rounded shadow-md p-5 flex flex-col items-start">
+             
+               <div className="w-full">
+                <h2 className="text-lg font-semibold text-gray-700 mb-3">
+                  Revenue Trend
+                </h2>
+               <MonthlyLoadsChart data={mockLoadData} />
+            </div>
+            </div>
           </div>
         </div>
       </section>
-      <div className="px-6 pb-6">
+      <div className="px-6 py-6">
         <h2 className="text-xl font-semibold text-gray-800 mb-4">
           Latest Loads
         </h2>
@@ -186,16 +212,21 @@ const Dashboard = () => {
           <LoadTable />
         </div>
       </div>
-      <div className="px-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8 mt-2">
+      {/* <div className="px-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8 mt-2">
         <CardRevenueSummary />
         <CardPerformance />
-      </div>
+      </div> */}
+
 
       <div className="px-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
-        <StatCard
+        <BidPriceTrendChart data={bidPriceData} />
+        <BidStatusBarChart data={bidStatusData} />
+        <div className="px-6">
+          <div className="mb-4">
+                <StatCard
           title="Customer & Expenses"
           primaryIcon={<Package className="text-blue-600 w-6 h-6" />}
-          dateRange="22 - 29 October 2023"
+          dateRange=""
           details={[
             {
               title: "Customer Growth",
@@ -211,10 +242,12 @@ const Dashboard = () => {
             },
           ]}
         />
+          </div>
+      
         <StatCard
           title="Sales & Discount"
           primaryIcon={<Tag className="text-blue-600 w-6 h-6" />}
-          dateRange="22 - 29 October 2023"
+          dateRange=""
           details={[
             {
               title: "Sales",
@@ -230,12 +263,7 @@ const Dashboard = () => {
             },
           ]}
         />
-        <MonthlyLoadsChart data={mockLoadData} />
       </div>
-
-      <div className="px-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
-        <BidPriceTrendChart data={bidPriceData} />
-        <BidStatusBarChart data={bidStatusData} />
       </div>
     </>
   );

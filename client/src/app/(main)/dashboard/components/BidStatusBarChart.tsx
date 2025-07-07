@@ -22,15 +22,15 @@ const BidStatusBarChart = ({ data }: { data: BidStatusData[] }) => {
       <h2 className="text-lg font-semibold text-gray-700 mb-3">
         Bid Status Overview
       </h2>
-      <ResponsiveContainer width="100%" height={300}>
+      <ResponsiveContainer width="100%" height={300} >
         <BarChart data={data}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="date" />
           <YAxis />
           <Tooltip />
           <Legend />
-          <Bar dataKey="accepted" fill="#3B82F6" name="Accepted" />
-          <Bar dataKey="rejected" fill="#EF4444" name="Rejected" />
+          <Bar dataKey="accepted" fill="#3B82F6" name="Accepted" barSize={15} />
+          <Bar dataKey="rejected" fill="#EF4444" name="Rejected" barSize={15} />
         </BarChart>
       </ResponsiveContainer>
     </div>
