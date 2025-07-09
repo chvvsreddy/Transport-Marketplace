@@ -1,0 +1,55 @@
+services:
+  # Development overrides for server
+  server:
+    environment:
+      NODE_ENV: development
+      DEBUG: goodseva:*
+      LOG_LEVEL: debug
+    volumes:
+      - ../server/src:/app/src
+      - ../server/prisma:/app/prisma
+      - ../server/package.json:/app/package.json
+      - ../server/tsconfig.json:/app/tsconfig.json
+      - /app/node_modules
+      - server_dist:/app/dist
+    command: sh -c "npx prisma generate && npx concurrently 'npx tsc -w' 'nodemon --exec ts-node src/index.ts'"
+    stdin_open: true
+    tty: true
+
+  # Development overrides for client
+  client:
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_API_URL: http://localhost:3001
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:3001
+      NEXT_PUBLIC_SOCKET_URL: http://localhost:3001
+      CHOKIDAR_USEPOLLING: false
+      WATCHPACK_POLLING: false
+    volumes:
+      - ../client/src:/app/src:cached
+      - ../client/public:/app/public:cached
+      - ../client/package.json:/app/package.json:cached
+      - ../client/tsconfig.json:/app/tsconfig.json:cached
+      - ../client/next.config.ts:/app/next.config.ts:cached
+      - /app/node_modules
+      - client_next:/app/.next
+      - client_cache:/app/.next/cache
+    command: npm run dev
+    stdin_open: true
+    tty: true
+
+  # Development database with exposed ports and debug logging
+  postgres:
+    environment:
+      POSTGRES_DB: ${DB_NAME:-goodseva_dev}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    command: postgres -c log_statement=all -c log_destination=stderr
+
+  # Development Redis with debug logging
+  redis:
+    command: redis-server --appendonly yes --loglevel debug
+
+volumes:
+  client_cache:
+    driver: local

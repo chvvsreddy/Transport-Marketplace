@@ -1,0 +1,114 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:17-alpine
+    container_name: goodseva-postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME:-goodseva}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/db-init.sh:/docker-entrypoint-initdb.d/init.sh
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-goodseva}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - goodseva-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: goodseva-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - goodseva-network
+
+  # Server API
+  server:
+    build:
+      context: ..
+      dockerfile: deployment/server.Dockerfile
+    container_name: goodseva-server
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-goodseva}
+      REDIS_URL: redis://redis:6379
+      PORT: 3001
+      JWT_SECRET: ${JWT_SECRET:-your-jwt-secret-key}
+    ports:
+      - "3001:3001"
+    volumes:
+      - ../server/src:/app/src
+      - ../server/prisma:/app/prisma
+      - ../server/package.json:/app/package.json
+      - ../server/tsconfig.json:/app/tsconfig.json
+      - /app/node_modules
+      - server_dist:/app/dist
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - goodseva-network
+    restart: unless-stopped
+
+  # Client Frontend
+  client:
+    build:
+      context: ..
+      dockerfile: deployment/client.Dockerfile
+    container_name: goodseva-client
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_API_URL: http://localhost:3001
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:3001
+      NEXT_PUBLIC_SOCKET_URL: http://localhost:3001
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../client/src:/app/src
+      - ../client/public:/app/public
+      - ../client/package.json:/app/package.json
+      - ../client/tsconfig.json:/app/tsconfig.json
+      - ../client/next.config.ts:/app/next.config.ts
+      - /app/node_modules
+      - client_next:/app/.next
+    depends_on:
+      - server
+    networks:
+      - goodseva-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  server_dist:
+    driver: local
+  client_next:
+    driver: local
+
+networks:
+  goodseva-network:
+    driver: bridge
