@@ -4,7 +4,7 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
 type User = {
-  message: string;
+  // message: string;
   userId: string;
   email: string;
   type: string;

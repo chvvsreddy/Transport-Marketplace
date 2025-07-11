@@ -5,7 +5,7 @@ import { fetchTrucksById } from "@/state/api";
 
 const ViewTrucks = () => {
   const [trucks, setTrucks] = useState([]);
-  const loggedUserId = getLoggedUserFromLS().userId;
+  // const loggedUserId = getLoggedUserFromLS().userId;
   const fetchTrucks = async () => {
     const trucksAll = await fetchTrucksById({
       ownerId: getLoggedUserFromLS().userId,

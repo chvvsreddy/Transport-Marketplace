@@ -9,10 +9,10 @@ import { UserProvider } from "../util/UserContext";
 import { SocketProvider } from "../util/SocketContext";
 import { useRouter } from "next/navigation";
 import Shimmer from "./(components)/shimmerUi/Shimmer";
-import { LoadScript } from "@react-google-maps/api";
 import { RegistrationProvider } from "../util/RegistrationContext";
+import { getLoggedUserFromLS, LoggedUser } from "../util/getLoggedUserFromLS";
 
-const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!;
+// const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!;
 const AdminSidebar = dynamic(
   () => import("./(components)/admin/adminSidebar/adminsidebar"),
   { ssr: false }
@@ -51,7 +51,6 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
 
   const [loggedUser, setLoggedUser] = useState({
-    message: "",
     userId: "",
     email: "",
     phone: "",
@@ -68,10 +67,10 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("token");
+    const storedUser = getLoggedUserFromLS();
     if (storedUser) {
       try {
-        const userObj = JSON.parse(storedUser);
+        const userObj: LoggedUser = storedUser;
         setLoggedUser(userObj);
       } catch (error) {
         console.error("Error parsing user:", error);

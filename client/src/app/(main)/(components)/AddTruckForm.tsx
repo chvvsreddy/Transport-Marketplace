@@ -1,38 +1,78 @@
 import { getLoggedUserFromLS } from "@/app/util/getLoggedUserFromLS";
+import getTokenIdFromLs from "@/app/util/getTokenIdFromLS";
 import { Form, Input, Select, DatePicker, Button, message, Space } from "antd";
 import axios from "axios";
 const { Option } = Select;
+import dayjs from "dayjs";
+
+interface VehicleFormValues {
+  registrationNumber: string;
+  make: string;
+  model: string;
+  year: string;
+  capacity: string;
+  length: string;
+  width: string;
+  height: string;
+  vehicleType: string;
+  isActive?: boolean;
+  insuranceNumber: string;
+  insuranceExpiry: dayjs.Dayjs;
+  fitnessCertExpiry: dayjs.Dayjs;
+  permitType?: string;
+}
 
 const AddTruckForm = () => {
   const [form] = Form.useForm();
-  const onFinish = async (values: any) => {
+  const token = getTokenIdFromLs();
+
+  const onFinish = async (values: VehicleFormValues) => {
     try {
-      await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/trucks`, {
-        ...values,
-        dimensions: {
-          length: parseFloat(values.length),
-          width: parseFloat(values.width),
-          height: parseFloat(values.height),
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/trucks`,
+        {
+          registrationNumber: values.registrationNumber,
+          make: values.make,
+          model: values.model,
+          year: parseInt(values.year, 10),
+          capacity: parseFloat(values.capacity),
+          dimensions: {
+            length: parseFloat(values.length),
+            width: parseFloat(values.width),
+            height: parseFloat(values.height),
+          },
+          vehicleType: values.vehicleType,
+          insuranceNumber: values.insuranceNumber,
+          insuranceExpiry: values.insuranceExpiry.format("YYYY-MM-DD"),
+          fitnessCertExpiry: values.fitnessCertExpiry.format("YYYY-MM-DD"),
+          permitType: values.permitType || null,
+          ownerId: getLoggedUserFromLS().userId,
         },
-        ownerId: getLoggedUserFromLS().userId,
-        insuranceExpiry: values.insuranceExpiry.format("YYYY-MM-DD"),
-        fitnessCertExpiry: values.fitnessCertExpiry.format("YYYY-MM-DD"),
-      });
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       message.success("Truck added successfully!");
       form.resetFields();
-    } catch (error: any) {
-      console.error("Error Details:", error);
-      if (error.response) {
-        console.error("Server Response Error:", error.response.data);
-        message.error(
-          `Failed to add truck. Server said: ${error.response.data.message}`
-        );
-      } else if (error.request) {
-        console.error("No Response from Server:", error.request);
-        message.error("No response from server. Please check your network.");
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        if (error.response) {
+          console.error("Server Response Error:", error.response.data);
+          message.error(
+            `Failed to add truck. Server said: ${error.response.data.message}`
+          );
+        } else if (error.request) {
+          console.error("No Response from Server:", error.request);
+          message.error("No response from server. Please check your network.");
+        } else {
+          console.error("Axios Error:", error.message);
+          message.error("Unexpected error occurred.");
+        }
       } else {
-        console.error("Axios Error:", error.message);
-        message.error("Unexpected error occurred.");
+        console.error("Unknown Error:", error);
+        message.error("An unknown error occurred.");
       }
     }
   };

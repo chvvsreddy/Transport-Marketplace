@@ -1,9 +1,8 @@
 "use client";
 import dynamic from "next/dynamic";
 import React from "react";
-import { Col, Row, Tabs, Typography } from "antd";
+import { Col, Row, Tabs } from "antd";
 import type { TabsProps } from "antd";
-import Header from "@/app/util/Header";
 import Heading from "@/app/util/Heading";
 
 const UserProfile = dynamic(() => import("../../util/Profile/ProfileDetails"));
@@ -36,19 +35,15 @@ export default function Profile() {
     },
   ];
   return (
-
-      <>
-        <Heading name="Profile" />
-        <div className={`bg-white p-4 m-4 rounded-xl shadow-md mt-4`}>
-
+    <>
+      <Heading name="Profile" />
+      <div className={`bg-white p-4 m-4 rounded-xl shadow-md mt-4`}>
         <Row>
           <Col lg={20}>
             <Tabs defaultActiveKey="1" items={items} onChange={onChange} />
           </Col>
         </Row>
-        </div>
-        
-      </>
-
+      </div>
+    </>
   );
 }

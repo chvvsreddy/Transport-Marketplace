@@ -1,6 +1,9 @@
 "use client";
 
-import { getLoggedUserFromLS } from "@/app/util/getLoggedUserFromLS";
+import {
+  getLoggedUserFromLS,
+  LoggedUser,
+} from "@/app/util/getLoggedUserFromLS";
 import { getLoads, getLoadsById } from "@/state/api";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -24,7 +27,7 @@ interface Location {
   postalCode: string;
 }
 
-interface Load {
+export interface Load {
   id: string;
   origin: Location;
   destination: Location;
@@ -39,7 +42,7 @@ interface Load {
 }
 
 export default function MyLoads() {
-  const [loggedUser, setLoggedUser] = useState(null);
+  const [loggedUser, setLoggedUser] = useState<LoggedUser>();
   const [isAdmin, setIsAdmin] = useState(false);
   const [loads, setLoads] = useState<Load[]>([]);
   const [selectedStatus, setSelectedStatus] = useState<LoadStatus | "ALL">(
@@ -57,8 +60,11 @@ export default function MyLoads() {
 
   useEffect(() => {
     const userObj = getLoggedUserFromLS();
+    if (userObj.type === "INDIVIDUAL_DRIVER") {
+      router.push("/login");
+    }
     if (userObj.type === "ADMIN") setIsAdmin(true);
-    if (userObj && userObj !== "no user found") setLoggedUser(userObj);
+    if (userObj.userId != "no user") setLoggedUser(userObj);
     else router.push("/login");
   }, []);
 

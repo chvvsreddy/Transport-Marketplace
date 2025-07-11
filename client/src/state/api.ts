@@ -2,36 +2,36 @@ import getTokenIdFromLs from "@/app/util/getTokenIdFromLS";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export interface allLoads {
-  id: String;
-  shipper: String;
-  shipperId: String;
-  origin: String;
-  destination: String;
+  id: string;
+  shipper: string;
+  shipperId: string;
+  origin: string;
+  destination: string;
   weight: number;
-  dimensions: String;
-  cargoType: String;
-  specialRequirements: String;
+  dimensions: string;
+  cargoType: string;
+  specialRequirements: string;
   //status              LoadStatus @default(AVAILABLE)
   price: number;
-  pickupWindowStart: String;
-  pickupWindowEnd: String;
-  deliveryWindowStart: String;
-  deliveryWindowEnd: String;
-  isBulkLoad: Boolean;
-  isFragile: Boolean;
-  requiresColdStorage: Boolean;
-  createdAt: String;
-  updatedAt: String;
+  pickupWindowStart: string;
+  pickupWindowEnd: string;
+  deliveryWindowStart: string;
+  deliveryWindowEnd: string;
+  isBulkLoad: boolean;
+  isFragile: boolean;
+  requiresColdStorage: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 export interface allUsers {
-  id: String;
-  email: String;
-  passwordHash: String;
-  type: String;
-  phone: String;
-  isVerified: Boolean;
-  createdAt: String;
-  updatedAt: String;
+  id: string;
+  email: string;
+  passwordHash: string;
+  type: string;
+  phone: string;
+  isVerified: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 export interface AllLoads {
   allLoads: allLoads[];

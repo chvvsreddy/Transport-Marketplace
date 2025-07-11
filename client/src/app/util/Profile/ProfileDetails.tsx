@@ -5,18 +5,24 @@ import Image from "next/image";
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/app/util/UserContext";
+import { getLoggedUserFromLS } from "../getLoggedUserFromLS";
+import { User } from "../interfaces/user.interface";
+import { getUser } from "@/state/api";
 
 export default function ProfileDetails() {
   const router = useRouter();
   const { user, setUser } = useUser();
 
   useEffect(() => {
-    const getUserFromLocal: any = localStorage.getItem("token");
-    const loggedUser = JSON.parse(getUserFromLocal);
-    if (!loggedUser) {
+    const getUserFromLocal: any = getLoggedUserFromLS();
+    async function getUserDetails(): Promise<User | void> {
+      const userInfo = await getUser(getUserFromLocal.userId);
+      setUser(userInfo);
+    }
+    if (!getUserFromLocal) {
       router.push("/login");
     } else {
-      setUser(loggedUser);
+      getUserDetails();
     }
   }, []);
 

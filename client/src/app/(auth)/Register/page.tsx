@@ -28,7 +28,7 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const router = useRouter();
 
-  const handleChange = (e: any) => {
+  const handleChange = (e: { target: { name: string; value: string } }) => {
     const { name, value } = e.target;
     setFormData((prevState) => ({
       ...prevState,
@@ -36,8 +36,7 @@ export default function RegisterPage() {
     }));
   };
 
-
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
     setLoading(true);
     setError("");
@@ -50,6 +49,7 @@ export default function RegisterPage() {
       type,
     };
 
+    console.log("data from user : ", dataToSubmit);
 
     try {
       const res = await createUser(dataToSubmit);
@@ -59,8 +59,12 @@ export default function RegisterPage() {
       } else {
         message.error("Registration failed. Please try again.");
       }
-    } catch (error: any) {
-      setError(error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("An unknown error occurred.");
+      }
     } finally {
       setLoading(false);
     }

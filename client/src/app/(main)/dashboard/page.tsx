@@ -11,6 +11,7 @@ import MonthlyLoadsChart from "./components/MontlyLoads";
 import BidPriceTrendChart from "./components/BidPriceTrend";
 import BidStatusBarChart from "./components/BidStatusBarChart";
 import { getLoggedUserFromLS } from "@/app/util/getLoggedUserFromLS";
+import RevenueTrendChart from "./components/RevenueTrends";
 
 const Heading = dynamic(() => import("@/app/util/Heading/index"), {
   loading: () => <h2>Loading Heading...</h2>,
@@ -19,45 +20,40 @@ const StatCard = dynamic(() => import("./StatCard"), {
   loading: () => <p>Loading Stat Card...</p>,
 });
 
-const mockLoadData = [
-  { date: "Jun 1", count: 5 },
-  { date: "Jun 2", count: 7 },
-  { date: "Jun 3", count: 3 },
-  { date: "Jun 4", count: 9 },
-  { date: "Jun 5", count: 6 },
-  { date: "Jun 6", count: 8 },
-  { date: "Jun 7", count: 4 },
-];
+type DashboardData = {
+  totalLoads: number;
+  countOfCompleted: number;
+  countOfIntransit: number;
+  totalRevenue: number;
+  totalRevenuePending: number;
+  totalRevenueCompleted: number;
+  top5LoadDays: { date: string; count: number }[];
+  top5HighestBids: { date: string; price: number }[];
+  latestThreeLoads: {
+    id: string;
+    origin: { city?: string };
+    destination: { city?: string };
+    cargoType: string;
+    status: string;
+    price: number;
+    pickupWindow: string;
+  }[];
+  bidStatusData: {
+    date: string;
+    accepted: number;
+    rejected: number;
+  }[];
+  top5HighestPayments: { date: string; price: number }[];
+};
 
-const bidPriceData = [
-  { date: "Jun 1", price: 1200 },
-  { date: "Jun 2", price: 1250 },
-  { date: "Jun 3", price: 1100 },
-  { date: "Jun 4", price: 1350 },
-  { date: "Jun 5", price: 1300 },
-];
-
-const bidStatusData = [
-  { date: "Jun 1", accepted: 5, rejected: 2 },
-  { date: "Jun 2", accepted: 3, rejected: 1 },
-  { date: "Jun 3", accepted: 6, rejected: 4 },
-  { date: "Jun 4", accepted: 4, rejected: 3 },
-];
 const Dashboard = () => {
-  const [loggedUser, setLoggedUser] = useState({
-    message: "",
-    userId: "",
-    email: "",
-    phone: "",
-    type: "",
+  const [selectedDate, setSelectedDate] = useState(() => {
+    return format(new Date(), "dd-MM-yyyy");
   });
-  const [selectedDate, setSelectedDate] = useState(
-    () => {
-      return format(new Date(), "dd-MM-yyyy");
-    } // e.g., "07-07-2025"
-  );
 
-  const [dashboardData, setDashBoardData] = useState([]);
+  const [dashboardData, setDashBoardData] = useState<DashboardData | null>(
+    null
+  );
   const router = useRouter();
   const { setUser } = useUser();
   const query = `
@@ -66,14 +62,48 @@ const Dashboard = () => {
       totalLoads
       countOfCompleted
       countOfIntransit
+      totalRevenue
+    totalRevenuePending
+    totalRevenueCompleted
+      top5LoadDays {
+      date
+      count
+    }
+      latestThreeLoads {
+      id
+      origin {
+        city
+       
+      }
+      destination {
+        city
+      }
+      cargoType
+      status
+      price
+      pickupWindow
+    }
+       bidStatusData {
+      date
+      accepted
+      rejected
+    }
+      top5HighestPayments {
+      date
+      price
+    }
+      top5HighestBids {
+      date
+      price
+    }
     }
   }
 `;
   useLayoutEffect(() => {
     const storedUser = getLoggedUserFromLS();
-    if (storedUser) {
+    if (storedUser.userId != "no user") {
       const userObj = storedUser;
-      setLoggedUser(userObj);
+      // setLoggedUser(userObj);
       setUser(userObj);
       if (userObj.type === "INDIVIDUAL_DRIVER") {
         router.push("/login");
@@ -83,23 +113,34 @@ const Dashboard = () => {
     }
 
     async function fetchDashboardData() {
-      const response = await fetch("http://localhost:8000/graphql", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          query,
-          variables: {
-            input: {
-              startDate: selectedDate,
-            },
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_GRAPHQL}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-        }),
-      });
-      const result = await response.json();
-      console.log(result?.data?.getLoadsCountByDate);
+          body: JSON.stringify({
+            query,
+            variables: {
+              input: {
+                startDate: selectedDate,
+                userId: getLoggedUserFromLS().userId,
+              },
+            },
+          }),
+        });
+
+        const result = await response.json();
+        if (result?.data?.getLoadsCountByDate) {
+          setDashBoardData(result.data.getLoadsCountByDate);
+        } else {
+          console.error("GraphQL Error:", result.errors || "Unknown error");
+        }
+      } catch (error) {
+        console.error("Network error:", error);
+      }
     }
+
     fetchDashboardData();
   }, [selectedDate]);
 
@@ -120,14 +161,15 @@ const Dashboard = () => {
   //   fetchData();
   // }, [selectedMonth]);
 
-  const data = {
-    totalLoads: 120,
-    completedLoads: 90,
-    inTransitLoads: 20,
-    totalRevenue: 250000,
-    pendingRevenue: 50000,
-  };
+  // const data = {
+  //   totalLoads: 120,
+  //   completedLoads: 90,
+  //   inTransitLoads: 20,
+  //   totalRevenue: 250000,
+  //   pendingRevenue: 50000,
+  // };
   console.log("Selected month : ", selectedDate);
+  console.log("dashboard data : ", dashboardData);
   return (
     <>
       <Heading name="Dashboard" />
@@ -174,18 +216,20 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6 w-full mb-5">
               <div className="bg-white rounded shadow-md p-5 flex flex-col items-start">
                 <p className="text-gray-500 text-sm">Total Loads</p>
-                <h3 className="text-2xl font-bold mt-1">{data.totalLoads}</h3>
+                <h3 className="text-2xl font-bold mt-1">
+                  {dashboardData?.totalLoads}
+                </h3>
               </div>
               <div className="bg-white rounded shadow-md p-5 flex flex-col items-start">
                 <p className="text-gray-500 text-sm">Completed Loads</p>
                 <h3 className="text-2xl font-bold text-green-500 mt-1">
-                  {data.completedLoads}
+                  {dashboardData?.countOfCompleted}
                 </h3>
               </div>
               <div className="bg-white rounded shadow-md p-5 flex flex-col items-start">
                 <p className="text-gray-500 text-sm">In Transit</p>
                 <h3 className="text-2xl font-bold text-yellow-500 mt-1">
-                  {data.inTransitLoads}
+                  {dashboardData?.countOfIntransit}
                 </h3>
               </div>
             </div>
@@ -194,7 +238,7 @@ const Dashboard = () => {
                 <h2 className="text-lg font-semibold text-gray-700 mb-3">
                   Loads Trend
                 </h2>
-                <MonthlyLoadsChart data={mockLoadData} />
+                <MonthlyLoadsChart data={dashboardData?.top5LoadDays || []} />
               </div>
             </div>
           </div>
@@ -206,19 +250,19 @@ const Dashboard = () => {
               <div className="bg-white rounded shadow-md p-5 flex flex-col items-start">
                 <p className="text-gray-500 text-sm">Total Revenue</p>
                 <h3 className="text-2xl font-bold mt-1">
-                  ₹{data.totalRevenue}
+                  ₹{dashboardData?.totalRevenue}
                 </h3>
               </div>
               <div className="bg-white rounded shadow-md p-5 flex flex-col items-start">
                 <p className="text-gray-500 text-sm">Fullfilled Revenue</p>
                 <h3 className="text-2xl font-bold text-green-500 mt-1">
-                  ₹{data.pendingRevenue}
+                  ₹{dashboardData?.totalRevenueCompleted}
                 </h3>
               </div>
               <div className="bg-white rounded shadow-md p-5 flex flex-col items-start">
                 <p className="text-gray-500 text-sm">Pending Revenue</p>
                 <h3 className="text-2xl font-bold text-red-500 mt-1">
-                  ₹{data.pendingRevenue}
+                  ₹{dashboardData?.totalRevenuePending}
                 </h3>
               </div>
             </div>
@@ -227,7 +271,9 @@ const Dashboard = () => {
                 <h2 className="text-lg font-semibold text-gray-700 mb-3">
                   Revenue Trend
                 </h2>
-                <MonthlyLoadsChart data={mockLoadData} />
+                <RevenueTrendChart
+                  data={dashboardData?.top5HighestPayments || []}
+                />
               </div>
             </div>
           </div>
@@ -238,7 +284,7 @@ const Dashboard = () => {
           Latest Loads
         </h2>
         <div className="bg-white shadow-md rounded-xl p-4">
-          <LoadTable />
+          <LoadTable LoadsData={dashboardData?.latestThreeLoads || []} />
         </div>
       </div>
       {/* <div className="px-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8 mt-2">
@@ -247,8 +293,8 @@ const Dashboard = () => {
       </div> */}
 
       <div className="px-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
-        <BidPriceTrendChart data={bidPriceData} />
-        <BidStatusBarChart data={bidStatusData} />
+        <BidPriceTrendChart data={dashboardData?.top5HighestBids || []} />
+        <BidStatusBarChart data={dashboardData?.bidStatusData || []} />
         <div className="px-6">
           <div className="mb-4">
             <StatCard

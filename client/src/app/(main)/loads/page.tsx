@@ -187,8 +187,7 @@ const Loads = () => {
 
   const { socket } = useContext(SocketContext) || {};
   const router = useRouter();
-  const token = getTokenIdFromLs()
-
+  const token = getTokenIdFromLs();
 
   useLayoutEffect(() => {
     if (getLoggedUserFromLS().userId) {
@@ -265,7 +264,10 @@ const Loads = () => {
                 `${process.env.NEXT_PUBLIC_API_BASE_URL}/driverLocation`,
                 {
                   method: "POST",
-                  headers: { "Content-Type": "application/json" ,"Authorization": `Bearer ${token}`},
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                  },
                   body: JSON.stringify({
                     driverUserId: getLoggedUserFromLS().userId,
                     coordinates: updatedLocation,
@@ -356,8 +358,8 @@ const Loads = () => {
       const userId = getLoggedUserFromLS()?.userId;
       const priceNum = Number(bidPrice);
 
-      if(priceNum<=0){
-        return message.error("amount should be greater then zero")
+      if (priceNum <= 0) {
+        return message.error("amount should be greater then zero");
       }
 
       const existingBid = Bids.find(
@@ -367,7 +369,12 @@ const Loads = () => {
         (load) => load.id === existingBid?.loadId
       );
       const loggedUser = getLoggedUserFromLS();
-
+      const getLoad = await getLoadByLoadIdForAdmin(existingBid?.loadId);
+      console.log("vinay loa d : ", getLoad);
+      // if (getLoad.status === "ASSIGNED") {
+      //   message.error("Load already assigned");
+      //   return;
+      // }
       if (existingBid) {
         socket?.emit("updateBidAmount", {
           bidId: existingBid.id,
@@ -379,20 +386,26 @@ const Loads = () => {
               : existingBid.carrierId,
         });
       } else {
-        const newBid = await createBid({
-          loadId: selectedLoad.id,
-          userId,
-          price: priceNum,
-          negotiateDriverPrice: priceNum,
-        });
+        if (getLoad.status === "AVAILABLE") {
+          const newBid = await createBid({
+            loadId: selectedLoad.id,
+            userId,
+            price: priceNum,
+            negotiateDriverPrice: priceNum,
+          });
 
-        socket.emit("passNewBid", { newBid, toUser: selectedLoad.shipperId });
+          if (newBid.id) {
+            message.success("Bid updated success");
+          }
+          socket.emit("passNewBid", { newBid, toUser: selectedLoad.shipperId });
+        } else {
+          message.error("load already assigned");
+        }
       }
 
       setIsModalVisible(false);
       setBidPrice("");
     }
-    message.success("bid updated success");
   };
 
   const acceptBidWithoutBid: any = async (
@@ -457,7 +470,14 @@ const Loads = () => {
   const countOfBid = Bids.filter(
     (bid) => bid.carrierId === getLoggedUserFromLS().userId
   );
-  const handleConfirmLoad = async (load: Load, bid: Bid, loadId: string) => {
+
+  const countOfFixedLoads = allData.filter(
+    (load) => load.price >= 0 && load.bidPrice == 0
+  );
+  const countOfBidLoads = allData.filter(
+    (load) => load.price >= 0 && load.bidPrice > 0
+  );
+  const handleConfirmLoad = async (load: Load, bid: Bid) => {
     const findVehicle = activeVehicles?.find(
       (veh) => veh.registrationNumber === selectedTrucks[load.id]
     );
@@ -553,12 +573,12 @@ const Loads = () => {
                 {allData.length} All
               </div>
               <div className="page-filter-tabs">
-                {allData.length - countOfBid.length} Fixed Price
+                {countOfFixedLoads.length} Fixed Price
               </div>
               <div className="page-filter-tabs">
-                {countOfBid.length < 10
-                  ? `0${countOfBid.length}`
-                  : countOfBid.length}{" "}
+                {countOfBidLoads.length < 10
+                  ? `0${countOfBidLoads.length}`
+                  : countOfBidLoads.length}{" "}
                 Bid Price
               </div>
             </div>
@@ -929,11 +949,11 @@ const Loads = () => {
       <Modal
         title={<p>Load Confirmation</p>}
         open={open}
-        footer={null} // Remove global footer
+        footer={null}
         onCancel={() => setOpen(false)}
       >
         {Array.isArray(dataWithOutTrips) &&
-          dataWithOutTrips.map((data: any, index: number) => {
+          dataWithOutTrips.map((data: any) => {
             const loadId = data?.load?.id;
             const isExpanded = expandedLoadIds.includes(loadId);
 
@@ -999,9 +1019,7 @@ const Loads = () => {
                     <Button
                       type="primary"
                       className="mt-4"
-                      onClick={() =>
-                        handleConfirmLoad(data.load, data.bid, loadId)
-                      }
+                      onClick={() => handleConfirmLoad(data.load, data.bid)}
                       disabled={!selectedTrucks[loadId]}
                     >
                       Ok

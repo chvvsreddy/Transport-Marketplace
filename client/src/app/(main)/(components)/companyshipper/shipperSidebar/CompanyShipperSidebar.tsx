@@ -18,17 +18,19 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
 
+interface SidebarLinkProps {
+  href: string;
+  label: string;
+  isCollapsed: boolean;
+  icon: React.ElementType;
+}
+
 // SidebarLink Component
-const SidebarLink = ({
+const SidebarLink: React.FC<SidebarLinkProps> = ({
   href,
   label,
   isCollapsed,
   icon: Icon,
-}: {
-  href: string;
-  label: string;
-  isCollapsed: boolean;
-  icon: any;
 }) => {
   const pathname = usePathname();
   const isActive = "/" + pathname.split("/")[1] === href;
@@ -42,9 +44,7 @@ const SidebarLink = ({
         }`}
       >
         <Icon className="w-6 h-6 text-gray-700" />
-        <span className={`${isCollapsed ? "hidden" : "block" }`}>
-          {label}
-        </span>
+        <span className={`${isCollapsed ? "hidden" : "block"}`}>{label}</span>
       </div>
     </Link>
   );
@@ -95,7 +95,8 @@ const Sidebar = () => {
       {/* Links */}
       <div className="flex-grow mt-8 px-4 overflow-y-auto max-h-[calc(100vh-100px)] scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100 pr-2">
         <h6
-          className={`${ isSidebarCollapsed ? "hidden" : "block" } nav-subhead`} >
+          className={`${isSidebarCollapsed ? "hidden" : "block"} nav-subhead`}
+        >
           Overview
         </h6>
 
@@ -106,7 +107,11 @@ const Sidebar = () => {
           isCollapsed={isSidebarCollapsed}
         />
 
-        <h6 className={`${  isSidebarCollapsed ? "hidden" : "block" } nav-subhead`} > Management
+        <h6
+          className={`${isSidebarCollapsed ? "hidden" : "block"} nav-subhead`}
+        >
+          {" "}
+          Management
         </h6>
 
         <SidebarLink

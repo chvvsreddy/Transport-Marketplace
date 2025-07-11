@@ -20,8 +20,9 @@ import { SocketContext } from "@/app/util/SocketContext";
 
 import Heading from "@/app/util/Heading";
 import Shimmer from "../(components)/shimmerUi/Shimmer";
+import { Tag } from "antd";
 
-const { Title, Paragraph, Text } = Typography;
+const { Paragraph, Text } = Typography;
 const { Option } = Select;
 
 type Address = {
@@ -49,6 +50,7 @@ interface Load {
   shipperId: string;
   origin: Address;
   destination: Address;
+  price: number;
   bidPrice: number;
   status: "AVAILABLE" | "ASSIGNED" | "COMPLETED";
   createdAt: string;
@@ -76,7 +78,7 @@ export default function BidsAndOthers() {
   const [negotiatedPrice, setNegotiatedPrice] = useState<number | null>(null);
   const [filteredLoads, setFilteredLoads] = useState<Load[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [dateRange, setDateRange] = useState<[Date, Date] | null>(null);
+  // const [dateRange, setDateRange] = useState<[Date, Date] | null>(null);
   const [bidStatusFilter, setBidStatusFilter] = useState<
     "PENDING" | "ACCEPTED" | "REJECTED" | "ALL"
   >("PENDING");
@@ -91,11 +93,25 @@ export default function BidsAndOthers() {
 
   const pageSize = 3;
   const router = useRouter();
-  const { socket, isConnected } = useContext(SocketContext) || {};
+  const { socket } = useContext(SocketContext) || {};
 
+  const getStatusTag = (status: "PENDING" | "ACCEPTED" | "REJECTED") => {
+    switch (status) {
+      case "ACCEPTED":
+        return <Tag color="green">Accepted</Tag>;
+      case "REJECTED":
+        return <Tag color="red">Rejected</Tag>;
+      case "PENDING":
+      default:
+        return <Tag color="gold">Pending</Tag>;
+    }
+  };
   useEffect(() => {
     const user = getLoggedUserFromLS();
-    setLoggedUser(user);
+
+    if (user.userId === "no user") {
+      return router.push("/login");
+    }
     if (user.type === "ADMIN") {
       setIsAdmin(true);
     }
@@ -104,7 +120,7 @@ export default function BidsAndOthers() {
       router.push("/login");
       return;
     }
-
+    setLoggedUser(user);
     async function fetchData() {
       const allLoads = await getLoads();
       const allBids = await getBids();
@@ -117,7 +133,7 @@ export default function BidsAndOthers() {
     }
 
     fetchData();
-  }, []);
+  }, [router]);
   useEffect(() => {
     if (!socket) return;
 
@@ -215,8 +231,8 @@ export default function BidsAndOthers() {
       (load) => load.id === selectedBid.loadId
     );
 
-    if(negotiatedPrice<=0){
-      return message.error("amount should be greater than zero")
+    if (negotiatedPrice <= 0) {
+      return message.error("amount should be greater than zero");
     }
     if (socket?.id) {
       socket?.emit("updateBidAmount", {
@@ -236,14 +252,14 @@ export default function BidsAndOthers() {
   const handleDateChange = (dates: any) => {
     if (!dates) {
       setFilteredLoads(loads);
-      setDateRange(null);
+      // setDateRange(null);
       return;
     }
 
     const [start, end] = dates;
     const startDate = new Date(start.$d);
     const endDate = new Date(end.$d);
-    setDateRange([startDate, endDate]);
+    // setDateRange([startDate, endDate]);
 
     const filtered = loads.filter((load) => {
       const created = new Date(load.createdAt);
@@ -283,7 +299,7 @@ export default function BidsAndOthers() {
         (load) =>
           load.shipperId === loggedUser?.userId &&
           load.origin.city.toLowerCase().includes(originSearch) &&
-          load.destination.city.toLowerCase().includes(destinationSearch) 
+          load.destination.city.toLowerCase().includes(destinationSearch)
       );
 
   const loadsWithMatchingBids = filteredAvailableLoads.filter((load) =>
@@ -390,7 +406,7 @@ export default function BidsAndOthers() {
           <Select
             defaultValue="PENDING"
             value={bidStatusFilter}
-            onChange={(value: any) => {
+            onChange={(value: "PENDING" | "ACCEPTED" | "REJECTED" | "ALL") => {
               setBidStatusFilter(value);
               setCurrentPage(1);
             }}
@@ -422,18 +438,6 @@ export default function BidsAndOthers() {
               (bidStatusFilter === "ALL" || bid.status === bidStatusFilter)
           );
 
-          const pickupDate = new Date(load.pickupWindowStart);
-          const daysLeft = Math.max(
-            0,
-            Math.ceil(
-              (pickupDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-            )
-          );
-
-          let color: "red" | "orange" | undefined;
-          if (daysLeft <= 2) color = "red";
-          else if (daysLeft <= 5) color = "orange";
-
           return (
             <div
               key={load.id}
@@ -451,7 +455,7 @@ export default function BidsAndOthers() {
                 <p>
                   <span className="labelStyle">Actual Price</span>
                   <br />
-                  <span className="valueStyle">₹{load.bidPrice}</span>
+                  <span className="valueStyle">₹{load.price}</span>
                 </p>
 
                 <Button
@@ -491,17 +495,22 @@ export default function BidsAndOthers() {
                           </p>
 
                           <Paragraph>
-                            Driver Negotiate Price :{getTimeAgo(bid.updatedAt)}
+                            Driver Negotiated Price :{getTimeAgo(bid.updatedAt)}
                             <br />
                             <strong> ₹{bid.negotiateDriverPrice}</strong>
                           </Paragraph>
                           <Paragraph>
-                            Your negotiate Price :
+                            shipper negotiated Price :
+                            <br />
+                            <strong> ₹{bid.negotiateShipperPrice}</strong>
+                          </Paragraph>
+                          <Paragraph>
+                            Final Price :
                             <br />
                             <strong> ₹{bid.negotiateShipperPrice}</strong>
                           </Paragraph>
                           <div>
-                            {bid.status === "PENDING" && (
+                            {/* {bid.status === "PENDING" && (
                               <>
                                 {bid &&
                                   bid.negotiateDriverPrice > 0 &&
@@ -544,13 +553,14 @@ export default function BidsAndOthers() {
                                     </Button>
                                   )}
                               </>
-                            )}
+                            )} */}
                             {bid &&
                               bid.isDriverAccepted &&
                               bid.isShipperAccepted && (
-                                <Text type="secondary">
-                                  Status: {bid.status}
-                                </Text>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <Text type="secondary">Status:</Text>
+                                  {getStatusTag(bid.status)}
+                                </div>
                               )}
                             {bid.isDriverAccepted === false &&
                               bid.negotiateDriverPrice > 0 &&
@@ -575,12 +585,18 @@ export default function BidsAndOthers() {
                           </p>
 
                           <Paragraph>
-                            Driver Negotiate Price :{getTimeAgo(bid.updatedAt)}
+                            Driver Negotiated Price :{" "}
+                            {getTimeAgo(bid.updatedAt)}
                             <br />
                             <strong> ₹{bid.negotiateDriverPrice}</strong>
                           </Paragraph>
                           <Paragraph>
-                            Your negotiate Price :
+                            Your negotiated Price :
+                            <br />
+                            <strong> ₹{bid.negotiateShipperPrice}</strong>
+                          </Paragraph>
+                          <Paragraph>
+                            Final Price :
                             <br />
                             <strong> ₹{bid.negotiateShipperPrice}</strong>
                           </Paragraph>
@@ -632,9 +648,10 @@ export default function BidsAndOthers() {
                             {bid &&
                               bid.isDriverAccepted &&
                               bid.isShipperAccepted && (
-                                <Text type="secondary">
-                                  Status: {bid.status}
-                                </Text>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <Text type="secondary">Status:</Text>
+                                  {getStatusTag(bid.status)}
+                                </div>
                               )}
                             {bid.isDriverAccepted === false &&
                               bid.negotiateDriverPrice > 0 &&

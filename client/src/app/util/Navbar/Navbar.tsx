@@ -9,9 +9,10 @@ import { useRouter } from "next/navigation";
 import { useSearch } from "../SearchContext";
 import { Avatar, message } from "antd";
 import { UserOutlined } from "@ant-design/icons";
-import { getNotificationsByUserId, upadteNotifs } from "@/state/api";
+import { getNotificationsByUserId, getUser, upadteNotifs } from "@/state/api";
 import { getLoggedUserFromLS } from "../getLoggedUserFromLS";
 import socket from "../socket";
+import { User } from "../interfaces/user.interface";
 
 export interface Notification {
   id: string;
@@ -55,11 +56,14 @@ const Navbar = () => {
   const [notifOpen, setNotifOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
 
+  async function getUserDetails(): Promise<User> {
+    const userInfo = getLoggedUserFromLS();
+    const user = await getUser(userInfo?.userId || "");
+    return user;
+  }
   useEffect(() => {
     async function fetchNotifications() {
-      const notifications = await getNotificationsByUserId(
-        getLoggedUserFromLS().userId
-      );
+      const notifications = await getNotificationsByUserId(loggedUser?.userId);
       setLatestNotifications(notifications);
       setCountOfNotifications(notifications.length);
     }
@@ -77,7 +81,7 @@ const Navbar = () => {
   useEffect(() => {
     if (!socket) return;
 
-    const handleNotification = (notification: any) => {
+    const handleNotification = (notification: Notification) => {
       console.log("🔔 notification received:", notification);
       setLatestNotifications((prev = []) => [notification, ...prev]);
       setCountOfNotifications((prev) => prev + 1);
@@ -115,15 +119,21 @@ const Navbar = () => {
   }, []);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("token");
+    const storedUser = getLoggedUserFromLS();
     if (storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setLoggedUser(parsedUser);
-      } catch (error) {
-        console.error("Failed to parse stored user:", error);
-        router.push("/login");
-      }
+      (async () => {
+        try {
+          const user = await getUserDetails();
+          const { email, type, phone } = user;
+          const userId = user.id;
+          if (user?.email)
+            setLoggedUser({ message: "", userId, email, type, phone });
+          else router.push("/login");
+        } catch (error) {
+          console.error("Failed to fetch user details:", error);
+          router.push("/login");
+        }
+      })();
     } else {
       router.push("/login");
     }
@@ -210,8 +220,8 @@ const Navbar = () => {
                 setCountOfNotifications(0);
                 setNotifOpen((prev) => !prev);
                 async function update() {
-                  const res = await upadteNotifs({
-                    userId: getLoggedUserFromLS().userId,
+                  await upadteNotifs({
+                    userId: loggedUser?.userId,
                   });
                 }
                 update();

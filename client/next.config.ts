@@ -2,14 +2,14 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   experimental: {
-    optimizePackageImports: ['lucide-react', 'recharts', '@ant-design/icons'],
+    optimizePackageImports: ["lucide-react", "recharts", "@ant-design/icons"],
   },
   webpack: (config, { dev, isServer }) => {
     if (dev && !isServer) {
       config.watchOptions = {
         poll: false,
         aggregateTimeout: 300,
-        ignored: ['**/node_modules/**', '**/.git/**', '**/.next/**'],
+        ignored: ["**/node_modules/**", "**/.git/**", "**/.next/**"],
       };
     }
     return config;
@@ -18,8 +18,8 @@ const nextConfig: NextConfig = {
     return {
       beforeFiles: [
         {
-          source: '/api/:path*',
-          destination: `${process.env.NEXT_PUBLIC_API_URL}/api/:path*`,
+          source: "/api/:path*",
+          destination: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/:path*`,
         },
       ],
     };

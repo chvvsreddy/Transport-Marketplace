@@ -1,11 +1,70 @@
 input LoadStatsInput {
   startDate: String!
+  userId: String!
+}
+
+type DailyRevenue {
+  date: String!
+  price: Float!
+}
+
+type DailyLoadCount {
+  date: String!
+  count: Int!
+}
+type BidStat {
+  date: String!
+  price: Float!
+}
+
+extend type Dashboard {
+  top5BidDays: [BidStat!]!
+}
+type BidStatusDay {
+  date: String!
+  accepted: Int!
+  rejected: Int!
+}
+
+type Location {
+  address: String
+  lat: Float
+  lng: Float
+  city: String
+}
+
+type Load {
+  id: String!
+  origin: Location
+  destination: Location
+  cargoType: String!
+  status: String!
+  price: Float!
+  pickupWindow: String!
+}
+type TopPayment {
+  date: String!
+  price: Float!
+}
+
+type BidPricePoint {
+  date: String!
+  price: Float!
 }
 
 type Dashboard {
   totalLoads: Int!
   countOfCompleted: Int!
   countOfIntransit: Int!
+  totalRevenue: Float!
+  totalRevenuePending: Float!
+  totalRevenueCompleted: Float!
+  top5LoadDays: [DailyLoadCount!]!
+  top5PaymentDays: [DailyRevenue!]!
+  latestThreeLoads: [Load!]!
+  bidStatusData: [BidStatusDay!]!
+  top5HighestPayments: [TopPayment!]!
+  top5HighestBids: [BidPricePoint!]!
 }
 
 type Query {

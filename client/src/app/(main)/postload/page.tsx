@@ -21,7 +21,6 @@ import {
   Upload,
   Checkbox,
   message,
-  Divider,
 } from "antd";
 import { InboxOutlined } from "@ant-design/icons";
 import Image from "next/image";
@@ -46,13 +45,13 @@ interface LocationData {
         lng: number;
       };
     };
-    address_components?: any[];
+    address_components?: unknown[];
   }[];
   status: string;
 }
 
 // Define types for the debounced function
-type DebouncedFunction<T extends (...args: any[]) => void> = {
+type DebouncedFunction<T extends (...args: unknown[]) => void> = {
   (...args: Parameters<T>): void;
   cancel: () => void;
 };
@@ -77,6 +76,8 @@ export default function PostLoad() {
   const [priceType, setPriceType] = useState<string>("FixPrice");
   const [originPincode, setOriginPincode] = useState("");
   const [destinationPincode, setDestinationPincode] = useState("");
+  const [originCity, setOriginCity] = useState("");
+  const [destinationCity, setDestinationCity] = useState("");
   const [originLocation, setOriginLocation] = useState<LocationData | null>(
     null
   );
@@ -146,19 +147,19 @@ export default function PostLoad() {
   );
   useLayoutEffect(() => {
     const userObj = getLoggedUserFromLS();
-    console.log("step 1 : ",userObj);
+    console.log("step 1 : ", userObj);
     if (
       !userObj ||
       !(
-        userObj.type === "SHIPPER_COMPANY" ||
-        userObj.type === "INDIVIDUAL_SHIPPER"
+        userObj?.type === "SHIPPER_COMPANY" ||
+        userObj?.type === "INDIVIDUAL_SHIPPER"
       )
     ) {
       router.push("/login");
     } else {
       setAuthorized(true);
     }
-    console.log("step 2 : ",userObj);
+    console.log("step 2 : ", userObj);
   }, [router]);
 
   const acOptionValue = useWatch("acOption", form);
@@ -351,8 +352,9 @@ export default function PostLoad() {
                       value={
                         originLocation?.results?.[0]?.address_components?.find(
                           (c: any) => c.types.includes("locality")
-                        )?.long_name || ""
+                        )?.long_name || originCity
                       }
+                      onChange={(e) => setOriginCity(e.target.value)}
                     />
                   </div>
                 </Form.Item>
@@ -410,8 +412,9 @@ export default function PostLoad() {
                       value={
                         destinationLocation?.results?.[0]?.address_components?.find(
                           (c: any) => c.types.includes("locality")
-                        )?.long_name || ""
+                        )?.long_name || destinationCity
                       }
+                      onChange={(e) => setDestinationCity(e.target.value)}
                     />
                   </div>
                 </Form.Item>

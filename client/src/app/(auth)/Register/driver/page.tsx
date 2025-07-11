@@ -2,8 +2,9 @@
 import "../../../(styles)/Step1.css";
 
 import "@ant-design/v5-patch-for-react-19";
-import dayjs, { Dayjs } from "dayjs";
-
+import { Dayjs } from "dayjs";
+import type { UploadChangeParam } from "antd/es/upload";
+import type { UploadFile } from "antd/es/upload/interface";
 import {
   Button,
   Col,
@@ -20,7 +21,6 @@ import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { getUser } from "@/state/api";
-import { useRouter } from "next/navigation";
 import { DatePicker, Upload } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 interface User {
@@ -38,27 +38,27 @@ export default function Step3() {
   const [licenseFrontUrl, setLicenseFrontUrl] = useState("");
   const [licenseBackUrl, setLicenseBackUrl] = useState("");
 
-  const [insuranceNumber, setInsuranceNumber] = useState("");
+  // const [insuranceNumber, setInsuranceNumber] = useState("");
 
-  const [insuranceDocUrl, setInsuranceDocUrl] = useState("");
+  // const [insuranceDocUrl, setInsuranceDocUrl] = useState("");
 
-  const [yearsOfExperience, setYearsOfExperience] = useState(0); // or null if optional
-  const [preferredRoutes, setPreferredRoutes] = useState([]); // array of strings
-  const [hasOwnVehicle, setHasOwnVehicle] = useState(false);
-  const [currentLocation, setCurrentLocation] = useState({
-    address: "",
-    lat: null,
-    lng: null,
-  });
+  // const [yearsOfExperience, setYearsOfExperience] = useState(0); // or null if optional
+  // const [preferredRoutes, setPreferredRoutes] = useState([]); // array of strings
+  // const [hasOwnVehicle, setHasOwnVehicle] = useState(false);
+  // const [currentLocation, setCurrentLocation] = useState({
+  //   address: "",
+  //   lat: null,
+  //   lng: null,
+  // });
 
-  const [emergencyContactName, setEmergencyContactName] = useState("");
-  const [emergencyContactPhone, setEmergencyContactPhone] = useState("");
+  // const [emergencyContactName, setEmergencyContactName] = useState("");
+  // const [emergencyContactPhone, setEmergencyContactPhone] = useState("");
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId");
 
   const [user, setUser] = useState<User | null>();
 
-  const router = useRouter();
+  // const router = useRouter();
   useEffect(() => {
     async function getData() {
       const res = await getUser(userId ?? "");
@@ -72,12 +72,12 @@ export default function Step3() {
   };
   const [form] = Form.useForm();
 
-  // Normalize upload file value
-  const normFile = (e: any) => {
+  const normFile = (
+    e: UploadChangeParam<UploadFile<unknown>> | UploadFile<unknown>[]
+  ): UploadFile<unknown>[] => {
     if (Array.isArray(e)) return e;
-    return e?.fileList;
+    return e?.fileList || [];
   };
-
   const handleSubmit = async () => {
     // if (res.id) {
     //   message.success("Data stored successfully");

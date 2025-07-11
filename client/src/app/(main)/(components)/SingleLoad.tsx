@@ -1,8 +1,11 @@
 "use client";
 
-import { getLoggedUserFromLS } from "@/app/util/getLoggedUserFromLS";
+import {
+  getLoggedUserFromLS,
+  LoggedUser,
+} from "@/app/util/getLoggedUserFromLS";
 import Heading from "@/app/util/Heading";
-import { getStatusColor } from "@/app/util/statusColorLoads";
+
 import {
   getBidsByLoadId,
   getLoadByLoadId,
@@ -15,9 +18,10 @@ import { useRouter, useParams, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { UploadOutlined } from "@ant-design/icons";
 import type { UploadProps } from "antd";
-import { Button, Upload } from "antd";
+import { Button, Tag, Upload } from "antd";
 import Shimmer from "./shimmerUi/Shimmer";
 import MapComponent from "./MapComponent";
+
 const props: UploadProps = {
   action: "//jsonplaceholder.typicode.com/posts/",
   listType: "picture",
@@ -80,6 +84,33 @@ interface SampleUser {
   email: string;
   type: string;
 }
+const getStatusColor = (status: LoadStatus | string): string => {
+  switch (status) {
+    case "AVAILABLE":
+      return "blue";
+    case "PENDING":
+      return "gold";
+    case "ASSIGNED":
+      return "purple";
+    case "IN_TRANSIT":
+      return "cyan";
+    case "DELIVERED":
+      return "green";
+    case "CANCELLED":
+      return "red";
+    default:
+      return "default";
+  }
+};
+const getStatusLabel = (status: LoadStatus | string): string => {
+  return status
+    .toLowerCase()
+    .split("_")
+    .map((word) => word[0].toUpperCase() + word.slice(1))
+    .join(" ");
+};
+
+// Example: "IN_TRANSIT" → "In Transit"
 
 export default function SingleLoad() {
   const router = useRouter();
@@ -87,7 +118,7 @@ export default function SingleLoad() {
   const pathname = usePathname();
   const loadId = params.loadId as string;
 
-  const [loggedUser, setLoggedUser] = useState<any>(null);
+  const [loggedUser, setLoggedUser] = useState<LoggedUser>();
   const [load, setLoad] = useState<Load | null>(null);
   const [loading, setLoading] = useState(true);
   const [bids, setBids] = useState<Bid[]>([]);
@@ -112,16 +143,16 @@ export default function SingleLoad() {
 
   useEffect(() => {
     const userObj = getLoggedUserFromLS();
-    if (userObj && userObj !== "no user found") {
+    if (userObj && userObj.userId !== "no user") {
       setLoggedUser(userObj);
     } else {
       router.push("/login");
     }
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     const fetchLoad = async () => {
-      let bids = await getBidsByLoadId({
+      const bids = await getBidsByLoadId({
         loadId,
       });
       setBids(bids);
@@ -144,13 +175,15 @@ export default function SingleLoad() {
     };
 
     fetchLoad();
-  }, [loggedUser?.userId, loadId, pathname]);
+  }, [loggedUser?.userId, loadId, pathname, router]);
 
   useEffect(() => {
     async function fetchData() {
       if (bids.length > 0) {
-        const activeBid: any = bids.find((b: any) => b.status === "ACCEPTED");
-        const user = await getUser(activeBid?.carrierId);
+        const activeBid: Bid | undefined = bids.find(
+          (b: Bid) => b.status === "ACCEPTED"
+        );
+        const user = await getUser(activeBid?.carrierId ?? "");
         setUserActive(user);
         setBidActive(activeBid);
       }
@@ -196,9 +229,11 @@ export default function SingleLoad() {
             <p>
               <span className="labelStyle">Status</span>
               <br />
-              <span className={`${getStatusColor(load.status)}`}>
-                {load.status}
-              </span>
+              <div className="flex items-center gap-2 mt-1">
+                <Tag color={getStatusColor(load.status)}>
+                  {getStatusLabel(load.status)}
+                </Tag>
+              </div>
             </p>
             <p>
               <span className="labelStyle">Load ID</span>
@@ -211,7 +246,7 @@ export default function SingleLoad() {
               <span className="valueStyle">
                 ₹
                 {findBidActive
-                  ? findBidActive.negotiateDriverPrice
+                  ? findBidActive.negotiateShipperPrice
                   : load.price}
               </span>
             </p>

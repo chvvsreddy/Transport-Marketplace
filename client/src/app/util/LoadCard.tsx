@@ -1,39 +1,17 @@
 "use client";
 
-import { Button, Card, Col, Flex, Row, Typography, Space } from "antd";
+import { Col, Flex, Row, Typography } from "antd";
 import { getStatusColor } from "./statusColorLoads";
 import { timeSincePosted } from "./timeSincePosted";
 import { DeleteOutlined, EditOutlined, EyeOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
-import { Edit } from "lucide-react";
+import { Load } from "../(main)/myloads/page";
 
-type LoadStatus =
-  | "AVAILABLE"
-  | "PENDING"
-  | "ASSIGNED"
-  | "IN_TRANSIT"
-  | "DELIVERED"
-  | "CANCELLED";
-
-interface Location {
-  city: string;
-  state: string;
-  postalCode: string;
-}
-interface Load {
-  id: string;
-  origin: Location;
-  destination: Location;
-  specialRequirements: string;
-  cargoType: string;
-  trucks: number;
-  pickupWindowStart: string;
-  deliveryWindowEnd: string;
-  status: LoadStatus;
-  createdAt: string;
+interface LoadCardProps {
+  load: Load;
 }
 
-export default function LoadCard({ load }: any) {
+const LoadCard: React.FC<LoadCardProps> = ({ load }) => {
   const { Text } = Typography;
 
   const formatDateTime = (str: string) =>
@@ -44,9 +22,10 @@ export default function LoadCard({ load }: any) {
       hour: "2-digit",
       minute: "2-digit",
     });
+
   const router = useRouter();
   return (
-    <div key={load.id} className="box" >
+    <div key={load.id} className="box">
       <div className="col-span-2 md:col-span-2">
         <div className="-mt-1">
           <Text
@@ -63,67 +42,64 @@ export default function LoadCard({ load }: any) {
       </div>
       <Row gutter={[12, 12]} align="middle" justify="space-between">
         <Col xs={24} md={4}>
-            <Typography.Text className ="labelStyle">Origin</Typography.Text><br/>
-            <Typography.Text className ="valueStyle">
-              {load.origin.city}
-              {/* {load.origin.state} */}
-            </Typography.Text>
-            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-              {load.origin.postalCode}
-            </Typography.Text>
+          <Typography.Text className="labelStyle">Origin</Typography.Text>
+          <br />
+          <Typography.Text className="valueStyle">
+            {load.origin.city}
+            {/* {load.origin.state} */}
+          </Typography.Text>
+          <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+            - {load.origin.postalCode}
+          </Typography.Text>
         </Col>
 
         <Col xs={24} md={4}>
-
-            <Typography.Text className ="labelStyle">Destination</Typography.Text><br/>
-            <Typography.Text className ="valueStyle">
-              {load.destination.city}
-               {/* {load.destination.state} */}
-            </Typography.Text>
-            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                - {load.destination.postalCode}
-            </Typography.Text>
-
-        </Col>
-{/* 
-        <Col xs={12} md={3}>
-          <Typography.Text className ="labelStyle">Equipment</Typography.Text>
+          <Typography.Text className="labelStyle">Destination</Typography.Text>
           <br />
-          <Typography.Text className ="valueStyle">
-            {load.specialRequirements}
+          <Typography.Text className="valueStyle">
+            {load.destination.city}
           </Typography.Text>
-        </Col> */}
+          <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+            - {load.destination.postalCode}
+          </Typography.Text>
+        </Col>
 
         <Col xs={12} md={2}>
-          <Typography.Text className ="labelStyle">Cargo Type</Typography.Text>
+          <Typography.Text className="labelStyle">Cargo Type</Typography.Text>
           <br />
-          <Typography.Text className ="valueStyle">{load.cargoType}</Typography.Text>
+          <Typography.Text className="valueStyle">
+            {load.cargoType}
+          </Typography.Text>
         </Col>
 
         <Col xs={12} md={3}>
-          <Typography.Text className ="labelStyle">Pickup</Typography.Text>
+          <Typography.Text className="labelStyle">Pickup</Typography.Text>
           <br />
-          <Typography.Text className ="valueStyle">
+          <Typography.Text className="valueStyle">
             {formatDateTime(load.pickupWindowStart)}
           </Typography.Text>
         </Col>
 
         <Col xs={12} md={2}>
-          <Typography.Text className ="labelStyle">Delivery</Typography.Text>
+          <Typography.Text className="labelStyle">Delivery</Typography.Text>
           <br />
-          <Typography.Text className ="valueStyle">
+          <Typography.Text className="valueStyle">
             {formatDateTime(load.deliveryWindowEnd)}
           </Typography.Text>
         </Col>
 
         <Col xs={24} md={3}>
           <Flex align="center" gap={8}>
-          <EyeOutlined onClick={() => router.push(`/myloads/${load.id}`)} className="icon-button"/>
-            <EditOutlined  className="icon-button" />
+            <EyeOutlined
+              onClick={() => router.push(`/myloads/${load.id}`)}
+              className="icon-button"
+            />
+            <EditOutlined className="icon-button" />
             <DeleteOutlined className="icon-button" />
           </Flex>
         </Col>
       </Row>
     </div>
   );
-}
+};
+export default LoadCard;
