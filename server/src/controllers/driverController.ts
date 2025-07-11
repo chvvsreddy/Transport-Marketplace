@@ -8,58 +8,58 @@ export const updateDriverLocation = async (
   res: Response
 ): Promise<void> => {
   const { coordinates, driverUserId } = req.body;
+
   try {
-    const updatedDriverLoaction = await prisma.driverDetails.update({
-      where: {
-        userId: driverUserId,
-      },
-      data: {
-        currentLocation: coordinates,
-      },
+    const updatedDriverLocation = await prisma.driverDetails.update({
+      where: { userId: driverUserId },
+      data: { currentLocation: coordinates },
     });
 
-    res.status(200).json(updatedDriverLoaction);
+    res.status(200).json(updatedDriverLocation);
   } catch (error) {
-    res.json({ message: "error on updating driver location" });
+    console.error("Error updating driver location:", error);
+    res.status(500).json({ message: "Error updating driver location" });
   }
 };
-export const getBidsByCarrierId = async (req: Request, res: Response) => {
+
+export const getBidsByCarrierId = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   const { carrierId } = req.body;
 
   try {
     const bids = await prisma.bid.findMany({
-      where: {
-        carrierId,
-        status: "ACCEPTED",
-      },
+      where: { carrierId, status: "ACCEPTED" },
     });
 
-    if (bids.length > 0) {
-      const loads = await Promise.all(
-        bids.map(async (bid) => {
-          const load = await prisma.loads.findUnique({
-            where: {
-              id: bid.loadId,
-            },
-          });
-          return load;
-        })
-      );
-
-      res.status(200).json(loads.filter(Boolean));
-    } else {
+    if (!bids.length) {
       res.status(200).json([]);
+      return;
     }
+
+    const loads = await Promise.all(
+      bids.map(async (bid) => {
+        const load = await prisma.loads.findUnique({
+          where: { id: bid.loadId },
+        });
+        return load ?? null;
+      })
+    );
+
+    res.status(200).json(loads.filter(Boolean));
   } catch (error) {
-    console.error(error);
-    res.status(404).json({ message: "Bids not found" });
+    console.error("Error getting bids by carrier ID:", error);
+    res.status(500).json({ message: "Bids not found" });
   }
 };
+
 export const getBidsByCarrierIdForTripsAssigning = async (
   req: Request,
   res: Response
-) => {
+): Promise<void> => {
   const { carrierId } = req.params;
+
   try {
     const bids = await prisma.bid.findMany({
       where: {
@@ -72,6 +72,7 @@ export const getBidsByCarrierIdForTripsAssigning = async (
 
     if (bids.length === 0) {
       res.status(200).json([]);
+      return;
     }
 
     const results = await Promise.all(
@@ -84,26 +85,25 @@ export const getBidsByCarrierIdForTripsAssigning = async (
             },
           }),
           prisma.users.findUnique({
-            where: {
-              id: carrierId,
-            },
+            where: { id: carrierId },
           }),
         ]);
 
+        if (!load) return null;
+
         const findLoadInTrips = await prisma.trips.findUnique({
-          where: {
-            loadId: load?.id,
-          },
+          where: { loadId: load.id },
         });
 
-        if (findLoadInTrips === null) {
-          return load ? { load, bid, user } : null;
+        if (!findLoadInTrips) {
+          return { load, bid, user };
         }
+
+        return null;
       })
     );
 
     const filteredResults = results.filter(Boolean);
-
     res.status(200).json(filteredResults);
   } catch (error) {
     console.error("Error fetching bids for trip assignment:", error);

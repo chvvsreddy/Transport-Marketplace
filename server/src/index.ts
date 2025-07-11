@@ -9,6 +9,8 @@ import http from "http";
 import { PrismaClient } from "@prisma/client";
 import { createYoga } from "graphql-yoga";
 import { schema } from "./merge";
+import { createAdapter } from "@socket.io/redis-adapter";
+import { createClient } from "redis";
 
 // Route Imports
 import allLoadsRoute from "./routes/allLoadsRoutes";
@@ -38,7 +40,7 @@ const onlineUsers = new Map();
 const yoga = createYoga({
   schema,
   graphqlEndpoint: "/graphql",
-   graphiql: true, 
+  graphiql: true,
 });
 // Middleware
 app.use(express.json());
@@ -69,11 +71,14 @@ app.use("/notifications", notificationRoutes);
 app.use("/Register/companyDetails", companyDetailsRoutes);
 
 //graphql setup
-app.use("/graphql",  (req, res, next) => {
+app.use(
+  "/graphql",
+  (req, res, next) => {
     res.removeHeader("Content-Security-Policy");
     next();
-  },yoga);
-
+  },
+  yoga
+);
 
 // Socket.IO Configuration
 const io = new Server(server, {
@@ -83,299 +88,327 @@ const io = new Server(server, {
   },
 });
 
-// Socket Event Handling
-io.on("connection", (socket) => {
-  console.log("New client connected:", socket.id);
+async function setupSocketServer() {
+  const pubClient = createClient({ url: process.env.REDIS_URL });
+  const subClient = pubClient.duplicate();
 
-  // Registering user with their socket ID
-  socket.on("register", (userId) => {
-    onlineUsers.set(userId, socket.id);
-    console.log(
-      `Registered user: ${userId} | Active clients: ${io.engine.clientsCount}`
-    );
-  });
+  await pubClient.connect();
+  await subClient.connect();
 
-  socket.on("updateBidAmount", async ({ bidId, shipperId, price, toUser }) => {
-    try {
-      const receiverSocketId = onlineUsers.get(toUser);
-      const fromUserSocketId = onlineUsers.get(shipperId);
-      const findUser: any = await prisma.users.findUnique({
-        where: { id: shipperId },
-      });
-      const isShipper = ["INDIVIDUAL_SHIPPER", "SHIPPER_COMPANY"].includes(
-        findUser?.type
+  io.adapter(createAdapter(pubClient, subClient));
+
+  const onlineUsersKey = "onlineUsers";
+
+  // Socket Event Handling
+  io.on("connection", (socket) => {
+    console.log("New client connected:", socket.id);
+
+    // Registering user with their socket ID
+    socket.on("register", async (userId) => {
+      await pubClient.hSet(onlineUsersKey, userId, socket.id);
+      console.log(
+        `Registered user: ${userId} | Active clients: ${io.engine.clientsCount}`
       );
-      const priceField = isShipper
-        ? "negotiateShipperPrice"
-        : "negotiateDriverPrice";
-      console.log("event triggered");
-      if (!receiverSocketId) {
-        const updatedBidAmount = await prisma.bid.update({
-          where: { id: bidId },
-          data: { [priceField]: price },
-        });
-        console.log("user offline , we updating in databse");
-        io.to(fromUserSocketId).emit(
-          "receiveUpdatedBidPrice",
-          updatedBidAmount
-        );
-        if (isShipper) {
-          const createNotification = await prisma.notification.create({
-            data: {
-              userId: toUser,
-              type: "BID_PRICE_UPDATED",
-              title: "Bid price updated",
-              message: `For this load ID  ${updatedBidAmount.loadId} , Bid amount updated by shipper`,
-            },
-          });
-        } else {
-          const createNotification = await prisma.notification.create({
-            data: {
-              userId: shipperId,
-              type: "BID_PRICE_UPDATED",
-              title: "Bid price updated",
-              message: `For this load ID ${updatedBidAmount.loadId}, Bid amount updated by driver`,
-            },
-          });
-        }
-        return;
-      }
-
-      const updatedBidAmount = await prisma.bid.update({
-        where: { id: bidId },
-        data: { [priceField]: price },
-      });
-      console.log(`socket id :${receiverSocketId} for this user ${toUser}`);
-      io.to(receiverSocketId).emit("receiveUpdatedBidPrice", updatedBidAmount);
-      io.to(fromUserSocketId).emit("receiveUpdatedBidPrice", updatedBidAmount);
-
-      const createNotification = await prisma.notification.create({
-        data: {
-          userId: shipperId,
-          type: "BID_PRICE_UPDATED",
-          title: "Bid price updated",
-          message: `For this load ID ${updatedBidAmount.loadId}, Bid amount updated by driver`,
-        },
-      });
-      io.to(receiverSocketId).emit(
-        "receiveBidPriceNotification",
-        createNotification
-      );
-    } catch (error) {
-      console.error("Error updating bid amount:", error);
-    }
-  });
-
-  // Updating bid status
-  socket.on("updateBidStatus", async ({ bidId, shipperId, toUser, loadId }) => {
-    try {
-      const receiverSocketId = onlineUsers.get(toUser);
-      const fromUserSocketId = onlineUsers.get(shipperId);
-      const findUser = await prisma.users.findUnique({
-        where: { id: shipperId },
-      });
-      const isShipper =
-        findUser?.type === "SHIPPER_COMPANY" ||
-        findUser?.type === "INDIVIDUAL_SHIPPER";
-
-      const statusField = isShipper ? "isShipperAccepted" : "isDriverAccepted";
-      if (!receiverSocketId) {
-        const updatedBidStatus = await prisma.bid.update({
-          where: { id: bidId },
-          data: {
-            [statusField]: true,
-            status:
-              statusField === "isShipperAccepted" ? "ACCEPTED" : "PENDING",
-          },
-        });
-        const updateLoadStatus = await prisma.loads.update({
-          where: {
-            id: loadId,
-          },
-          data: {
-            status:
-              statusField === "isShipperAccepted" ? "ASSIGNED" : "AVAILABLE",
-          },
-        });
-
-        const createNotification = await prisma.notification.create({
-          data: {
-            userId: updateLoadStatus.shipperId,
-            type: "LOAD_ACCEPTED",
-            title: "load accepted",
-            message: `This load ID ${updatedBidStatus.loadId} has accepted by driver`,
-          },
-        });
-
-        io.to(fromUserSocketId).emit(
-          "receiveUpdatedBidPrice",
-          updatedBidStatus
-        );
-        return;
-      }
-
-      const updatedBidStatus = await prisma.bid.update({
-        where: { id: bidId },
-        data: {
-          [statusField]: true,
-          status: statusField === "isShipperAccepted" ? "ACCEPTED" : "PENDING",
-        },
-      });
-      const updateLoadStatus = await prisma.loads.update({
-        where: {
-          id: loadId,
-        },
-        data: {
-          status:
-            statusField === "isShipperAccepted" ? "ASSIGNED" : "AVAILABLE",
-        },
-      });
-
-      console.log(updatedBidStatus);
-
-      const createNotification = await prisma.notification.create({
-        data: {
-          userId: updateLoadStatus.shipperId,
-          type: "LOAD_ACCEPTED",
-          title: "load accepted",
-          message: `This load ID ${updatedBidStatus.loadId} has accepted by driver`,
-        },
-      });
-      io.to(receiverSocketId).emit(
-        "receiveLoadAcceptanceNotification",
-        createNotification
-      );
-
-      io.to(receiverSocketId).emit("receiveUpdatedBidStatus", updatedBidStatus);
-      io.to(fromUserSocketId).emit("receiveUpdatedBidStatus", updatedBidStatus);
-    } catch (error) {
-      console.error("Error updating bid status:", error);
-    }
-  });
-
-  socket.on("passNewBid", async ({ newBid, toUser }) => {
-    const receiverSocketId = onlineUsers.get(toUser);
-    const fromUserId = newBid.carrierId;
-    const fromUserSocketId = onlineUsers.get(fromUserId);
-    const createNotification = await prisma.notification.create({
-      data: {
-        userId: toUser,
-        type: "NEW_BID",
-        title: "New bid arrived for your load",
-        message: `Your Load ID  ${newBid.loadId} , new bid has arrived`,
-      },
     });
-    io.to(receiverSocketId).emit(
-      "receiveNewBidNotification",
-      createNotification
+
+    socket.on(
+      "updateBidAmount",
+      async ({ bidId, shipperId, price, toUser }) => {
+        try {
+          const receiverSocketId = await pubClient.hGet("onlineUsers", toUser);
+          const fromUserSocketId = await pubClient.hGet(
+            "onlineUsers",
+            shipperId
+          );
+
+          const findUser = await prisma.users.findUnique({
+            where: { id: shipperId },
+          });
+
+          const isShipper = ["INDIVIDUAL_SHIPPER", "SHIPPER_COMPANY"].includes(
+            findUser?.type || ""
+          );
+
+          const priceField = isShipper
+            ? "negotiateShipperPrice"
+            : "negotiateDriverPrice";
+
+          console.log("event triggered");
+
+          // Update bid in all cases
+          const updatedBidAmount = await prisma.bid.update({
+            where: { id: bidId },
+            data: { [priceField]: price },
+          });
+
+          console.log(
+            receiverSocketId
+              ? `Online user. Sending to socket ID: ${receiverSocketId}`
+              : "User is offline. No socket to emit to."
+          );
+
+          // Emit to receiver if online
+          if (receiverSocketId) {
+            io.to(receiverSocketId).emit(
+              "receiveUpdatedBidPrice",
+              updatedBidAmount
+            );
+
+            // Notify receiver
+            const createNotification = await prisma.notification.create({
+              data: {
+                userId: toUser,
+                type: "BID_PRICE_UPDATED",
+                title: "Bid price updated",
+                message: `For this load ID ${
+                  updatedBidAmount.loadId
+                }, Bid amount updated by ${isShipper ? "shipper" : "driver"}`,
+              },
+            });
+
+            io.to(receiverSocketId).emit(
+              "receiveBidPriceNotification",
+              createNotification
+            );
+          } else {
+            // User offline, save notification only
+            await prisma.notification.create({
+              data: {
+                userId: toUser,
+                type: "BID_PRICE_UPDATED",
+                title: "Bid price updated",
+                message: `For this load ID ${
+                  updatedBidAmount.loadId
+                }, Bid amount updated by ${isShipper ? "shipper" : "driver"}`,
+              },
+            });
+          }
+
+          // Emit to sender (shipper or driver) if they’re online
+          if (fromUserSocketId) {
+            io.to(fromUserSocketId).emit(
+              "receiveUpdatedBidPrice",
+              updatedBidAmount
+            );
+          }
+        } catch (error) {
+          console.error("Error updating bid amount:", error);
+        }
+      }
     );
-    io.to(receiverSocketId).emit("receiveNewBid", newBid);
-    io.to(fromUserSocketId).emit("receiveNewBid", newBid);
-  });
 
-  socket.on(
-    "acceptAfterDriverBidViaSocket",
-    async ({ bidId, shipperId, toUser, price, loadId }) => {
-      const receiverSocketId = onlineUsers.get(toUser);
-      const fromUserSocketId = onlineUsers.get(shipperId);
-      if (!receiverSocketId) {
-        const updateBid = await prisma.bid.update({
-          where: {
-            id: bidId,
-          },
-          data: {
-            isDriverAccepted: true,
-            isShipperAccepted: true,
-            negotiateShipperPrice: Number(price),
-          },
-        });
-        const updateLoadStatus = await prisma.loads.update({
-          where: {
-            id: loadId,
-          },
-          data: {
-            status: "ASSIGNED",
-          },
-        });
+    // Updating bid status
+    socket.on(
+      "updateBidStatus",
+      async ({ bidId, shipperId, toUser, loadId }) => {
+        try {
+          const receiverSocketId = await pubClient.hGet("onlineUsers", toUser);
+          const fromUserSocketId = await pubClient.hGet(
+            "onlineUsers",
+            shipperId
+          );
 
+          const findUser = await prisma.users.findUnique({
+            where: { id: shipperId },
+          });
+
+          const isShipper =
+            findUser?.type === "SHIPPER_COMPANY" ||
+            findUser?.type === "INDIVIDUAL_SHIPPER";
+
+          const statusField = isShipper
+            ? "isShipperAccepted"
+            : "isDriverAccepted";
+
+          const bidStatus =
+            statusField === "isShipperAccepted" ? "ACCEPTED" : "PENDING";
+          const loadStatus =
+            statusField === "isShipperAccepted" ? "ASSIGNED" : "AVAILABLE";
+
+          // 📝 Update bid and load status
+          const updatedBidStatus = await prisma.bid.update({
+            where: { id: bidId },
+            data: {
+              [statusField]: true,
+              status: bidStatus,
+            },
+          });
+
+          const updatedLoad = await prisma.loads.update({
+            where: { id: loadId },
+            data: { status: loadStatus },
+          });
+
+          // 🔔 Create notification
+          const notification = await prisma.notification.create({
+            data: {
+              userId: updatedLoad.shipperId,
+              type: "LOAD_ACCEPTED",
+              title: "Load Accepted",
+              message: `This load ID ${
+                updatedBidStatus.loadId
+              } has been accepted by ${isShipper ? "shipper" : "driver"}`,
+            },
+          });
+
+          // 💬 Emit to receiver (if online)
+          if (receiverSocketId) {
+            io.to(receiverSocketId).emit(
+              "receiveLoadAcceptanceNotification",
+              notification
+            );
+
+            io.to(receiverSocketId).emit(
+              "receiveUpdatedBidStatus",
+              updatedBidStatus
+            );
+          } else {
+            console.log(`Receiver (${toUser}) is offline.`);
+          }
+
+          // 💬 Emit to sender (if online)
+          if (fromUserSocketId) {
+            io.to(fromUserSocketId).emit(
+              "receiveUpdatedBidStatus",
+              updatedBidStatus
+            );
+          } else {
+            console.log(`Sender (${shipperId}) is offline.`);
+          }
+        } catch (error) {
+          console.error("Error updating bid status:", error);
+        }
+      }
+    );
+
+    socket.on("passNewBid", async ({ newBid, toUser }) => {
+      try {
+        const receiverSocketId = await pubClient.hGet("onlineUsers", toUser);
+        const fromUserId = newBid.carrierId;
+        const fromUserSocketId = await pubClient.hGet(
+          "onlineUsers",
+          fromUserId
+        );
+
+        // 🔔 Create notification regardless of online/offline
         const createNotification = await prisma.notification.create({
           data: {
             userId: toUser,
-            type: "LOAD_ACCEPTED",
-            title: "Load accepted",
-            message: ` Load ${updateBid.loadId} has accepted by the shipper`,
+            type: "NEW_BID",
+            title: "New bid arrived for your load",
+            message: `Your Load ID ${newBid.loadId} received a new bid.`,
           },
         });
 
-        io.to(fromUserSocketId).emit(
-          "receiveAfterDriverBidViaSocket",
-          updateBid
-        );
+        // 📤 Send to receiver (shipper) if online
+        if (receiverSocketId) {
+          io.to(receiverSocketId).emit(
+            "receiveNewBidNotification",
+            createNotification
+          );
+          io.to(receiverSocketId).emit("receiveNewBid", newBid);
+        } else {
+          console.log(`Receiver (user: ${toUser}) is offline.`);
+        }
+
+        // 📤 Echo to sender (driver) if online
+        if (fromUserSocketId) {
+          io.to(fromUserSocketId).emit("receiveNewBid", newBid);
+        } else {
+          console.log(`Sender (user: ${fromUserId}) is offline.`);
+        }
+      } catch (err) {
+        console.error("Error handling passNewBid:", err);
+      }
+    });
+
+    socket.on(
+      "acceptAfterDriverBidViaSocket",
+      async ({ bidId, shipperId, toUser, price, loadId }) => {
+        try {
+          const receiverSocketId = await pubClient.hGet("onlineUsers", toUser);
+          const fromUserSocketId = await pubClient.hGet(
+            "onlineUsers",
+            shipperId
+          );
+
+          // Step 1: Update bid
+          const updateBid = await prisma.bid.update({
+            where: { id: bidId },
+            data: {
+              isDriverAccepted: true,
+              isShipperAccepted: true,
+              negotiateShipperPrice: Number(price),
+              status: "ACCEPTED",
+            },
+          });
+
+          // Step 2: Update load status
+          const updateLoadStatus = await prisma.loads.update({
+            where: { id: loadId },
+            data: { status: "ASSIGNED" },
+          });
+
+          // Step 3: Create notification
+          const createNotification = await prisma.notification.create({
+            data: {
+              userId: toUser,
+              type: "LOAD_ACCEPTED",
+              title: "Load accepted",
+              message: `Load ${updateBid.loadId} has been accepted by the shipper.`,
+            },
+          });
+
+          // Step 4: Emit to receiver (driver)
+          if (receiverSocketId) {
+            io.to(receiverSocketId).emit(
+              "receiveLoadAcceptanceByShipperNotification",
+              createNotification
+            );
+            io.to(receiverSocketId).emit(
+              "receiveAfterDriverBidViaSocket",
+              updateBid
+            );
+          } else {
+            console.log(`Driver (user: ${toUser}) is offline.`);
+          }
+
+          // Step 5: Emit to sender (shipper)
+          if (fromUserSocketId) {
+            io.to(fromUserSocketId).emit(
+              "receiveAfterDriverBidViaSocket",
+              updateBid
+            );
+          } else {
+            console.log(`Shipper (user: ${shipperId}) is offline.`);
+          }
+        } catch (error) {
+          console.error("Error in acceptAfterDriverBidViaSocket:", error);
+        }
+      }
+    );
+
+    socket.on("fixedAcceptLoad", async ({ loadId, toUser, fromUser }) => {
+      if (!loadId || !toUser || !fromUser) {
+        console.error("Invalid payload for fixedAcceptLoad", {
+          loadId,
+          toUser,
+          fromUser,
+        });
         return;
       }
 
-      const updateBid = await prisma.bid.update({
-        where: {
-          id: bidId,
-        },
-        data: {
-          isDriverAccepted: true,
-          isShipperAccepted: true,
-          negotiateShipperPrice: Number(price),
-          status: "ACCEPTED",
-        },
-      });
+      try {
+        const receiverSocketId = await pubClient.hGet("onlineUsers", toUser);
+        const fromUserSocketId = await pubClient.hGet("onlineUsers", fromUser);
 
-      const updateLoadStatus = await prisma.loads.update({
-        where: {
-          id: loadId,
-        },
-        data: {
-          status: "ASSIGNED",
-        },
-      });
-      const createNotification = await prisma.notification.create({
-        data: {
-          userId: toUser,
-          type: "LOAD_ACCEPTED",
-          title: "Load accepted",
-          message: ` Load ${updateBid.loadId} has accepted by the shipper`,
-        },
-      });
-      io.to(receiverSocketId).emit(
-        "receiveLoadAcceptanceByShipperNotification",
-        createNotification
-      );
-
-      io.to(receiverSocketId).emit("receiveAfterDriverBidViaSocket", updateBid);
-      io.to(fromUserSocketId).emit("receiveAfterDriverBidViaSocket", updateBid);
-    }
-  );
-
-  socket.on("fixedAcceptLoad", async ({ loadId, toUser, fromUser }) => {
-    if (!loadId || !toUser || !fromUser) {
-      console.error("Invalid payload for fixedAcceptLoad", {
-        loadId,
-        toUser,
-        fromUser,
-      });
-      return;
-    }
-
-    try {
-      const receiverSocketId = onlineUsers.get(toUser);
-      const fromUserSocketId = onlineUsers.get(fromUser);
-
-      if (!receiverSocketId) {
+        // ✅ 1. Update Load status
         const updateLoad = await prisma.loads.update({
-          where: {
-            id: loadId,
-          },
-          data: {
-            status: "ASSIGNED",
-          },
+          where: { id: loadId },
+          data: { status: "ASSIGNED" },
         });
 
+        // ✅ 2. Create bid for the load
         const createBid = await prisma.bid.create({
           data: {
             loadId,
@@ -391,74 +424,52 @@ io.on("connection", (socket) => {
           },
         });
 
+        // ✅ 3. Create notification
         const createNotification = await prisma.notification.create({
           data: {
             userId: toUser,
             type: "LOAD_ACCEPTED",
             title: "Load accepted",
-            message: `Your Load ${loadId} has accepted by driver`,
+            message: `Your Load ${loadId} has been accepted by the driver.`,
           },
         });
 
-        io.to(receiverSocketId).emit("receiveFixedLoad", createBid);
-        io.to(fromUserSocketId).emit("receiveFixedLoad", createBid);
-        return;
-      }
-      const updateLoad = await prisma.loads.update({
-        where: {
-          id: loadId,
-        },
-        data: {
-          status: "ASSIGNED",
-        },
-      });
+        // ✅ 4. Emit to `toUser` (shipper) if online
+        if (receiverSocketId) {
+          io.to(receiverSocketId).emit(
+            "receiveFixedLoadAcceptanceNotification",
+            createNotification
+          );
+          io.to(receiverSocketId).emit("receiveFixedLoad", createBid);
+        } else {
+          console.log(`Receiver (user: ${toUser}) is offline.`);
+        }
 
-      const createBid = await prisma.bid.create({
-        data: {
-          loadId,
-          carrierId: fromUser,
-          price: updateLoad.price,
-          status: "ACCEPTED",
-          vehicleId: null,
-          negotiateDriverPrice: updateLoad.price,
-          negotiateShipperPrice: updateLoad.price,
-          isDriverAccepted: true,
-          isShipperAccepted: true,
-          estimatedDuration: 0,
-        },
-      });
-      const load = await prisma.loads.findUnique({
-        where: { id: loadId },
-      });
-      const createNotification = await prisma.notification.create({
-        data: {
-          userId: toUser,
-          type: "LOAD_ACCEPTED",
-          title: "Load accepted",
-          message: `Your Load ${loadId} has accepted by driver`,
-        },
-      });
-      io.to(receiverSocketId).emit(
-        "receiveFixedLoadAcceptanceNotification",
-        createNotification
-      );
-      io.to(receiverSocketId).emit("receiveFixedLoad", createBid);
-      io.to(fromUserSocketId).emit("receiveFixedLoad", createBid);
-    } catch (e) {
-      console.log(e);
-    }
-  });
-
-  socket.on("disconnect", () => {
-    console.log("Client disconnected:", socket.id);
-    for (const [userId, sId] of onlineUsers.entries()) {
-      if (sId === socket.id) {
-        onlineUsers.delete(userId);
-        break;
+        // ✅ 5. Emit to `fromUser` (driver) if online
+        if (fromUserSocketId) {
+          io.to(fromUserSocketId).emit("receiveFixedLoad", createBid);
+        } else {
+          console.log(`Sender (user: ${fromUser}) is offline.`);
+        }
+      } catch (error) {
+        console.error("Error in fixedAcceptLoad:", error);
       }
-    }
+    });
+
+    socket.on("disconnect", async () => {
+      console.log("Disconnected:", socket.id);
+      const allUsers = await pubClient.hGetAll(onlineUsersKey);
+      for (const [userId, sId] of Object.entries(allUsers)) {
+        if (sId === socket.id) {
+          await pubClient.hDel(onlineUsersKey, userId);
+          break;
+        }
+      }
+    });
   });
-});
+}
+
+setupSocketServer();
 
 // Server Setup
 const port = Number(process.env.PORT) || 8000;

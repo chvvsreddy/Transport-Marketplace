@@ -286,7 +286,7 @@ const Loads = () => {
 
     fetchBidsAndSetInitialLoads();
     setIsLoading(false);
-  }, [allData]);
+  }, [allData, router, token, selectedState]);
 
   useEffect(() => {
     if (socket) {
@@ -353,7 +353,7 @@ const Loads = () => {
     setIsModalVisible(true);
   };
 
-  const handleBidSubmit = async () => {
+  const handleBidSubmit = async (loadId: string) => {
     if (selectedLoad && socket) {
       const userId = getLoggedUserFromLS()?.userId;
       const priceNum = Number(bidPrice);
@@ -369,7 +369,7 @@ const Loads = () => {
         (load) => load.id === existingBid?.loadId
       );
       const loggedUser = getLoggedUserFromLS();
-      const getLoad = await getLoadByLoadIdForAdmin(existingBid?.loadId);
+      const getLoad = await getLoadByLoadIdForAdmin(loadId);
       console.log("vinay loa d : ", getLoad);
       // if (getLoad.status === "ASSIGNED") {
       //   message.error("Load already assigned");
@@ -408,7 +408,7 @@ const Loads = () => {
     }
   };
 
-  const acceptBidWithoutBid: any = async (
+  const acceptBidWithoutBid = async (
     idOfLoad: string,
     loadShipperId: string
   ) => {
@@ -913,7 +913,7 @@ const Loads = () => {
         <Modal
           title="Place a Bid"
           open={isModalVisible}
-          onOk={handleBidSubmit}
+          onOk={() => handleBidSubmit(selectedLoad.id)}
           onCancel={() => setIsModalVisible(false)}
           okText="Submit Bid"
           cancelText="Cancel"

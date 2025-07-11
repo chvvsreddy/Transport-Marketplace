@@ -1,7 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import {
   parse,
-  subDays,
   startOfDay,
   isValid,
   format,
@@ -23,28 +22,34 @@ export const loadResolvers = {
   Query: {
     getLoadsCountByDate: async (
       _: unknown,
-      { input }: { input: { startDate: string; userId: string } }
+      {
+        input,
+      }: { input: { startDate?: string; endDate?: string; userId: string } }
     ) => {
-      const { startDate, userId } = input;
-      let parsedStart = parse(input.startDate, "dd-MM-yyyy", new Date());
+      const { startDate, endDate, userId } = input;
 
-      if (!isValid(parsedStart)) {
-        console.warn("Invalid startDate format, using current date");
-        parsedStart = new Date();
-      }
-      const today = startOfDay(parsedStart);
-      const end = startOfDay(new Date(today.getTime() + 86400000)); // include full today
-      const fromDate = startOfDay(subDays(today, 30));
-      const days = eachDayOfInterval({ start: fromDate, end: today });
+      // Default to earliest and latest dates if not provided
+      let parsedStart = startDate
+        ? parse(startDate, "dd-MM-yyyy", new Date())
+        : new Date("2000-01-01"); // far past
+
+      let parsedEnd = endDate
+        ? parse(endDate, "dd-MM-yyyy", new Date())
+        : new Date(); // today
+
+      if (!isValid(parsedStart)) parsedStart = new Date("2000-01-01");
+      if (!isValid(parsedEnd)) parsedEnd = new Date();
+
+      const fromDate = startOfDay(parsedStart);
+      const toDate = startOfDay(new Date(parsedEnd.getTime() + 86400000)); // inclusive
+
+      const days = eachDayOfInterval({ start: fromDate, end: parsedEnd });
 
       // === Load Stats ===
       const totalLoads = await prisma.loads.count({
         where: {
           shipperId: userId,
-          createdAt: {
-            gte: fromDate,
-            lt: end,
-          },
+          createdAt: { gte: fromDate, lt: toDate },
         },
       });
 
@@ -52,10 +57,7 @@ export const loadResolvers = {
         where: {
           shipperId: userId,
           status: "DELIVERED",
-          createdAt: {
-            gte: fromDate,
-            lt: end,
-          },
+          createdAt: { gte: fromDate, lt: toDate },
         },
       });
 
@@ -63,20 +65,14 @@ export const loadResolvers = {
         where: {
           shipperId: userId,
           status: "IN_TRANSIT",
-          createdAt: {
-            gte: fromDate,
-            lt: end,
-          },
+          createdAt: { gte: fromDate, lt: toDate },
         },
       });
 
-      // === Payment Stats === && (PENDING)
+      // === Payments ===
       const payments = await prisma.payment.findMany({
         where: {
-          createdAt: {
-            gte: fromDate,
-            lt: end,
-          },
+          createdAt: { gte: fromDate, lt: toDate },
         },
         select: {
           amount: true,
@@ -123,25 +119,18 @@ export const loadResolvers = {
         .sort((a, b) => b.count - a.count)
         .slice(0, 5);
 
-      // === Top 5 Bid Days (filtered by shipper's loads) === (completed)
-      const loads = await prisma.loads.findMany({
-        where: {
-          shipperId: userId,
-        },
-        select: {
-          id: true,
-        },
-      });
-
-      const loadIds = loads.map((load) => load.id);
+      // === Bids ===
+      const userLoadIds = (
+        await prisma.loads.findMany({
+          where: { shipperId: userId },
+          select: { id: true },
+        })
+      ).map((load) => load.id);
 
       const bids = await prisma.bid.findMany({
         where: {
-          loadId: { in: loadIds },
-          createdAt: {
-            gte: fromDate,
-            lt: end,
-          },
+          loadId: { in: userLoadIds },
+          createdAt: { gte: fromDate, lt: toDate },
         },
         select: {
           price: true,
@@ -177,9 +166,7 @@ export const loadResolvers = {
 
       // === Latest 3 Loads ===
       const latestThreeLoads = await prisma.loads.findMany({
-        where: {
-          shipperId: userId,
-        },
+        where: { shipperId: userId },
         orderBy: { createdAt: "desc" },
         take: 3,
         select: {
@@ -194,53 +181,34 @@ export const loadResolvers = {
         },
       });
 
-      // Step 1: Get all load IDs for the user(completed)
-      const loadsForUser = await prisma.loads.findMany({
-        where: {
-          shipperId: userId,
-        },
-        select: {
-          id: true,
-        },
+      // === Bid status chart ===
+      const allUserLoads = await prisma.loads.findMany({
+        where: { shipperId: userId },
+        select: { id: true },
       });
 
-      const userLoadIds = new Set(loadsForUser.map((load) => load.id));
+      const userLoadIdSet = new Set(allUserLoads.map((load) => load.id));
 
-      // Step 2: Get all bids with their associated loads in the time range
       const bidsWithLoads = await prisma.bid.findMany({
-        where: {
-          createdAt: {
-            gte: fromDate,
-            lt: end,
-          },
-        },
+        where: { createdAt: { gte: fromDate, lt: toDate } },
         select: {
           createdAt: true,
           status: true,
-          load: {
-            select: {
-              id: true,
-              status: true,
-            },
-          },
+          load: { select: { id: true, status: true } },
         },
       });
 
-      // Step 3: Filter bids where the load belongs to this user
-      const filteredBids = bidsWithLoads.filter(
-        (bid) => bid.load && userLoadIds.has(bid.load.id)
-      );
-
-      // Step 4: Group and count by date
       const bidStatusDataMap = new Map<
         string,
         { accepted: number; rejected: number }
       >();
 
-      filteredBids.forEach((bid) => {
-        const loadStatus = bid.load?.status;
-        const validLoadStatus = ["ASSIGNED", "IN_TRANSIT", "DELIVERED"];
-        if (!validLoadStatus.includes(loadStatus)) return;
+      bidsWithLoads.forEach((bid) => {
+        if (!bid.load || !userLoadIdSet.has(bid.load.id)) return;
+
+        const loadStatus = bid.load.status;
+        if (!["ASSIGNED", "IN_TRANSIT", "DELIVERED"].includes(loadStatus))
+          return;
 
         const dateKey = format(new Date(bid.createdAt), "MMM d");
 
@@ -257,77 +225,37 @@ export const loadResolvers = {
         }
       });
 
-      // Step 5: Final array for chart or return
       const bidStatusData = Array.from(bidStatusDataMap.entries())
         .map(([date, { accepted, rejected }]) => ({ date, accepted, rejected }))
         .filter((entry) => entry.accepted > 0 || entry.rejected > 0);
 
-      //payments(Not completed)
-
+      // === Top 5 Payments ===
       const top5Payments = await prisma.payment.findMany({
-        where: {
-          createdAt: {
-            gte: fromDate,
-            lt: end,
-          },
-        },
-        orderBy: {
-          amount: "desc",
-        },
+        where: { createdAt: { gte: fromDate, lt: toDate } },
+        orderBy: { amount: "desc" },
         take: 5,
-        select: {
-          amount: true,
-          createdAt: true,
-        },
+        select: { amount: true, createdAt: true },
       });
 
-      const formatted = top5Payments.map((p) => ({
+      const top5HighestPayments = top5Payments.map((p) => ({
         date: format(p.createdAt, "MMM d"),
         price: p.amount,
       }));
 
-      // top 5 bid price
-
-      // Step 1: Get all load IDs for the user(Completed)
-      const loadsAll = await prisma.loads.findMany({
-        where: {
-          shipperId: userId,
-        },
-        select: {
-          id: true,
-        },
-      });
-
-      const userLoadIdsCheck = new Set(loadsAll.map((load) => load.id));
-
-      // Step 2: Get top 5 highest bids in the time range
+      // === Top 5 Highest Bids ===
       const top5Bids = await prisma.bid.findMany({
-        where: {
-          createdAt: {
-            gte: fromDate,
-            lt: end,
-          },
-        },
-        orderBy: {
-          price: "desc",
-        },
-        select: {
-          price: true,
-          createdAt: true,
-          loadId: true,
-        },
+        where: { createdAt: { gte: fromDate, lt: toDate } },
+        orderBy: { price: "desc" },
+        select: { price: true, createdAt: true, loadId: true },
       });
 
-      // Step 3: Filter bids for the user's loads only
-      const filteredTopBids = top5Bids
-        .filter((bid) => userLoadIdsCheck.has(bid.loadId))
-        .slice(0, 5);
-
-      // Step 4: Format for frontend
-      const top5HighestBids = filteredTopBids.map((bid) => ({
-        date: format(bid.createdAt, "MMM d"), // e.g., "Jun 10"
-        price: bid.price,
-      }));
+      const top5HighestBids = top5Bids
+        .filter((bid) => userLoadIdSet.has(bid.loadId))
+        .slice(0, 5)
+        .map((bid) => ({
+          date: format(bid.createdAt, "MMM d"),
+          price: bid.price,
+        }));
 
       return {
         totalLoads,
@@ -340,7 +268,7 @@ export const loadResolvers = {
         top5BidDays,
         latestThreeLoads,
         bidStatusData,
-        top5HighestPayments: formatted,
+        top5HighestPayments,
         top5HighestBids,
       };
     },

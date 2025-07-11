@@ -1,6 +1,7 @@
 input LoadStatsInput {
+  userId: String
   startDate: String!
-  userId: String!
+  endDate: String!
 }
 
 type DailyRevenue {
