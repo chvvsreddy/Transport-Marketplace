@@ -3,17 +3,21 @@
 import {
   Row,
   Col,
-  Select,
   Button,
   Typography,
   Modal,
   InputNumber,
   Form,
-  Empty,
   message,
   Radio,
 } from "antd";
-import React, { useState, useEffect, useContext, useLayoutEffect } from "react";
+import React, {
+  useState,
+  useEffect,
+  useContext,
+  useLayoutEffect,
+  useMemo,
+} from "react";
 import Heading from "@/app/util/Heading/index";
 import {
   createBid,
@@ -36,40 +40,20 @@ import Link from "next/link";
 import getTokenIdFromLs from "@/app/util/getTokenIdFromLS";
 
 const { Title, Text } = Typography;
-const { Option } = Select;
 
-const INDIAN_STATES = [
-  "Andhra Pradesh",
-  "Arunachal Pradesh",
-  "Assam",
-  "Bihar",
-  "Chhattisgarh",
-  "Delhi",
-  "Goa",
-  "Gujarat",
-  "Haryana",
-  "Himachal Pradesh",
-  "Jammu and Kashmir",
-  "Jharkhand",
-  "Karnataka",
-  "Kerala",
-  "Madhya Pradesh",
-  "Maharashtra",
-  "Manipur",
-  "Meghalaya",
-  "Mizoram",
-  "Nagaland",
-  "Odisha",
-  "Punjab",
-  "Rajasthan",
-  "Sikkim",
-  "Tamil Nadu",
-  "Telangana",
-  "Tripura",
-  "Uttar Pradesh",
-  "Uttarakhand",
-  "West Bengal",
-];
+interface Requirements {
+  size: string;
+  type: string;
+  acOption: string;
+  trollyOption: string;
+}
+
+type AddressComponent = {
+  long_name: string;
+  short_name: string;
+  types: string[];
+};
+
 interface Vehicle {
   id: string;
   registrationNumber: string;
@@ -82,7 +66,7 @@ interface Vehicle {
     width: number;
     height: number;
   };
-  vehicleType: string;
+  vehicleType: Requirements;
   isActive: boolean;
 
   ownerId: string;
@@ -149,21 +133,41 @@ interface Load {
   price: number;
   createdAt: string;
   pickupWindowStart: string;
-  specialRequirements: string;
+  specialRequirements: Requirements;
   deliveryWindowEnd: string;
 }
 
 const PAGE_SIZE = 5;
 
+const fetchNearbyLoads = async (currentLoc: Location, allLoads: Load[]) => {
+  const origin = `${currentLoc.lat},${currentLoc.lng}`;
+  const destinations = allLoads.map((load) => ({
+    lat: load.origin.lat,
+    lng: load.origin.lng,
+  }));
+
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/distance`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ origin, destinations }),
+  });
+
+  const data = await res.json();
+  return data;
+};
+
 const Loads = () => {
   const { data, isLoading, isError } = useGetAllLoadsQuery();
   const allLoads = data as Load[] | undefined;
-  const allData = allLoads || [];
+  const allData = useMemo(() => allLoads || [], [allLoads]);
+
   const [location, setLocation] = useState<Location | null>(null);
   const [Bids, setBids] = useState<Bid[]>([]);
   const [filteredLoads, setFilteredLoads] = useState<Load[]>([]);
-  const [selectedState, setSelectedState] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedLoad, setSelectedLoad] = useState<Load | null>(null);
   const [bidPrice, setBidPrice] = useState<string>("");
@@ -184,6 +188,7 @@ const Loads = () => {
   };
 
   const [open, setOpen] = React.useState<boolean>(false);
+  const [hasFetchedNearbyLoads, setHasFetchedNearbyLoads] = useState(false);
 
   const { socket } = useContext(SocketContext) || {};
   const router = useRouter();
@@ -196,7 +201,7 @@ const Loads = () => {
       }
     }
 
-    const fetchBidsAndSetInitialLoads = async () => {
+    const fetchInitialData = async () => {
       const getDataWithoutTrips = await getDataForTripsAssigning(
         getLoggedUserFromLS().userId
       );
@@ -213,80 +218,121 @@ const Loads = () => {
       const bids = await getBids();
       setBids(bids);
 
-      const availableLoads = allData.filter(
-        (load) => load.status === "AVAILABLE"
-      );
-      setFilteredLoads(availableLoads);
-
       if (!navigator.geolocation) return;
-      if (!selectedState && navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          async ({ coords: { latitude: lat, longitude: lng } }) => {
-            try {
-              const geoRes = await fetch(
-                `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`
+
+      navigator.geolocation.getCurrentPosition(
+        async ({ coords: { latitude: lat, longitude: lng } }) => {
+          try {
+            const geoRes = await fetch(
+              `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`
+            );
+            const geoData = await geoRes.json();
+
+            let stateName = "";
+            let formattedAddress = "";
+
+            if (geoData.status === "OK" && geoData.results.length > 0) {
+              formattedAddress = geoData.results[0].formatted_address;
+
+              const addressComponents = geoData.results[0]
+                .address_components as AddressComponent[];
+              const stateComponent = addressComponents.find(
+                (component: AddressComponent) =>
+                  component.types.includes("administrative_area_level_1")
               );
-              const geoData = await geoRes.json();
-
-              let stateName = "";
-              let formattedAddress = "";
-
-              if (geoData.status === "OK" && geoData.results.length > 0) {
-                formattedAddress = geoData.results[0].formatted_address;
-
-                const addressComponents = geoData.results[0].address_components;
-                const stateComponent = addressComponents.find(
-                  (component: any) =>
-                    component.types.includes("administrative_area_level_1")
-                );
-                stateName = stateComponent ? stateComponent.long_name : "";
-              }
-
-              const updatedLocation: Location = {
-                lat,
-                lng,
-                address: formattedAddress,
-                state: stateName,
-              };
-              setLocation(updatedLocation);
-
-              if (selectedState) {
-                const filtered = allData.filter(
-                  (load) =>
-                    load.origin.state?.trim().toLowerCase() ===
-                      selectedState.trim().toLowerCase() &&
-                    load.status === "AVAILABLE"
-                );
-                setFilteredLoads(filtered);
-              }
-
-              await fetch(
-                `${process.env.NEXT_PUBLIC_API_BASE_URL}/driverLocation`,
-                {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                  },
-                  body: JSON.stringify({
-                    driverUserId: getLoggedUserFromLS().userId,
-                    coordinates: updatedLocation,
-                  }),
-                }
-              );
-            } catch (err) {
-              console.error("Location fetch error:", err);
+              stateName = stateComponent ? stateComponent.long_name : "";
             }
-          },
-          (err) => console.warn("Geolocation error:", err.message),
-          { enableHighAccuracy: true }
+
+            const updatedLocation: Location = {
+              lat,
+              lng,
+              address: formattedAddress,
+              state: stateName,
+            };
+
+            setLocation(updatedLocation);
+
+            await fetch(
+              `${process.env.NEXT_PUBLIC_API_BASE_URL}/driverLocation`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                  driverUserId: getLoggedUserFromLS().userId,
+                  coordinates: updatedLocation,
+                }),
+              }
+            );
+          } catch (err) {
+            console.error("Location fetch error:", err);
+          }
+        },
+        (err) => console.warn("Geolocation error:", err.message),
+        { enableHighAccuracy: true }
+      );
+    };
+
+    fetchInitialData();
+    setIsLoading(false);
+  }, [router, token]);
+
+  useEffect(() => {
+    const fetchNearby = async () => {
+      if (!location || !allData || hasFetchedNearbyLoads) return;
+
+      try {
+        const distanceData = await fetchNearbyLoads(location, allData);
+        if (!distanceData?.rows?.[0]?.elements) return;
+
+        const activeVehiclesById = await getActiveVehiclesByOwnerId({
+          ownerId: getLoggedUserFromLS().userId,
+        });
+
+        const availableNearbyLoadsResults = await Promise.all(
+          allData.map(async (load, index) => {
+            const element = distanceData?.rows?.[0]?.elements?.[index];
+            const distanceText = element?.distance?.text;
+            const distanceValue = parseFloat(
+              distanceText?.replace(" km", "") || "0"
+            );
+
+            const isVehicleAvailable = Array.isArray(activeVehiclesById)
+              ? activeVehiclesById.some(
+                  (vehicle: Vehicle) =>
+                    vehicle.vehicleType?.size ===
+                      load.specialRequirements?.size &&
+                    vehicle.vehicleType?.type ===
+                      load.specialRequirements?.type &&
+                    vehicle.vehicleType.trollyOption ===
+                      load.specialRequirements.trollyOption
+                )
+              : false;
+
+            const isAvailable =
+              load.status === "AVAILABLE" &&
+              distanceValue <= 50 &&
+              isVehicleAvailable;
+
+            return isAvailable ? load : null;
+          })
         );
+
+        const filtered = availableNearbyLoadsResults.filter(
+          (load): load is Load => load !== null
+        );
+
+        setFilteredLoads(filtered);
+        setHasFetchedNearbyLoads(true);
+      } catch (error) {
+        console.error("fetchNearbyLoads error:", error);
       }
     };
 
-    fetchBidsAndSetInitialLoads();
-    setIsLoading(false);
-  }, [allData, router, token, selectedState]);
+    fetchNearby();
+  }, [location, allData, hasFetchedNearbyLoads]);
 
   useEffect(() => {
     if (socket) {
@@ -321,23 +367,6 @@ const Loads = () => {
     }
   }, [socket]);
 
-  const handleStateChange = (value: string) => {
-    setSelectedState(value);
-    const trimmedValue = value.trim().toLowerCase();
-
-    const filtered =
-      trimmedValue === "all"
-        ? allData
-        : allData.filter(
-            (load) =>
-              load.origin.state?.trim().toLowerCase() === trimmedValue &&
-              load.status === "AVAILABLE"
-          );
-
-    setFilteredLoads(filtered);
-    setCurrentPage(1);
-  };
-
   const totalPages = Math.ceil(filteredLoads.length / PAGE_SIZE);
   const paginatedLoads = filteredLoads.slice(
     (currentPage - 1) * PAGE_SIZE,
@@ -370,11 +399,7 @@ const Loads = () => {
       );
       const loggedUser = getLoggedUserFromLS();
       const getLoad = await getLoadByLoadIdForAdmin(loadId);
-      console.log("vinay loa d : ", getLoad);
-      // if (getLoad.status === "ASSIGNED") {
-      //   message.error("Load already assigned");
-      //   return;
-      // }
+
       if (existingBid) {
         socket?.emit("updateBidAmount", {
           bidId: existingBid.id,
@@ -584,26 +609,199 @@ const Loads = () => {
             </div>
           </Col>
         </Row>
-        <div className={`bg-white p-4 sm:m-4 rounded-xl shadow-md mt-4 `}>
-          <div className="flex justify-between">
-            <h3 className="text-xl font-semibold mt-2 text-gray-700">
-              Your Bids
-            </h3>
-            <div className="bg-red-100 p-2 text-black rounded-md mb-2">
-              <b>2 Carriars</b> from <b>2 Bids</b> Responded.
-            </div>
-          </div>
-          {countOfBid.length === 0 ? (
-            <Empty description="You have not placed any bids yet." />
-          ) : (
-            Bids.map((bid) => {
-              const load: any = allData.find((l) => l.id === bid.loadId);
-              if (!load) return null;
-              const isBidLoad = bid.carrierId === getLoggedUserFromLS().userId;
-              return (
-                isBidLoad && (
+        <div className={`bg-white pt-2 sm:m-4 rounded-xl mt-4 `}>
+          {countOfBid.length > 0 && (
+            <>
+              <div className="s sm:m-4 rounded-xl shadow-md mt-4">
+                <div className="flex justify-between">
+                  <h3 className="text-xl font-semibold mt-2 text-gray-700">
+                    Your Bids
+                  </h3>
+                  <div className="bg-red-100 p-2 text-black rounded-md mb-2">
+                    <b>{countOfBid.length} Carriers</b> from{" "}
+                    <b>{Bids.length} Bids</b> Responded.
+                  </div>
+                </div>
+
+                {Bids.map((bid) => {
+                  const load: Load | undefined = allData.find(
+                    (l) => l.id === bid.loadId
+                  );
+                  if (!load) return null;
+                  const isBidLoad =
+                    bid.carrierId === getLoggedUserFromLS().userId;
+                  return (
+                    isBidLoad && (
+                      <div
+                        className="grid grid-cols-4 md:grid-cols-7 gap-4 border rounded-md p-2 mt-2 mb-2 border-neutral-300"
+                        key={load.id}
+                      >
+                        <div className="col-span-2 md:col-span-2">
+                          <div className="-mt-1">
+                            <Text
+                              className={`${getStatusColor(
+                                load.status
+                              )} p-1 px-2 text-sm rounded-l-md`}
+                            >
+                              {load.status}
+                            </Text>
+                            <Text className="bg-blue-200 p-1 px-2 text-sm rounded-r-md">
+                              {timeSincePosted(load.createdAt)}
+                            </Text>
+                          </div>
+                          <Title level={5} className="mt-1! mb-0!">
+                            {load.origin.city} → {load.destination.city}
+                          </Title>
+                        </div>
+
+                        <div className="md:col-span-1">
+                          <Text>
+                            Type:
+                            <span className="font-semibold">
+                              <br />
+                              {load.cargoType}
+                            </span>
+                          </Text>
+                        </div>
+
+                        <Text>
+                          Weight:
+                          <span className="font-semibold">
+                            <br />
+                            {load.weight} Tons
+                          </span>
+                        </Text>
+
+                        <Text>
+                          {isBidLoad ? "Bid Price" : "Fixed Price"}:
+                          <span className="font-semibold">
+                            <br />₹{bid.negotiateShipperPrice}
+                          </span>
+                        </Text>
+
+                        <Text className="col-span-2 md:col-span-1">
+                          Your price:
+                          <span className="font-semibold">
+                            <br />₹{bid.negotiateDriverPrice}
+                          </span>
+                        </Text>
+
+                        <div className="flex justify-end">
+                          {isBidLoad && (
+                            <>
+                              {load.status === "AVAILABLE" &&
+                                bid.negotiateDriverPrice > 0 &&
+                                bid.negotiateShipperPrice == 0 && (
+                                  <span className="max-h-10 text-red-800 text-sm">
+                                    Waiting for shipper response
+                                  </span>
+                                )}
+                              {bid.isDriverAccepted &&
+                                bid.isShipperAccepted === false &&
+                                bid.negotiateDriverPrice > 0 &&
+                                bid.negotiateShipperPrice > 0 && (
+                                  <span className="max-h-10 text-red-800 text-sm">
+                                    Waiting for shipper response
+                                  </span>
+                                )}
+                              {bid.isDriverAccepted &&
+                                bid.isShipperAccepted && (
+                                  <span className="max-h-10 text-green-800 text-sm">
+                                    Load accepted
+                                  </span>
+                                )}
+                              {load.status === "ASSIGNED" &&
+                                !bid.isDriverAccepted &&
+                                !bid.isShipperAccepted && (
+                                  <span className="max-h-10 text-red-800 text-sm">
+                                    Bid closed!
+                                  </span>
+                                )}
+                              {load.status === "AVAILABLE" &&
+                                !bid.isDriverAccepted &&
+                                bid.negotiateDriverPrice > 0 &&
+                                bid.negotiateShipperPrice > 0 && (
+                                  <Button
+                                    className="button-primary max-h-10"
+                                    onClick={() =>
+                                      handleBidStatus(bid.id, load.id)
+                                    }
+                                  >
+                                    Accept
+                                  </Button>
+                                )}
+                              {load.status === "ASSIGNED" &&
+                                !bid.isDriverAccepted &&
+                                bid.negotiateDriverPrice > 0 &&
+                                bid.negotiateShipperPrice > 0 && (
+                                  <span className="max-h-10 text-red-800 text-sm">
+                                    Bid is closed!
+                                  </span>
+                                )}
+                              {bid.negotiateDriverPrice == 0 &&
+                                bid.negotiateShipperPrice == 0 && (
+                                  <>
+                                    <Button
+                                      className="button-primary max-h-10"
+                                      onClick={() =>
+                                        acceptBidWithoutBid(
+                                          load.id,
+                                          load.shipperId
+                                        )
+                                      }
+                                    >
+                                      Accept
+                                    </Button>
+                                    <Button
+                                      className="button-secondary max-h-10"
+                                      onClick={() => showBidModal(load)}
+                                    >
+                                      Bid
+                                    </Button>
+                                  </>
+                                )}
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  );
+                })}
+              </div>
+            </>
+          )}
+          <div className="p-4">
+            <Row justify="space-between" align="middle" className="mb-4">
+              <h3 className="text-xl font-semibold mt-2 text-gray-700">
+                Available Loads
+              </h3>
+            </Row>
+
+            {paginatedLoads.length === 0 ? (
+              <>
+                <div className="text-center py-10">
+                  <div className="text-4xl mb-2">📦</div>
+                  <h3 className="text-lg font-semibold text-gray-700">
+                    No Loads Available Nearby
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    Try again later or expand your search radius.
+                  </p>
+                </div>
+              </>
+            ) : (
+              paginatedLoads.map((load) => {
+                const isBidLoad = load.bidPrice > 0;
+                const isFixedLoad = load.bidPrice === 0 && load.price > 0;
+                const currentUserBid: Bid | undefined = Bids.find(
+                  (bid) =>
+                    bid.loadId === load.id &&
+                    bid.carrierId === getLoggedUserFromLS().userId
+                );
+
+                return (
                   <div
-                    className="grid grid-cols-4 md:grid-cols-7 gap-4 border rounded-md p-2 mt-2 mb-2 border-neutral-300"
+                    className="grid grid-cols-3 md:grid-cols-7 gap-4 border rounded-md p-2 mb-2 border-neutral-300"
                     key={load.id}
                   >
                     <div className="col-span-2 md:col-span-2">
@@ -624,7 +822,7 @@ const Loads = () => {
                       </Title>
                     </div>
 
-                    <div className="md:col-span-1">
+                    <div className="md:col-span-2">
                       <Text>
                         Type:
                         <span className="font-semibold">
@@ -643,277 +841,112 @@ const Loads = () => {
                     </Text>
 
                     <Text>
-                      {isBidLoad ? "Bid Price" : "Fixed Price"}:
+                      Price ({isBidLoad ? "Bid Price" : "Fixed Price"}):
                       <span className="font-semibold">
-                        <br />₹{bid.negotiateShipperPrice}
-                      </span>
-                    </Text>
-
-                    <Text className="col-span-2 md:col-span-1">
-                      Your price:
-                      <span className="font-semibold">
-                        <br />₹{bid.negotiateDriverPrice}
+                        <br />₹{load.price}
                       </span>
                     </Text>
 
                     <div className="flex justify-end">
+                      {isFixedLoad && !currentUserBid && (
+                        <Button
+                          className="button-primary max-h-10"
+                          onClick={() => {
+                            acceptBidWithoutBid(load.id, load.shipperId);
+                          }}
+                        >
+                          Accept
+                        </Button>
+                      )}
                       {isBidLoad && (
                         <>
-                          {load.status === "AVAILABLE" &&
-                            bid &&
-                            bid.negotiateDriverPrice > 0 &&
-                            bid.negotiateShipperPrice == 0 && (
+                          {currentUserBid &&
+                            currentUserBid.negotiateDriverPrice > 0 &&
+                            currentUserBid.negotiateShipperPrice == 0 && (
                               <span className="max-h-10 text-red-800 text-sm">
                                 Waiting for shipper response
                               </span>
                             )}
-                          {bid.isDriverAccepted &&
-                            bid.isShipperAccepted === false &&
-                            bid.negotiateDriverPrice > 0 &&
-                            bid.negotiateShipperPrice > 0 && (
+                          {currentUserBid?.isDriverAccepted &&
+                            currentUserBid.isShipperAccepted === false &&
+                            currentUserBid.negotiateDriverPrice > 0 &&
+                            currentUserBid.negotiateShipperPrice > 0 && (
                               <span className="max-h-10 text-red-800 text-sm">
                                 Waiting for shipper response
                               </span>
                             )}
-                          {bid &&
-                            bid.isDriverAccepted &&
-                            bid.isShipperAccepted && (
-                              <span className="max-h-10 text-green-800 text-sm">
-                                Load accepted
-                              </span>
-                            )}
-                          {load.status === "ASSIGNED" &&
-                            bid &&
-                            bid.isDriverAccepted == false &&
-                            bid.isShipperAccepted == false && (
-                              <span className="max-h-10 text-red-800 text-sm">
-                                Bid closed!
-                              </span>
-                            )}
-                          {load.status === "AVAILABLE" &&
-                            bid.isDriverAccepted === false &&
-                            bid.negotiateDriverPrice > 0 &&
-                            bid.negotiateShipperPrice > 0 && (
+                          {currentUserBid?.isDriverAccepted === false &&
+                            currentUserBid.negotiateDriverPrice > 0 &&
+                            currentUserBid.negotiateShipperPrice > 0 && (
                               <Button
                                 className="button-primary max-h-10"
-                                onClick={() => handleBidStatus(bid.id, load.id)}
+                                onClick={() =>
+                                  handleBidStatus(currentUserBid.id, load.id)
+                                }
                               >
                                 Accept
                               </Button>
                             )}
-                          {load.status === "ASSIGNED" &&
-                            bid.isDriverAccepted === false &&
-                            bid.negotiateDriverPrice > 0 &&
-                            bid.negotiateShipperPrice > 0 && (
-                              <span className="max-h-10 text-red-800 text-sm">
-                                Bid is closed!
-                              </span>
-                            )}
+                          {!currentUserBid && (
+                            <>
+                              <Button
+                                className="button-primary max-h-10"
+                                onClick={() =>
+                                  acceptBidWithoutBid(load.id, load.shipperId)
+                                }
+                              >
+                                Accept
+                              </Button>
+                              <Button
+                                className="button-secondary max-h-10"
+                                onClick={() => showBidModal(load)}
+                              >
+                                Bid
+                              </Button>
+                            </>
+                          )}
 
-                          {bid.negotiateDriverPrice == 0 &&
-                            bid.negotiateShipperPrice == 0 && (
-                              <>
-                                <Button
-                                  className="button-primary max-h-10"
-                                  onClick={() =>
-                                    acceptBidWithoutBid(load.id, load.shipperId)
-                                  }
-                                >
-                                  Accept
-                                </Button>
-                                <Button
-                                  className="button-secondary max-h-10"
-                                  onClick={() => showBidModal(load)}
-                                >
-                                  Bid
-                                </Button>
-                              </>
+                          {currentUserBid &&
+                            currentUserBid.isDriverAccepted &&
+                            currentUserBid.isShipperAccepted && (
+                              <span className="max-h-10 text-green-800 text-sm">
+                                Load accepted
+                              </span>
                             )}
                         </>
                       )}
                     </div>
                   </div>
-                )
-              );
-            })
-          )}
-          <Row justify="space-between" align="middle" className="mb-4">
-            <h3 className="text-xl font-semibold mt-2 text-gray-700">
-              Available Loads
-            </h3>
-
-            <Select
-              placeholder="Filter by State"
-              onChange={handleStateChange}
-              allowClear
-              style={{ width: 200 }}
-            >
-              <Option value="All">All</Option>
-              {INDIAN_STATES.map((state) => (
-                <Option key={state} value={state}>
-                  {state}
-                </Option>
-              ))}
-            </Select>
-          </Row>
-
-          {paginatedLoads.length === 0 ? (
-            <>
-              <Empty description="No loads available in this route" />
-            </>
-          ) : (
-            paginatedLoads.map((load) => {
-              const isBidLoad = load.bidPrice > 0;
-              const isFixedLoad = load.bidPrice === 0 && load.price > 0;
-              const currentUserBid: Bid | any = Bids.find(
-                (bid) =>
-                  bid.loadId === load.id &&
-                  bid.carrierId === getLoggedUserFromLS().userId
-              );
-
-              return (
-                <div
-                  className="grid grid-cols-3 md:grid-cols-7 gap-4 border rounded-md p-2 mb-2 border-neutral-300"
-                  key={load.id}
+                );
+              })
+            )}
+            {filteredLoads.length > PAGE_SIZE && (
+              <div className="flex justify-center mt-6">
+                <Button onClick={handlePrev} disabled={currentPage === 1}>
+                  Prev
+                </Button>
+                <Text className="mx-4">
+                  Page {currentPage} of {totalPages}
+                </Text>
+                <Button
+                  onClick={handleNext}
+                  disabled={currentPage === totalPages}
                 >
-                  <div className="col-span-2 md:col-span-2">
-                    <div className="-mt-1">
-                      <Text
-                        className={`${getStatusColor(
-                          load.status
-                        )} p-1 px-2 text-sm rounded-l-md`}
-                      >
-                        {load.status}
-                      </Text>
-                      <Text className="bg-blue-200 p-1 px-2 text-sm rounded-r-md">
-                        {timeSincePosted(load.createdAt)}
-                      </Text>
-                    </div>
-                    <Title level={5} className="mt-1! mb-0!">
-                      {load.origin.city} → {load.destination.city}
-                    </Title>
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <Text>
-                      Type:
-                      <span className="font-semibold">
-                        <br />
-                        {load.cargoType}
-                      </span>
-                    </Text>
-                  </div>
-
-                  <Text>
-                    Weight:
-                    <span className="font-semibold">
-                      <br />
-                      {load.weight} Tons
-                    </span>
-                  </Text>
-
-                  <Text>
-                    Price ({isBidLoad ? "Bid Price" : "Fixed Price"}):
-                    <span className="font-semibold">
-                      <br />₹{load.price}
-                    </span>
-                  </Text>
-
-                  <div className="flex justify-end">
-                    {isFixedLoad && !currentUserBid && (
-                      <Button
-                        className="button-primary max-h-10"
-                        onClick={() => {
-                          acceptBidWithoutBid(load.id, load.shipperId);
-                        }}
-                      >
-                        Accept
-                      </Button>
-                    )}
-                    {isBidLoad && (
-                      <>
-                        {currentUserBid &&
-                          currentUserBid.negotiateDriverPrice > 0 &&
-                          currentUserBid.negotiateShipperPrice == 0 && (
-                            <span className="max-h-10 text-red-800 text-sm">
-                              Waiting for shipper response
-                            </span>
-                          )}
-                        {currentUserBid?.isDriverAccepted &&
-                          currentUserBid.isShipperAccepted === false &&
-                          currentUserBid.negotiateDriverPrice > 0 &&
-                          currentUserBid.negotiateShipperPrice > 0 && (
-                            <span className="max-h-10 text-red-800 text-sm">
-                              Waiting for shipper response
-                            </span>
-                          )}
-                        {currentUserBid?.isDriverAccepted === false &&
-                          currentUserBid.negotiateDriverPrice > 0 &&
-                          currentUserBid.negotiateShipperPrice > 0 && (
-                            <Button
-                              className="button-primary max-h-10"
-                              onClick={() =>
-                                handleBidStatus(currentUserBid.id, load.id)
-                              }
-                            >
-                              Accept
-                            </Button>
-                          )}
-                        {!currentUserBid && (
-                          <>
-                            <Button
-                              className="button-primary max-h-10"
-                              onClick={() =>
-                                acceptBidWithoutBid(load.id, load.shipperId)
-                              }
-                            >
-                              Accept
-                            </Button>
-                            <Button
-                              className="button-secondary max-h-10"
-                              onClick={() => showBidModal(load)}
-                            >
-                              Bid
-                            </Button>
-                          </>
-                        )}
-
-                        {currentUserBid &&
-                          currentUserBid.isDriverAccepted &&
-                          currentUserBid.isShipperAccepted && (
-                            <span className="max-h-10 text-green-800 text-sm">
-                              Load accepted
-                            </span>
-                          )}
-                      </>
-                    )}
-                  </div>
-                </div>
-              );
-            })
-          )}
-          {filteredLoads.length > PAGE_SIZE && (
-            <div className="flex justify-center mt-6">
-              <Button onClick={handlePrev} disabled={currentPage === 1}>
-                Prev
-              </Button>
-              <Text className="mx-4">
-                Page {currentPage} of {totalPages}
-              </Text>
-              <Button
-                onClick={handleNext}
-                disabled={currentPage === totalPages}
-              >
-                Next
-              </Button>
-            </div>
-          )}
+                  Next
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
 
         <Modal
           title="Place a Bid"
           open={isModalVisible}
-          onOk={() => handleBidSubmit(selectedLoad.id)}
+          onOk={() => {
+            if (selectedLoad) {
+              handleBidSubmit(selectedLoad.id);
+            }
+          }}
           onCancel={() => setIsModalVisible(false)}
           okText="Submit Bid"
           cancelText="Cancel"
@@ -937,8 +970,8 @@ const Loads = () => {
                 onChange={(value) => setBidPrice(String(value))}
                 placeholder="Enter amount"
                 prefix="₹"
-                parser={(value?: any) =>
-                  value ? value.replace(/₹\s?|(,)/g, "") : "0"
+                parser={(value?: string) =>
+                  value ? Number(value.replace(/₹\s?|(,)/g, "")) : 0
                 }
                 style={{ width: "100%" }}
               />
@@ -988,23 +1021,34 @@ const Loads = () => {
                     >
                       {activeVehicles && activeVehicles?.length > 0 ? (
                         activeVehicles?.map((vehicle, index) => {
+                          const isCorrectVehicle =
+                            data.load.specialRequirements.size ===
+                              vehicle.vehicleType.size &&
+                            data.load.specialRequirements.type ===
+                              vehicle.vehicleType.type &&
+                            data.load.specialRequirements.acOption ===
+                              vehicle.vehicleType.acOption &&
+                            data.load.specialRequirements.trollyOption ===
+                              vehicle.vehicleType.trollyOption;
                           return (
-                            <div
-                              className="box flex justify-between w-100 my-2"
-                              key={index}
-                            >
-                              <p>
-                                <span className="labelStyle">
-                                  {vehicle.model}
-                                </span>
-                                <br />
-                                <span className="valueStyle">
-                                  {" "}
-                                  {vehicle.registrationNumber}
-                                </span>
-                              </p>
-                              <Radio value={vehicle.registrationNumber} />
-                            </div>
+                            isCorrectVehicle && (
+                              <div
+                                className="box flex justify-between w-100 my-2"
+                                key={index}
+                              >
+                                <p>
+                                  <span className="labelStyle">
+                                    {vehicle.model}
+                                  </span>
+                                  <br />
+                                  <span className="valueStyle">
+                                    {" "}
+                                    {vehicle.registrationNumber}
+                                  </span>
+                                </p>
+                                <Radio value={vehicle.registrationNumber} />
+                              </div>
+                            )
                           );
                         })
                       ) : (

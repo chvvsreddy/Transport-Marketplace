@@ -1,5 +1,5 @@
 "use client";
-import "../../../(styles)/Step1.css";
+import "../../../../(styles)/Step1.css";
 
 import "@ant-design/v5-patch-for-react-19";
 import { Dayjs } from "dayjs";
@@ -65,7 +65,7 @@ export default function Step3() {
       setUser(res);
     }
     getData();
-  }, []);
+  }, [userId]);
 
   const handleNext = () => {
     setActiveTab("2");

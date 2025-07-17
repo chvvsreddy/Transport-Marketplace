@@ -37,4 +37,27 @@ export const getTripsByLoadId = async (req: Request, res: Response) => {
   }
 };
 
+export const getTripByLoadId = async (req: Request, res: Response) => {
+  try {
+    const { loadId } = req.params;
 
+    if (!loadId) {
+      res.status(400).json({ error: "loadId is required" });
+      return;
+    }
+
+    const trip = await prisma.trips.findFirst({
+      where: { loadId },
+    });
+
+    if (!trip) {
+      res.status(404).json({ message: "Trip not found for this load" });
+      return;
+    }
+
+    res.status(200).json(trip);
+  } catch (error) {
+    console.error("Error fetching trip by loadId:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};

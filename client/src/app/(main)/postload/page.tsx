@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useLayoutEffect,
-  useState,
-  useCallback,
-  useMemo,
-} from "react";
+import { useEffect, useLayoutEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   Button,
@@ -36,6 +30,12 @@ import Heading from "@/app/util/Heading";
 import TextArea from "antd/es/input/TextArea";
 import Shimmer from "../(components)/shimmerUi/Shimmer";
 
+interface AddressComponent {
+  long_name: string;
+  short_name: string;
+  types: string[];
+}
+
 interface LocationData {
   results?: {
     formatted_address?: string;
@@ -45,32 +45,74 @@ interface LocationData {
         lng: number;
       };
     };
-    address_components?: unknown[];
+    address_components?: AddressComponent[];
   }[];
   status: string;
 }
+interface GoodsOption {
+  title: string;
+}
+interface Location {
+  city: string;
+  lat: string;
+  lng: string;
+  state: string;
+  address: string;
+  country: string;
+  postalCode: string;
+}
 
-// Define types for the debounced function
-type DebouncedFunction<T extends (...args: unknown[]) => void> = {
-  (...args: Parameters<T>): void;
-  cancel: () => void;
+interface SpecialRequirements {
+  size: string;
+  type: string;
+  acOption: "AC" | "Non-AC";
+  trollyOption: "With Trolly" | "Without Trolly";
+}
+
+interface LoadPayload {
+  shipperId: string;
+  origin: Location;
+  destination: Location;
+  weight: number;
+  dimensions: Record<string, never>; // or a specific type
+  cargoType: string;
+  specialRequirements: SpecialRequirements;
+  price: number;
+  bidPrice: number;
+  noOfTrucks: number;
+  pickupWindowStart: string;
+  pickupWindowEnd: string;
+  deliveryWindowStart: string;
+  deliveryWindowEnd: string;
+}
+
+export type GoodsTypes = {
+  Open: GoodsOption[];
+  Closed: GoodsOption[];
+  Tanker: GoodsOption[];
+  Container: {
+    "With Trolly": GoodsOption[];
+    "Without Trolly": GoodsOption[];
+  };
 };
+
 // Debounce function utility
-const debounce = <F extends (...args: any[]) => void>(
-  func: F,
+// Correctly typed debounce function
+function debounce<Args extends unknown[]>(
+  func: (...args: Args) => void,
   delay: number
-): DebouncedFunction<F> => {
+): ((...args: Args) => void) & { cancel: () => void } {
   let timeoutId: ReturnType<typeof setTimeout>;
 
-  const debounced = (...args: Parameters<F>) => {
+  const debounced = (...args: Args) => {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => func(...args), delay);
   };
 
   debounced.cancel = () => clearTimeout(timeoutId);
 
-  return debounced as DebouncedFunction<F>;
-};
+  return debounced;
+}
 
 export default function PostLoad() {
   const [priceType, setPriceType] = useState<string>("FixPrice");
@@ -90,33 +132,33 @@ export default function PostLoad() {
 
   const [activeGoodsType, setActiveGoodsType] = useState<number | null>(null);
   const [selectedTruckType, setSelectedTruckType] = useState<string>("Open");
-  const [postStatus, setPostStatus] = useState<string | null>(null);
+
   const [isLoading, setIsLoading] = useState(true);
 
   // Debounced API call with cleanup
-  const fetchLocation = useCallback(
-    debounce((pin: string, setFn: (val: LocationData) => void) => {
+  const fetchLocation = debounce(
+    (pin: string, setFn: (val: LocationData) => void) => {
       if (pin.length === 6 && /^\d+$/.test(pin)) {
         const locationUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${pin}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`;
         fetch(locationUrl)
           .then((res) => res.json())
           .then((data) => setFn(data));
       }
-    }, 1000),
-    []
+    },
+    1000
   );
 
   useEffect(() => {
     fetchLocation(originPincode, setOriginLocation);
     return () => fetchLocation.cancel();
-  }, [originPincode]);
+  }, [originPincode, fetchLocation]);
 
   useEffect(() => {
     fetchLocation(destinationPincode, setDestinationLocation);
     return () => fetchLocation.cancel();
-  }, [destinationPincode]);
+  }, [destinationPincode, fetchLocation]);
 
-  const Goods_Types: any = useMemo(
+  const Goods_Types: GoodsTypes = useMemo(
     () => ({
       Open: [
         { title: "17-24 FT" },
@@ -168,7 +210,7 @@ export default function PostLoad() {
     setIsLoading(false);
   }, []);
 
-  const handlePost = async (values: any) => {
+  const handlePost = async (values: Record<string, unknown>) => {
     let selectedGoods;
 
     if (
@@ -179,67 +221,70 @@ export default function PostLoad() {
         Goods_Types.Container["With Trolly"][activeGoodsType ?? -1]?.title;
     } else {
       selectedGoods =
-        Goods_Types[selectedTruckType][activeGoodsType ?? -1]?.title;
+        Goods_Types[selectedTruckType as "Open" | "Closed" | "Tanker"][
+          activeGoodsType ?? -1
+        ]?.title;
     }
 
-    const payload = {
-      shipperId: getLoggedUserFromLS()?.userId,
+    const payload: LoadPayload = {
+      shipperId: getLoggedUserFromLS()?.userId ?? "",
       origin: {
-        city: values.fromCity,
+        city: values.fromCity as string,
         lat: "",
         lng: "",
-        state: values.originState,
-        address: values.originAddress,
+        state: values.originState as string,
+        address: values.originAddress as string,
         country: "India",
-        postalCode: values.fromPin,
+        postalCode: values.fromPin as string,
       },
       destination: {
-        city: values.toCity,
+        city: values.toCity as string,
         lat: "",
         lng: "",
-        state: values.destinationState,
-        address: values.destinationAddress,
+        state: values.destinationState as string,
+        address: values.destinationAddress as string,
         country: "India",
-        postalCode: values.toPin,
+        postalCode: values.toPin as string,
       },
-      weight: values.weight,
+      weight: values.weight as number,
       dimensions: {},
-      cargoType: values.loadType,
-      specialRequirements: [
-        ...(values.specialRequirements || []),
-        selectedGoods ?? "",
-        selectedTruckType ?? "",
-        acOptionValue ?? "NO",
-        trollyOptionValue ?? "NO",
-      ],
-      price: values.price,
-      bidPrice: priceType === "FixPrice" ? 0 : values.price,
-      noOfTrucks: values.noOfTrucks,
-      pickupWindowStart: values.pickupDate,
-      pickupWindowEnd: values.pickupDate,
-      deliveryWindowStart: values.deliveryDate,
-      deliveryWindowEnd: values.deliveryDate,
+      cargoType: values.loadType as string,
+      specialRequirements: {
+        size: selectedGoods ?? "",
+        type: selectedTruckType ?? "",
+        acOption:
+          selectedTruckType === "Closed" && acOptionValue === "AC"
+            ? "AC"
+            : "Non-AC",
+        trollyOption:
+          trollyOptionValue === "With Trolly"
+            ? "With Trolly"
+            : "Without Trolly",
+      },
+      price: values.price as number,
+      bidPrice: priceType === "FixPrice" ? 0 : (values.price as number),
+      noOfTrucks: values.noOfTrucks as number,
+      pickupWindowStart: values.pickupDate as string,
+      pickupWindowEnd: values.pickupDate as string,
+      deliveryWindowStart: values.deliveryDate as string,
+      deliveryWindowEnd: values.deliveryDate as string,
     };
 
     callCreateLoad(payload);
   };
 
-  async function callCreateLoad(payload: any) {
+  async function callCreateLoad(payload: LoadPayload) {
     try {
       const load = await createLoad(payload);
       if (load) {
         message.success("Load posted successfully!");
-        setPostStatus("✅ Load posted successfully!");
         form.resetFields();
         setActiveGoodsType(null);
         setSelectedTruckType("Open");
-        setTimeout(() => setPostStatus(null), 4000);
       }
     } catch (error) {
       console.log(error);
       message.error("Something went wrong while posting the load.");
-      setPostStatus("❌ Failed to post load.");
-      setTimeout(() => setPostStatus(null), 4000);
     }
   }
 
@@ -327,7 +372,7 @@ export default function PostLoad() {
                     <Input
                       type="text"
                       value={originPincode}
-                      onChange={(e: any) =>
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                         setOriginPincode(e.target.value.replace(/\D/g, ""))
                       } // Allow only numbers
                       placeholder="Enter 6-digit pincode"
@@ -351,7 +396,7 @@ export default function PostLoad() {
                       placeholder="City Name"
                       value={
                         originLocation?.results?.[0]?.address_components?.find(
-                          (c: any) => c.types.includes("locality")
+                          (c) => c.types.includes("locality")
                         )?.long_name || originCity
                       }
                       onChange={(e) => setOriginCity(e.target.value)}
@@ -387,7 +432,7 @@ export default function PostLoad() {
                       type="text"
                       value={destinationPincode}
                       name="postalCodeTo"
-                      onChange={(e: any) =>
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                         setDestinationPincode(e.target.value.replace(/\D/g, ""))
                       }
                       placeholder="Enter 6-digit pincode"
@@ -411,10 +456,12 @@ export default function PostLoad() {
                       placeholder="City Name"
                       value={
                         destinationLocation?.results?.[0]?.address_components?.find(
-                          (c: any) => c.types.includes("locality")
+                          (c: AddressComponent) => c.types.includes("locality")
                         )?.long_name || destinationCity
                       }
-                      onChange={(e) => setDestinationCity(e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        setDestinationCity(e.target.value)
+                      }
                     />
                   </div>
                 </Form.Item>
@@ -596,28 +643,30 @@ export default function PostLoad() {
             </Row>
 
             {/* Goods Types */}
-            {["Open", "Closed"].includes(selectedTruckType) &&
+            {(selectedTruckType === "Open" || selectedTruckType === "Closed") &&
               Goods_Types[selectedTruckType].length > 0 && (
                 <Flex wrap gap={15} style={{ marginBottom: 16 }}>
-                  {Goods_Types[selectedTruckType].map((g: any, i: number) => (
-                    <Button
-                      key={i}
-                      className={`materials-btn ${
-                        activeGoodsType === i ? "active" : ""
-                      }`}
-                      onClick={() => setActiveGoodsType(i)}
-                      style={{
-                        border:
-                          activeGoodsType === i
-                            ? "2px solid #1677ff"
-                            : undefined,
-                      }}
-                    >
-                      <Typography.Text strong style={{ fontSize: "14px" }}>
-                        {g.title}
-                      </Typography.Text>
-                    </Button>
-                  ))}
+                  {Goods_Types[selectedTruckType].map(
+                    (g: GoodsOption, i: number) => (
+                      <Button
+                        key={i}
+                        className={`materials-btn ${
+                          activeGoodsType === i ? "active" : ""
+                        }`}
+                        onClick={() => setActiveGoodsType(i)}
+                        style={{
+                          border:
+                            activeGoodsType === i
+                              ? "2px solid #1677ff"
+                              : undefined,
+                        }}
+                      >
+                        <Typography.Text strong style={{ fontSize: "14px" }}>
+                          {g.title}
+                        </Typography.Text>
+                      </Button>
+                    )
+                  )}
                 </Flex>
               )}
 
@@ -625,7 +674,7 @@ export default function PostLoad() {
               trollyOptionValue === "With Trolly" && (
                 <Flex wrap gap={15} style={{ marginBottom: 16 }}>
                   {Goods_Types.Container["With Trolly"].map(
-                    (g: any, i: number) => (
+                    (g: GoodsOption, i: number) => (
                       <Button
                         key={i}
                         className={`materials-btn ${

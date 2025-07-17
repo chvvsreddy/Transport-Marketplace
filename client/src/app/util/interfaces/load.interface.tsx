@@ -7,20 +7,33 @@ type LoadStatus =
   | "CANCELLED";
 
 interface Location {
-  city: string;
-  state: string;
-  postalCode: string;
+  lat: number;
+  lng: number;
+  city?: string;
+  state?: string;
+  address?: string;
+  country?: string;
+  postalCode?: string;
+}
+interface Requirements {
+  size: string;
+  type: string;
+  acOption: string;
+  trollyOption: string;
 }
 
-interface Load {
+export interface Load {
   id: string;
   origin: Location;
   destination: Location;
-  specialRequirements: string;
-  cargoType: string;
-  trucks: number;
-  pickupWindowStart: string;
-  deliveryWindowEnd: string;
+  shipperId: string;
   status: LoadStatus;
+  cargoType: string;
+  weight: number;
+  bidPrice: number;
+  price: number;
   createdAt: string;
+  pickupWindowStart: string;
+  specialRequirements: Requirements;
+  deliveryWindowEnd: string;
 }

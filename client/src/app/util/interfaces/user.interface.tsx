@@ -4,4 +4,5 @@ export interface User {
   passwordHash: string;
   phone: string;
   type: string;
+  profilePic: string;
 }

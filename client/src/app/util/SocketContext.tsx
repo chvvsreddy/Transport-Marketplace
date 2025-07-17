@@ -1,9 +1,14 @@
+// SocketProvider.tsx
+
+"use client";
+
 import React, { createContext, useEffect, useState, ReactNode } from "react";
-import socket from "./socket";
+import { Socket } from "socket.io-client";
 import { getLoggedUserFromLS } from "./getLoggedUserFromLS";
+import { getSocket } from "./socket";
 
 interface ISocketContext {
-  socket: typeof socket;
+  socket: Socket;
   isConnected: boolean;
 }
 
@@ -16,13 +21,16 @@ interface SocketProviderProps {
 }
 
 export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
-  const [isConnected, setIsConnected] = useState<boolean>(false);
+  const [isConnected, setIsConnected] = useState(false);
+  const socket = getSocket();
 
   useEffect(() => {
-    socket.connect();
+    if (!socket.connected) {
+      socket.connect();
+    }
 
-    socket.on("connect", () => {
-      console.log("Connected:", socket.id);
+    const handleConnect = () => {
+      console.log("✅ Connected:", socket.id);
       setIsConnected(true);
 
       const user = getLoggedUserFromLS();
@@ -30,18 +38,22 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       if (userId) {
         socket.emit("register", userId);
       }
-    });
+    };
 
-    socket.on("disconnect", (reason: string) => {
-      console.log("Disconnected:", reason);
+    const handleDisconnect = (reason: string) => {
+      console.log("❌ Disconnected:", reason);
       setIsConnected(false);
-    });
+    };
+
+    socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
 
     return () => {
-      socket.off();
+      socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
       socket.disconnect();
     };
-  }, []);
+  }, [socket]);
 
   return (
     <SocketContext.Provider value={{ socket, isConnected }}>

@@ -16,7 +16,7 @@ import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { getLoggedUserFromLS } from "../getLoggedUserFromLS";
+import { useParams } from "next/navigation";
 import { getUser, updateUserProfile } from "@/state/api";
 
 export interface User {
@@ -33,26 +33,29 @@ export interface User {
   deletedAt?: string | null;
 }
 
-export default function ProfileDetails() {
+export default function ForAdminSingleUserProfile() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
+  const params = useParams();
+  const userId = params?.userId as string;
+
   useEffect(() => {
-    const getUserFromLocal = getLoggedUserFromLS();
-    async function getUserDetails(): Promise<User | void> {
-      const userInfo = await getUser(getUserFromLocal.userId);
+    async function getUserDetails(): Promise<void> {
+      if (!userId) {
+        router.push("/login");
+        return;
+      }
+
+      const userInfo = await getUser(userId);
       setUser(userInfo);
     }
 
-    if (!getUserFromLocal) {
-      router.push("/login");
-    } else {
-      getUserDetails();
-    }
-  }, [router]);
+    getUserDetails();
+  }, [userId, router]);
 
   const handleImageUpload = async ({ file }: { file: File }) => {
     try {
@@ -112,6 +115,7 @@ export default function ProfileDetails() {
     <Row
       gutter={[32, 32]}
       style={{
+        margin: 30,
         padding: 30,
         borderRadius: 16,
         backgroundColor: "#fff",
@@ -129,9 +133,9 @@ export default function ProfileDetails() {
                 Profile Overview
               </Typography.Text>
             </div>
-            <Button shape="round" type="default" icon={<EditIcon />}>
+            {/* <Button shape="round" type="default" icon={<EditIcon />}>
               Edit
-            </Button>
+            </Button> */}
           </Flex>
 
           <Divider style={{ margin: "12px 0" }} />
@@ -185,7 +189,7 @@ export default function ProfileDetails() {
             />
           </div>
 
-          <Upload
+          {/* <Upload
             disabled={loading}
             showUploadList={false}
             accept="image/*"
@@ -202,8 +206,8 @@ export default function ProfileDetails() {
             >
               Change Picture
             </Button>
-          </Upload>
-          <Modal
+          </Upload> */}
+          {/* <Modal
             open={isModalVisible}
             footer={null}
             onCancel={() => setIsModalVisible(false)}
@@ -222,7 +226,7 @@ export default function ProfileDetails() {
                 objectFit: "contain",
               }}
             />
-          </Modal>
+          </Modal> */}
         </Flex>
       </Col>
     </Row>

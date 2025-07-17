@@ -40,8 +40,13 @@ export const loadResolvers = {
       if (!isValid(parsedStart)) parsedStart = new Date("2000-01-01");
       if (!isValid(parsedEnd)) parsedEnd = new Date();
 
+      console.log("startDate", startDate);
+      console.log("enddate", endDate);
+      console.log("parsedStart", parsedStart);
+      console.log("paresedemd", parsedEnd);
+
       const fromDate = startOfDay(parsedStart);
-      const toDate = startOfDay(new Date(parsedEnd.getTime() + 86400000)); // inclusive
+      const toDate = startOfDay(new Date(parsedEnd.getTime() + 86400000));
 
       const days = eachDayOfInterval({ start: fromDate, end: parsedEnd });
 

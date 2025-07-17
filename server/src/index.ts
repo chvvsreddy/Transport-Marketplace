@@ -30,12 +30,13 @@ import createTripRoutes from "./routes/createTripRoutes";
 import vehicleStatusUpdate from "./routes/vehicleStatusRoutes";
 import notificationRoutes from "./routes/notificationRoutes";
 import companyDetailsRoutes from "./routes/companyDetailsRegisterRoutes";
+import uploadRoutes from "./routes/uploadRoute";
+import distanceRoutes from "./routes/distance";
 // Configurations
 dotenv.config();
 const app = express();
 const server = http.createServer(app);
 const prisma = new PrismaClient();
-const onlineUsers = new Map();
 
 const yoga = createYoga({
   schema,
@@ -69,6 +70,8 @@ app.use("/createTrip", createTripRoutes);
 app.use("/vehicleStatus", vehicleStatusUpdate);
 app.use("/notifications", notificationRoutes);
 app.use("/Register/companyDetails", companyDetailsRoutes);
+app.use("/upload", uploadRoutes);
+app.use("/distance", distanceRoutes);
 
 //graphql setup
 app.use(
@@ -106,6 +109,10 @@ async function setupSocketServer() {
     // Registering user with their socket ID
     socket.on("register", async (userId) => {
       await pubClient.hSet(onlineUsersKey, userId, socket.id);
+
+      const userIds = await pubClient.hKeys(onlineUsersKey);
+      socket.emit("onlineUsers", userIds); // only to this admin socket
+
       console.log(
         `Registered user: ${userId} | Active clients: ${io.engine.clientsCount}`
       );

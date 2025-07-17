@@ -1,46 +1,18 @@
 "use client";
-import dynamic from "next/dynamic";
-import React from "react";
-import { Col, Row, Tabs } from "antd";
-import type { TabsProps } from "antd";
-import Heading from "@/app/util/Heading";
 
-const UserProfile = dynamic(() => import("../../util/Profile/ProfileDetails"));
+import React from "react";
+import { Col, Row } from "antd";
+import Heading from "@/app/util/Heading";
+import ProfileDetails from "@/app/util/Profile/ProfileDetails";
 
 export default function Profile() {
-  const onChange = (key: string) => {
-    console.log(key);
-  };
-
-  const items: TabsProps["items"] = [
-    {
-      key: "1",
-      label: "Company Details",
-      children: <UserProfile />,
-    },
-    {
-      key: "2",
-      label: "Vehicles",
-      children: "Content of Tab Pane 2",
-    },
-    {
-      key: "3",
-      label: "SubScription",
-      children: "Content of Tab Pane 3",
-    },
-    {
-      key: "4",
-      label: "Reviews",
-      children: "Content of Tab Pane 4",
-    },
-  ];
   return (
     <>
       <Heading name="Profile" />
-      <div className={`bg-white p-4 m-4 rounded-xl shadow-md mt-4`}>
+      <div className="bg-white p-4 m-4 rounded-xl shadow-md mt-4">
         <Row>
-          <Col lg={20}>
-            <Tabs defaultActiveKey="1" items={items} onChange={onChange} />
+          <Col lg={24}>
+            <ProfileDetails />
           </Col>
         </Row>
       </div>

@@ -606,17 +606,18 @@ export default function BidsAndOthers() {
                                 {bid &&
                                   bid.negotiateDriverPrice > 0 &&
                                   bid.negotiateShipperPrice === 0 && (
-                                    <>
+                                    <div className="flex flex-col sm:flex-row sm:gap-3 gap-2 justify-end mt-2">
                                       <Button
-                                        className="max-h-10"
+                                        className="border border-gray-300 rounded-md px-4 py-1 hover:border-gray-400"
                                         onClick={() =>
                                           handleNegotiateBid(bid, load)
                                         }
                                       >
                                         Negotiate
                                       </Button>
+
                                       <Button
-                                        className="button-primary max-h-10"
+                                        className="button-primary px-4 py-1 rounded-md"
                                         onClick={() =>
                                           acceptAfterDriverBid(
                                             bid.id,
@@ -628,7 +629,7 @@ export default function BidsAndOthers() {
                                       >
                                         Accept
                                       </Button>
-                                    </>
+                                    </div>
                                   )}
                                 {bid.negotiateDriverPrice > 0 &&
                                   bid.negotiateShipperPrice > 0 &&

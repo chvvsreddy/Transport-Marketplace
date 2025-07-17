@@ -3,6 +3,13 @@ import { Table } from "antd";
 import { getLoggedUserFromLS } from "@/app/util/getLoggedUserFromLS";
 import { fetchTrucksById } from "@/state/api";
 
+interface Requirements {
+  size: string;
+  type: string;
+  acOption: string;
+  trollyOption: string;
+}
+
 const ViewTrucks = () => {
   const [trucks, setTrucks] = useState([]);
   // const loggedUserId = getLoggedUserFromLS().userId;
@@ -41,7 +48,10 @@ const ViewTrucks = () => {
     {
       title: "Vehicle Type",
       dataIndex: "vehicleType",
+      render: (value: Requirements) =>
+        `${value.size}, ${value.type}, ${value.acOption}, ${value.trollyOption}`,
     },
+
     {
       title: "Insurance Number",
       dataIndex: "insuranceNumber",

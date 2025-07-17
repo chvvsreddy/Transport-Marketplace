@@ -66,7 +66,7 @@ export default function MyLoads() {
     if (userObj.type === "ADMIN") setIsAdmin(true);
     if (userObj.userId != "no user") setLoggedUser(userObj);
     else router.push("/login");
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     const fetchLoads = async () => {

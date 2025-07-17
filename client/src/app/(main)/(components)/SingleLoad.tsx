@@ -10,6 +10,7 @@ import {
   getBidsByLoadId,
   getLoadByLoadId,
   getLoadByLoadIdForAdmin,
+  getTripByLoadId,
   getUser,
 } from "@/state/api";
 
@@ -48,6 +49,41 @@ interface Bid {
   isDriverAccepted: boolean;
   isShipperAccepted: boolean;
 }
+export interface Trip {
+  id: string;
+  loadId: string;
+  driverId: string;
+  vehicleId: string;
+  plannedRoute: any; // typically GeoJSON or array of coordinates
+  actualRoute?: any; // same as above, optional
+  distance: number; // in km
+  estimatedDuration: number; // in minutes
+  actualDuration?: number; // optional, in minutes
+  startTime?: string; // ISO date string
+  endTime?: string; // ISO date string
+  status: TripStatus;
+  createdAt: string;
+  updatedAt: string;
+
+  // Optional relational data (if included in response)
+  // load?: Load;
+  // driver?: User;
+  // vehicle?: Vehicle;
+  // events?: TripEvent[];
+  // documents?: Document[];
+  // payments?: Payment[];
+}
+
+export type TripStatus =
+  | "SCHEDULED"
+  | "IN_PROGRESS"
+  | "DELAYED"
+  | "COMPLETED"
+  | "CANCELLED";
+
+interface FallBackTrip {
+  message: string;
+}
 interface Location {
   address: string;
   lat: number;
@@ -70,7 +106,7 @@ interface Load {
   createdAt: string;
   updatedAt: string;
   dimensions: { length: number; width: number; height: number };
-  specialRequirements?: string[];
+  specialRequirements?: Requirements;
   isFragile: boolean;
   requiresColdStorage: boolean;
   isBulkLoad: boolean;
@@ -78,6 +114,13 @@ interface Load {
   pickupWindowEnd: string;
   deliveryWindowStart: string;
   deliveryWindowEnd: string;
+}
+
+interface Requirements {
+  size: string;
+  type: string;
+  acOption: string;
+  trollyOption: string;
 }
 interface SampleUser {
   id: string;
@@ -102,7 +145,32 @@ const getStatusColor = (status: LoadStatus | string): string => {
       return "default";
   }
 };
+
+export const getTripStatusColor = (status: TripStatus): string => {
+  switch (status) {
+    case "SCHEDULED":
+      return "blue";
+    case "IN_PROGRESS":
+      return "gold";
+    case "DELAYED":
+      return "orange";
+    case "COMPLETED":
+      return "green";
+    case "CANCELLED":
+      return "red";
+    default:
+      return "brown";
+  }
+};
 const getStatusLabel = (status: LoadStatus | string): string => {
+  return status
+    .toLowerCase()
+    .split("_")
+    .map((word) => word[0].toUpperCase() + word.slice(1))
+    .join(" ");
+};
+
+export const getTripStatusLabel = (status: TripStatus): string => {
   return status
     .toLowerCase()
     .split("_")
@@ -126,6 +194,7 @@ export default function SingleLoad() {
   const [findUserForThisLoad, setUserActive] = useState<
     SampleUser | undefined
   >();
+  const [trip, setTrip] = useState<Trip | FallBackTrip>();
 
   const [openSections, setOpenSections] = useState({
     route: true,
@@ -155,7 +224,10 @@ export default function SingleLoad() {
       const bids = await getBidsByLoadId({
         loadId,
       });
+
+      const trips = await getTripByLoadId(loadId);
       setBids(bids);
+      setTrip(trips);
 
       if (loggedUser?.userId && loadId) {
         let fetchedLoad;
@@ -191,7 +263,7 @@ export default function SingleLoad() {
     fetchData();
   }, [bids]);
 
-  console.log(findBidActive);
+  console.log("trip", trip);
   if (loading)
     return (
       <div className="p-6 text-gray-500">
@@ -272,7 +344,24 @@ export default function SingleLoad() {
               <span className="labelStyle">Special Requirements</span>
               <br />
               <span className="valueStyle">
-                {load.specialRequirements?.join(", ") || "None"}
+                {load?.specialRequirements?.size ?? "None"}
+              </span>
+              <br />
+              <span className="valueStyle">
+                {load?.specialRequirements?.type ?? "None"} truck
+              </span>
+              <br />
+              <span className="valueStyle">
+                {load?.specialRequirements?.acOption === "NO"
+                  ? "Non - AC"
+                  : "AC"}{" "}
+                truck
+              </span>
+              <br />
+              <span className="valueStyle">
+                {load?.specialRequirements?.trollyOption === "YES"
+                  ? "With trolly"
+                  : "Without trolly"}
               </span>
             </p>
             <p>
@@ -426,6 +515,19 @@ export default function SingleLoad() {
                 className="accordian-header"
               >
                 Trip
+                <Tag
+                  color={getTripStatusColor(
+                    trip?.message == "Trip not found for this load"
+                      ? "Not assigned"
+                      : trip?.status
+                  )}
+                >
+                  {getTripStatusLabel(
+                    trip?.message == "Trip not found for this load"
+                      ? "Not assigned"
+                      : trip?.status
+                  )}
+                </Tag>
                 <ArrowDownCircle
                   className={`transition-transform duration-200 ${
                     openSections.trip ? "rotate-180" : ""

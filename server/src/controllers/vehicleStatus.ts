@@ -21,7 +21,7 @@ export const updateVehicle = async (req: Request, res: Response) => {
         isActive: true,
         trips: {
           connect: {
-            id: newTrip.id, // ✅ just connect the existing trip
+            id: newTrip.id,
           },
         },
       },

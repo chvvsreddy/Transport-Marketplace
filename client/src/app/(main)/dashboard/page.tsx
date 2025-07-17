@@ -48,7 +48,7 @@ type DashboardData = {
 
 const Dashboard = () => {
   const [fromDate, setFromDate] = useState(() =>
-    format(new Date(), "dd-MM-yyyy")
+    format(new Date("01-01-2000"), "dd-MM-yyyy")
   );
   const [toDate, setToDate] = useState(() => format(new Date(), "dd-MM-yyyy"));
 

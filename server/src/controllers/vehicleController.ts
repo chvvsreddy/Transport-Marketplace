@@ -50,6 +50,7 @@ export const getActiveVehiclesById = async (req: Request, res: Response) => {
 
   if (!ownerId) {
     res.status(400).json({ error: "ownerId is required" });
+    return;
   }
 
   try {

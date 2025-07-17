@@ -11,8 +11,9 @@ import { Avatar, message } from "antd";
 import { UserOutlined } from "@ant-design/icons";
 import { getNotificationsByUserId, getUser, upadteNotifs } from "@/state/api";
 import { getLoggedUserFromLS } from "../getLoggedUserFromLS";
-import socket from "../socket";
+
 import { User } from "../interfaces/user.interface";
+import { getSocket } from "../socket";
 
 export interface Notification {
   id: string;
@@ -37,7 +38,7 @@ const Navbar = () => {
 
   const [searchValue, setSearchValue] = useState("");
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
-
+  const [pic, setPic] = useState<string | null>(null);
   const [loggedUser, setLoggedUser] = useState({
     message: "",
     userId: "",
@@ -55,20 +56,21 @@ const Navbar = () => {
 
   const [notifOpen, setNotifOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
-
+  const socket = getSocket();
   async function getUserDetails(): Promise<User> {
     const userInfo = getLoggedUserFromLS();
     const user = await getUser(userInfo?.userId || "");
     return user;
   }
   useEffect(() => {
+    if (!loggedUser?.userId) return;
     async function fetchNotifications() {
       const notifications = await getNotificationsByUserId(loggedUser?.userId);
       setLatestNotifications(notifications);
       setCountOfNotifications(notifications.length);
     }
     fetchNotifications();
-  }, []);
+  }, [loggedUser.userId]);
 
   const NOTIFICATION_EVENTS = [
     "receiveBidPriceNotification",
@@ -124,7 +126,8 @@ const Navbar = () => {
       (async () => {
         try {
           const user = await getUserDetails();
-          const { email, type, phone } = user;
+          const { email, type, phone, profilePic } = user;
+          setPic(profilePic);
           const userId = user.id;
           if (user?.email)
             setLoggedUser({ message: "", userId, email, type, phone });
@@ -266,7 +269,7 @@ const Navbar = () => {
 
           <div className="flex flex-row items-start gap-1  cursor-pointer">
             <div>
-              <Avatar size={45} icon={<UserOutlined />} />
+              <Avatar size={45} icon={<UserOutlined />} src={pic} />
             </div>
             <div className="flex flex-col mt-1">
               <span className="font-semibold">

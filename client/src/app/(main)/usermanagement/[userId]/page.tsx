@@ -5,6 +5,8 @@ import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import Profile from "../../profile/page";
 import { useUser } from "@/app/util/UserContext";
+import ForAdminSingleUserProfile from "@/app/util/ForAdminSingleUserProfile";
+import VerificationPending from "@/app/util/verification/verificationPending";
 
 const UserDetail = () => {
   const { userId } = useParams();
@@ -20,7 +22,7 @@ const UserDetail = () => {
           setError(null);
           const data = await getUser(userId as string);
           setUser(data);
-        } catch (err) {
+        } catch (error) {
           setError("Failed to load user details. Please try again.");
         } finally {
           setLoading(false);
@@ -39,7 +41,7 @@ const UserDetail = () => {
 
   return (
     <div>
-      <Profile />
+      <ForAdminSingleUserProfile />
     </div>
   );
 };

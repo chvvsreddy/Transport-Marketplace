@@ -170,7 +170,7 @@ model Loads {
   weight              Float
   dimensions          Json // { length: Float, width: Float, height: Float }
   cargoType           String
-  specialRequirements String[]
+  specialRequirements Json
   status              LoadStatus @default(AVAILABLE)
   price               Float
   bidPrice            Float      @default(0)
@@ -240,7 +240,7 @@ model Vehicle {
   year               Int
   capacity           Float // in kg
   dimensions         Json // { length: Float, width: Float, height: Float }
-  vehicleType        String
+  vehicleType        Json
   isActive           Boolean @default(false)
 
   // Ownership
