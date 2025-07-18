@@ -67,6 +67,7 @@ model CompanyDetails {
   cin       String? // Corporate Identification Number (for shipper companies)
   gstNumber String? // GSTIN (for both shipper and logistics companies)
   panNumber String? // Permanent Account Number
+  tinNumber String?
 
   // Additional fields for logistics companies
   fleetSize      Int? // Number of trucks owned/operated
@@ -90,11 +91,12 @@ model IndividualShipperDetails {
   // Identification for individual shippers
   aadhaarNumber String? // For Indian individuals
   panNumber     String? // Permanent Account Number
-
+  aadhaarUrl    String?
+  panUrl        String?
   // Additional fields
-  isBusiness   Boolean @default(false) // Whether shipping for business purposes
-  businessName String? // If shipping for business
-  businessGST  String? // If has GST number
+  isBusiness    Boolean @default(false) // Whether shipping for business purposes
+  businessName  String? // If shipping for business
+  businessGST   String? // If has GST number
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -247,11 +249,25 @@ model Vehicle {
   owner   Users  @relation(fields: [ownerId], references: [id])
   ownerId String
 
+  //driver details of this vehicle
+
+  driverName      String
+  driverImage     String?
+  contact1        String
+  contact2        String?
+  currentLocation Json?
+  driverLicense   String
+  driverRC        String
+  driverPAN       String
+
   // Additional vehicle details
   insuranceNumber   String
   insuranceExpiry   DateTime
   fitnessCertExpiry DateTime
   permitType        String?
+
+  isVehicleVerified Boolean @default(false)
+  isDriverVerified  Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

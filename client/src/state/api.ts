@@ -237,6 +237,7 @@ export const getBids = async () => {
     console.error("bids getting error:", error);
   }
 };
+
 export const updateBid = async (obj: any) => {
   try {
     const token = getTokenIdFromLs();
@@ -539,6 +540,70 @@ export const getUserCompanyDetails = async (userId: string) => {
     console.error(" got error getting user for comapny details", e);
   }
 };
+
+export const createIndividualShipperDetails = async (obj: any) => {
+  try {
+    const createdIndividualShipperDetails = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/Register/individualShipperDetails`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(obj),
+      }
+    );
+
+    return createdIndividualShipperDetails.json();
+  } catch (error) {
+    console.error("creating error geeting user for  individualShipperDetails");
+  }
+};
+
+export const getIndividualShipperDetails = async (userId: string) => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/Register/individualShipperDetails/${userId}`,
+      {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+    return response.json();
+  } catch (e) {
+    console.error(" got error getting user for  individualShipperDetails", e);
+  }
+};
+
+export const createIndividualDriverDetails = async (obj: any) => {
+  try {
+    const createdIndividualDriverDetails = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/Register/individualDriverDetails`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(obj),
+      }
+    );
+
+    return createdIndividualDriverDetails.json();
+  } catch (error) {
+    console.error("creating error getting user for  individualDriverDetails");
+  }
+};
+
+export const getIndividualDriverDetails = async (userId: string) => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/Register/individualDriverDetails/${userId}`,
+      {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+    return response.json();
+  } catch (e) {
+    console.error(" got error getting user for  individualDriverDetails", e);
+  }
+};
 export const getActiveVehiclesByOwnerId = async (obj: any) => {
   try {
     const token = getTokenIdFromLs();
@@ -695,6 +760,24 @@ export const updateUserProfile = async (input: UpdateUserProfileInput) => {
   } catch (error: unknown) {
     console.error("Update profile error:", error);
     throw error;
+  }
+};
+
+export const getSingleVehicleBtOwnerId = async (userId: string) => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/trucks/${userId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return response.json();
+  } catch (error) {
+    console.log(error);
   }
 };
 export const { useGetAllLoadsQuery } = api;

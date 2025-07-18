@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import StoreProvider, { useAppSelector } from "@/app/redux";
 import { SearchProvider } from "../util/SearchContext";
-import { UserProvider } from "../util/UserContext";
+import { UserProvider, useUser } from "../util/UserContext";
 import { SocketProvider } from "../util/SocketContext";
 import { useRouter } from "next/navigation";
 import Shimmer from "./(components)/shimmerUi/Shimmer";
@@ -63,7 +63,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const [isIndividualShipper, setIsIndividualShipper] = useState(false);
   const [isDriver, setIsDriver] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-
+  const { isVerified } = useUser();
   const router = useRouter();
 
   useEffect(() => {
@@ -124,13 +124,13 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       id="fordash"
     >
       {isAdmin && <AdminSidebar />}
-      {isIndividualShipper && <IndividualShipperSidebar />}
-      {isLogisticShipper && <LogisticsShipperSidebar />}
-      {isCompanyShipper && <CompanyShipperSidebar />}
+      {isIndividualShipper && isVerified && <IndividualShipperSidebar />}
+      {isLogisticShipper && isVerified && <LogisticsShipperSidebar />}
+      {isCompanyShipper && isVerified && <CompanyShipperSidebar />}
 
       <main
         className={`flex flex-col w-full h-full bg-gray-100 pb-6 pr-2 ${
-          isDriver
+          isDriver && isVerified
             ? "max-w-[1200px] mx-auto py-14 pl-2 pr-2"
             : isSidebarCollapsed
             ? "md:pl-16"

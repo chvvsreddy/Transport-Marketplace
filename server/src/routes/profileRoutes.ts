@@ -7,6 +7,6 @@ import { authenticateToken } from "../authMiddleware";
 
 const router = Router();
 
-router.get("/", authenticateToken, getUserDetails);
+router.get("/", getUserDetails);
 router.post("/", authenticateToken, updateUserProfile);
 export default router;

@@ -40,6 +40,19 @@
     height: 42px;
   }
 }
+.main-register {
+  background-color: #f7f7f7;
+
+  padding: 24px 0;
+}
+
+.bg-register-card {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+
 
 @media (min-width: 1024px) {
   #Text-Register {

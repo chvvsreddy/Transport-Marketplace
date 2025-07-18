@@ -1,8 +1,7 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import jwt from 'jsonwebtoken'
-
+import jwt from "jsonwebtoken";
 
 const prisma = new PrismaClient();
 
@@ -30,10 +29,19 @@ export const checkUser = async (req: Request, res: Response): Promise<any> => {
       return res.status(401).json({ message: "Invalid  password" });
     }
     if (!process.env.JWT_SECRET) {
-  throw new Error("JWT_SECRET is not defined");
-  }
-  const token = jwt.sign({ userId: checkedUser.id,type:checkedUser.type}, process.env.JWT_SECRET, { expiresIn: '1h' });
-   res.json({ token,type:checkedUser.type,userId:checkedUser.id });
+      throw new Error("JWT_SECRET is not defined");
+    }
+    const token = jwt.sign(
+      { userId: checkedUser.id, type: checkedUser.type },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+    res.json({
+      token,
+      type: checkedUser.type,
+      userId: checkedUser.id,
+      isVerified: checkedUser.isVerified,
+    });
   } catch (error) {
     console.error(error);
 

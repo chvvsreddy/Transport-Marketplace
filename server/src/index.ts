@@ -32,6 +32,8 @@ import notificationRoutes from "./routes/notificationRoutes";
 import companyDetailsRoutes from "./routes/companyDetailsRegisterRoutes";
 import uploadRoutes from "./routes/uploadRoute";
 import distanceRoutes from "./routes/distance";
+import individualShipperRoutes from "./routes/individualshipperRoutes";
+import individualDriverRoutes from "./routes/individualDriverRoutes";
 // Configurations
 dotenv.config();
 const app = express();
@@ -72,6 +74,8 @@ app.use("/notifications", notificationRoutes);
 app.use("/Register/companyDetails", companyDetailsRoutes);
 app.use("/upload", uploadRoutes);
 app.use("/distance", distanceRoutes);
+app.use("/Register/individualShipperDetails", individualShipperRoutes);
+app.use("/Register/individualDriverDetails", individualDriverRoutes);
 
 //graphql setup
 app.use(

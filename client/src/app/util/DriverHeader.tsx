@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
-import { useAppDispatch, useAppSelector } from "@/app/redux";
+// import { useAppDispatch, useAppSelector } from "@/app/redux";
 import Image from "next/image";
 import { Settings } from "lucide-react";
 import Link from "next/link";
@@ -39,11 +39,11 @@ export default function DriverHeader() {
     message.success("loggedout successful");
     router.push("/login");
   };
-  const dispatch = useAppDispatch();
-  const isSidebarCollapsed = useAppSelector(
-    (state) => state.global.isSidebarCollapsed
-  );
-  const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
+  // const dispatch = useAppDispatch();
+  // const isSidebarCollapsed = useAppSelector(
+  //   (state) => state.global.isSidebarCollapsed
+  // );
+  // const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
   //   const toggleSidebar = () => {
   //     dispatch(setIsSidebarCollapsed(!isSidebarCollapsed));
   //   };

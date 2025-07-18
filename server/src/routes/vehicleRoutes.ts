@@ -3,12 +3,14 @@ import {
   createVehicle,
   getActiveVehiclesById,
   getAllVehiclesById,
+  getSingleVehicleByOwnerId,
 } from "../controllers/vehicleController";
 import { authenticateToken } from "../authMiddleware";
 
 const router = Router();
-router.post("/",authenticateToken, createVehicle);
-router.patch("/",authenticateToken, getAllVehiclesById);
-router.put("/", authenticateToken,getActiveVehiclesById);
+router.post("/", createVehicle);
+router.patch("/", authenticateToken, getAllVehiclesById);
+router.put("/", authenticateToken, getActiveVehiclesById);
+router.get("/:userId", getSingleVehicleByOwnerId);
 
 export default router;

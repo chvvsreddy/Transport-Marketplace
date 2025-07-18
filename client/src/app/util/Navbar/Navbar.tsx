@@ -141,7 +141,7 @@ const Navbar = () => {
       router.push("/login");
     }
   }, [router]);
-
+  console.log("pic", pic);
   const handleLogout = () => {
     localStorage.removeItem("token");
     message.success("User loggedOut Successful");
@@ -269,7 +269,11 @@ const Navbar = () => {
 
           <div className="flex flex-row items-start gap-1  cursor-pointer">
             <div>
-              <Avatar size={45} icon={<UserOutlined />} src={pic} />
+              <Avatar
+                size={45}
+                src={pic || "/default-profile.png"}
+                icon={!pic && <UserOutlined />}
+              />
             </div>
             <div className="flex flex-col mt-1">
               <span className="font-semibold">

@@ -69,21 +69,19 @@ export default function ProfileDetails() {
         }
       );
 
-      if (!res.ok) throw new Error("Upload failed");
-
       const data = await res.json();
       const uploadedUrl = data.url;
 
-      setPreviewImage(uploadedUrl);
-
       if (!user?.id) throw new Error("User ID is missing");
 
-      const updated = await updateUserProfile({
+      await updateUserProfile({
         userId: user.id,
         profilePic: uploadedUrl,
       });
 
-      setUser(updated);
+      const refreshed = await getUser(user.id); // refresh user info
+      setUser(refreshed);
+      setPreviewImage(null); // clear temporary image
       message.success("Profile picture updated successfully!");
     } catch (err) {
       console.error(err);
