@@ -14,7 +14,7 @@ import {
   getUser,
 } from "@/state/api";
 
-import { ArrowDownCircle, Edit } from "lucide-react";
+import { ArrowDownCircle } from "lucide-react";
 import { useRouter, useParams, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { UploadOutlined } from "@ant-design/icons";
@@ -22,6 +22,7 @@ import type { UploadProps } from "antd";
 import { Button, Tag, Upload } from "antd";
 import Shimmer from "./shimmerUi/Shimmer";
 import MapComponent from "./MapComponent";
+import { LoadStatus } from "@/app/util/interfaces/load.interface";
 
 const props: UploadProps = {
   action: "//jsonplaceholder.typicode.com/posts/",
@@ -49,13 +50,23 @@ interface Bid {
   isDriverAccepted: boolean;
   isShipperAccepted: boolean;
 }
+interface Waypoint {
+  lat: number;
+  lng: number;
+}
+
+interface TripRoute {
+  distance: number;
+  waypoints: Waypoint[];
+}
+
 export interface Trip {
   id: string;
   loadId: string;
   driverId: string;
   vehicleId: string;
-  plannedRoute: any; // typically GeoJSON or array of coordinates
-  actualRoute?: any; // same as above, optional
+  plannedRoute?: TripRoute; // typically GeoJSON or array of coordinates
+  actualRoute?: TripRoute; // same as above, optional
   distance: number; // in km
   estimatedDuration: number; // in minutes
   actualDuration?: number; // optional, in minutes
@@ -64,6 +75,7 @@ export interface Trip {
   status: TripStatus;
   createdAt: string;
   updatedAt: string;
+  message?: string;
 
   // Optional relational data (if included in response)
   // load?: Load;
@@ -83,6 +95,7 @@ export type TripStatus =
 
 interface FallBackTrip {
   message: string;
+  status: string;
 }
 interface Location {
   address: string;
@@ -279,7 +292,7 @@ export default function SingleLoad() {
     <>
       <div className="flex justify-between items-center pr-4">
         <Heading name="Load Details" />
-
+        {/* 
         {pathname.includes("/myloads") && (
           <button
             className="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
@@ -288,7 +301,7 @@ export default function SingleLoad() {
           >
             <Edit className="inline mr-1" /> Edit
           </button>
-        )}
+        )} */}
       </div>
       <div className="main-content !p-0">
         <div className="grid grid-cols-4">
@@ -518,14 +531,14 @@ export default function SingleLoad() {
                 <Tag
                   color={getTripStatusColor(
                     trip?.message == "Trip not found for this load"
-                      ? "Not assigned"
-                      : trip?.status
+                      ? ("Not assigned" as TripStatus)
+                      : (trip?.status as TripStatus)
                   )}
                 >
                   {getTripStatusLabel(
                     trip?.message == "Trip not found for this load"
-                      ? "Not assigned"
-                      : trip?.status
+                      ? ("Not assigned" as TripStatus)
+                      : (trip?.status as TripStatus)
                   )}
                 </Tag>
                 <ArrowDownCircle

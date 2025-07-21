@@ -34,6 +34,7 @@ import uploadRoutes from "./routes/uploadRoute";
 import distanceRoutes from "./routes/distance";
 import individualShipperRoutes from "./routes/individualshipperRoutes";
 import individualDriverRoutes from "./routes/individualDriverRoutes";
+import adminProfileUsersRoutes from "./routes/adminUserProfileRoutes";
 // Configurations
 dotenv.config();
 const app = express();
@@ -76,6 +77,22 @@ app.use("/upload", uploadRoutes);
 app.use("/distance", distanceRoutes);
 app.use("/Register/individualShipperDetails", individualShipperRoutes);
 app.use("/Register/individualDriverDetails", individualDriverRoutes);
+app.use("/admin/users", adminProfileUsersRoutes);
+
+type Coordinate = {
+  lat: number;
+  lng: number;
+};
+
+type Load = {
+  id: string;
+  origin: Coordinate;
+  specialRequirements: {
+    size: string;
+    acOption: string;
+    trollyOption: string;
+  };
+};
 
 //graphql setup
 app.use(
@@ -204,6 +221,206 @@ async function setupSocketServer() {
           }
         } catch (error) {
           console.error("Error updating bid amount:", error);
+        }
+      }
+    );
+    type Coordinate = {
+      lat: number;
+      lng: number;
+    };
+
+    type Load = {
+      id: string;
+      origin: Coordinate;
+      specialRequirements: {
+        size: string;
+        acOption: string;
+        trollyOption: string;
+      };
+      destination: Coordinate;
+      shipperId: string;
+      status: string;
+      cargoType: string;
+      weight: number;
+      bidPrice: number;
+      price: number;
+      createdAt: string;
+      pickupWindowStart: string;
+      deliveryWindowEnd: string;
+    };
+
+    type SendLoadNearDriverPayload = {
+      load: Load;
+    };
+
+    type Driver = {
+      id: string;
+      userId: string;
+      currentLocation: Coordinate;
+    };
+
+    type DistanceMatrixResponse = {
+      rows: {
+        elements: {
+          status: string;
+          distance: {
+            value: number; // in meters
+          };
+        }[];
+      }[];
+    };
+
+    socket.on(
+      "sendLoadNearDriver",
+      async ({ load }: SendLoadNearDriverPayload) => {
+        const loadOrigin = `${load.origin.lat},${load.origin.lng}`;
+        console.log("load came to socket", load);
+        try {
+          // 1. Fetch drivers
+          const rawDrivers = await prisma.driverDetails.findMany({
+            select: {
+              id: true,
+              userId: true,
+              currentLocation: true,
+            },
+          });
+
+          const eligibleVehicles = await prisma.vehicle.findMany({
+            where: {
+              AND: [
+                {
+                  vehicleType: {
+                    path: ["size"],
+                    equals: load.specialRequirements.size,
+                  },
+                },
+                {
+                  vehicleType: {
+                    path: ["acOption"],
+                    equals: load.specialRequirements.acOption,
+                  },
+                },
+                {
+                  vehicleType: {
+                    path: ["trollyOption"],
+                    equals: load.specialRequirements.trollyOption,
+                  },
+                },
+                {
+                  isVehicleVerified: true,
+                },
+              ],
+            },
+            select: {
+              ownerId: true,
+            },
+          });
+
+          const eligibleUserIds = new Set(
+            eligibleVehicles.map((v) => v.ownerId)
+          );
+
+          const drivers: Driver[] = rawDrivers
+            .map((driver) => {
+              let parsedLocation: Coordinate | null = null;
+
+              try {
+                if (typeof driver.currentLocation === "string") {
+                  parsedLocation = JSON.parse(driver.currentLocation);
+                } else if (
+                  driver.currentLocation &&
+                  typeof driver.currentLocation === "object" &&
+                  "lat" in driver.currentLocation &&
+                  "lng" in driver.currentLocation
+                ) {
+                  parsedLocation = driver.currentLocation as Coordinate;
+                }
+              } catch (e) {
+                console.error(
+                  "Invalid location JSON for driver:",
+                  driver.id,
+                  e
+                );
+              }
+
+              if (
+                parsedLocation &&
+                typeof parsedLocation.lat === "number" &&
+                typeof parsedLocation.lng === "number" &&
+                eligibleUserIds.has(driver.userId)
+              ) {
+                return {
+                  id: driver.id,
+                  userId: driver.userId,
+                  currentLocation: parsedLocation,
+                };
+              }
+
+              return null;
+            })
+            .filter((d): d is Driver => d !== null);
+
+          if (drivers.length === 0) return;
+
+          // 4. Prepare destinations
+          const destinations: Coordinate[] = drivers.map(
+            (d) => d.currentLocation
+          );
+
+          // 5. Call distance API
+          const distanceResponse = await fetch(
+            "http://localhost:8000/distance",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ origin: loadOrigin, destinations }),
+            }
+          );
+
+          const distanceData: DistanceMatrixResponse =
+            await distanceResponse.json();
+
+          if (
+            !distanceData.rows ||
+            !distanceData.rows[0]?.elements ||
+            distanceData.rows[0].elements.length !== drivers.length
+          ) {
+            console.warn("Invalid distance data");
+            return;
+          }
+
+          // 6. Filter nearby drivers (<= 50km)
+          const elements = distanceData.rows[0].elements;
+
+          const nearbyUserIds = elements
+            .map((element, index) => {
+              if (
+                element.status === "OK" &&
+                element.distance.value <= 50000 // 50km
+              ) {
+                return drivers[index].userId;
+              }
+              return null;
+            })
+            .filter((id): id is string => id !== null);
+
+          console.log("Nearby Drivers (within 50km):", nearbyUserIds);
+
+          // 7. Emit to nearby drivers
+          await Promise.all(
+            nearbyUserIds.map(async (userId) => {
+              const receiverSocketId = await pubClient.hGet(
+                "onlineUsers",
+                userId
+              );
+              if (receiverSocketId) {
+                io.to(receiverSocketId).emit("newLoadAvailable", { load });
+                console.log("loadSent", receiverSocketId, "load is", load);
+              }
+            })
+          );
+        } catch (err) {
+          console.error("sendLoadNearDriver failed:", err);
         }
       }
     );

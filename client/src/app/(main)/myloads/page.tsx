@@ -26,13 +26,18 @@ interface Location {
   state: string;
   postalCode: string;
 }
-
+interface Requirements {
+  size: string;
+  type: string;
+  acOption: string;
+  trollyOption: string;
+}
 export interface Load {
   id: string;
   origin: Location;
   destination: Location;
   shipperId: string;
-  specialRequirements: string;
+  specialRequirements: Requirements;
   cargoType: string;
   trucks: number;
   pickupWindowStart: string;

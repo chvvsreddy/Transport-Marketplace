@@ -57,7 +57,7 @@ interface VehicleFormValues {
   driverPAN: UploadFile[]; // 👈 change to UploadFile[]
 }
 
-interface GoodsOption {
+export interface GoodsOption {
   title: string;
 }
 const AddTruckForm = () => {

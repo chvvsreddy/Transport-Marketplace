@@ -30,3 +30,44 @@ export const getLoadByLoadId = async (
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+export const updateLoadByLoadId = async (req: Request, res: Response) => {
+  try {
+    const { loadId, status, pickupWindowStart, deliveryWindowEnd } = req.body;
+
+    const updated = await prisma.loads.update({
+      where: {
+        id: loadId,
+      },
+      data: {
+        status,
+        pickupWindowStart,
+        deliveryWindowEnd,
+      },
+    });
+
+    res.status(201).json(updated);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const deleteLoadByLoadId = async (req: Request, res: Response) => {
+  try {
+    const { loadId } = req.body;
+
+    const deleteLoad = await prisma.loads.delete({
+      where: {
+        id: loadId,
+      },
+    });
+
+    res.status(201).json({
+      message: "success",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};

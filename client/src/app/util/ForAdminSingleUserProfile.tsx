@@ -17,13 +17,29 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { useParams } from "next/navigation";
-import { getUser, updateUserProfile } from "@/state/api";
+import {
+  fetchTrucksById,
+  getIndividualDriverDetails,
+  getIndividualShipperDetails,
+  getUser,
+  getUserCompanyDetails,
+  updateUserProfile,
+} from "@/state/api";
+import {
+  CompanyDetails,
+  DriverDetails,
+  IndividualShipperDetails,
+  Vehicle,
+} from "./interfaces/AdminInterfaces/user.interface.admin";
+import CompanyProfileCard from "./admin/CompanyProfileCard";
+import { DriverProfileCard } from "./admin/DriverProfileCard";
+import ShipperProfileCard from "./admin/ShipperProfileCard";
 
 export interface User {
   id: string;
   email: string;
   passwordHash: string;
-  type: "INDIVIDUAL_DRIVER" | "INDIVIDUAL_SHIPPER" | "COMPANY";
+  type: "INDIVIDUAL_DRIVER" | "INDIVIDUAL_SHIPPER" | "SHIPPER_COMPANY";
   phone: string;
   profilePic?: string;
   isVerified: boolean;
@@ -39,6 +55,17 @@ export default function ForAdminSingleUserProfile() {
   const [loading, setLoading] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [companyDetails, setComapnyDetails] = useState<CompanyDetails | null>(
+    null
+  );
+
+  const [IndividualShipperDetails, setIndividualShipperDetails] =
+    useState<IndividualShipperDetails | null>(null);
+
+  const [individualdriverDetails, setindividualDriverDetails] =
+    useState<DriverDetails | null>(null);
+
+  const [vehicles, setVehicles] = useState<Vehicle[] | []>([]);
 
   const params = useParams();
   const userId = params?.userId as string;
@@ -52,6 +79,24 @@ export default function ForAdminSingleUserProfile() {
 
       const userInfo = await getUser(userId);
       setUser(userInfo);
+      console.log("userinfo", userInfo);
+      if (
+        userInfo.type === "SHIPPER_COMPANY" ||
+        userInfo.type === "LOGISTICS_COMPANY"
+      ) {
+        const res = await getUserCompanyDetails(userInfo.id);
+        setComapnyDetails(res);
+      } else if (userInfo.type === "INDIVIDUAL_DRIVER") {
+        const res = await getIndividualDriverDetails(userInfo.id);
+        const response = await fetchTrucksById({
+          ownerId: userInfo.id,
+        });
+        setindividualDriverDetails(res);
+        setVehicles(response);
+      } else if (userInfo.type === "INDIVIDUAL_SHIPPER") {
+        const res = await getIndividualShipperDetails(userInfo.id);
+        setIndividualShipperDetails(res);
+      }
     }
 
     getUserDetails();
@@ -112,124 +157,165 @@ export default function ForAdminSingleUserProfile() {
     "/default-profile.png";
 
   return (
-    <Row
-      gutter={[32, 32]}
-      style={{
-        margin: 30,
-        padding: 30,
-        borderRadius: 16,
-        backgroundColor: "#fff",
-        boxShadow: "0 4px 20px rgba(0, 0, 0, 0.05)",
-      }}
-    >
-      <Col xs={24} lg={16}>
-        <Flex vertical gap={24}>
-          <Flex justify="space-between" align="center">
-            <div>
-              <Typography.Title level={4} style={{ margin: 0 }}>
-                Name: {user.email?.split("@")[0] || "User"}
-              </Typography.Title>
-              <Typography.Text type="secondary">
-                Profile Overview
-              </Typography.Text>
-            </div>
-            {/* <Button shape="round" type="default" icon={<EditIcon />}>
-              Edit
-            </Button> */}
-          </Flex>
-
-          <Divider style={{ margin: "12px 0" }} />
-
-          <Row gutter={[16, 24]}>
-            <Col xs={24} sm={12} md={8}>
-              <Flex vertical>
-                <Typography.Text type="secondary">User Type</Typography.Text>
-                <Typography.Text strong>
-                  {user.type || "MultiLoads"}
+    <>
+      <Row
+        gutter={[32, 32]}
+        style={{
+          margin: 30,
+          padding: 30,
+          borderRadius: 16,
+          backgroundColor: "#fff",
+          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.05)",
+        }}
+      >
+        <Col xs={24} lg={16}>
+          <Flex vertical gap={24}>
+            <Flex justify="space-between" align="center">
+              <div>
+                <Typography.Title level={4} style={{ margin: 0 }}>
+                  Name: {user.email?.split("@")[0] || "User"}
+                </Typography.Title>
+                <Typography.Text type="secondary">
+                  Profile Overview
                 </Typography.Text>
-              </Flex>
-            </Col>
+              </div>
+              <Button shape="round" type="default" icon={<EditIcon />}>
+                Edit
+              </Button>
+            </Flex>
 
-            <Col xs={24} sm={12} md={8}>
-              <Flex vertical>
-                <Typography.Text type="secondary">Phone</Typography.Text>
-                <Typography.Text strong>{user.phone || "N/A"}</Typography.Text>
-              </Flex>
-            </Col>
+            <Divider style={{ margin: "12px 0" }} />
 
-            <Col xs={24} sm={12} md={8}>
-              <Flex vertical>
-                <Typography.Text type="secondary">Email</Typography.Text>
-                <Typography.Text strong>{user.email || "N/A"}</Typography.Text>
-              </Flex>
-            </Col>
-          </Row>
-        </Flex>
-      </Col>
+            <Row gutter={[16, 24]}>
+              <Col xs={24} sm={12} md={8}>
+                <Flex vertical>
+                  <Typography.Text type="secondary">User Type</Typography.Text>
+                  <Typography.Text strong>
+                    {user.type || "MultiLoads"}
+                  </Typography.Text>
+                </Flex>
+              </Col>
 
-      <Col xs={24} lg={8}>
-        <Flex vertical align="center" gap={20}>
+              <Col xs={24} sm={12} md={8}>
+                <Flex vertical>
+                  <Typography.Text type="secondary">Phone</Typography.Text>
+                  <Typography.Text strong>
+                    {user.phone || "N/A"}
+                  </Typography.Text>
+                </Flex>
+              </Col>
+
+              <Col xs={24} sm={12} md={8}>
+                <Flex vertical>
+                  <Typography.Text type="secondary">Email</Typography.Text>
+                  <Typography.Text strong>
+                    {user.email || "N/A"}
+                  </Typography.Text>
+                </Flex>
+              </Col>
+            </Row>
+          </Flex>
+        </Col>
+
+        <Col xs={24} lg={8} style={{ position: "relative" }}>
           <div
             style={{
-              width: 120,
-              height: 120,
-              borderRadius: "50%",
-              overflow: "hidden",
-              border: "3px solid #f0f0f0",
-              cursor: "pointer",
+              position: "absolute",
+              top: -30,
+              right: 0,
+
+              backgroundColor: user.isVerified ? "#4CAF50" : "#f44336",
+              color: "#fff",
+              padding: "6px 12px",
+              borderRadius: "0 0 0 12px",
+              fontWeight: "bold",
+              zIndex: 10,
             }}
-            onClick={() => setIsModalVisible(true)}
           >
-            <Image
-              src={fullProfilePic}
-              alt="profile"
-              width={120}
-              height={120}
-              style={{ objectFit: "cover" }}
-            />
+            {user.isVerified ? "Verified" : "Not Verified"}
           </div>
 
-          {/* <Upload
-            disabled={loading}
-            showUploadList={false}
-            accept="image/*"
-            customRequest={({ file, onSuccess }) => {
-              handleImageUpload({ file: file as File });
-              setTimeout(() => onSuccess && onSuccess("ok"), 0);
-            }}
-          >
-            <Button
-              type="primary"
-              shape="round"
-              icon={<UploadOutlined />}
-              loading={loading}
-            >
-              Change Picture
-            </Button>
-          </Upload> */}
-          {/* <Modal
-            open={isModalVisible}
-            footer={null}
-            onCancel={() => setIsModalVisible(false)}
-            centered
-            width="auto"
-            styles={{ body: { padding: 0 } }}
-          >
-            <Image
-              src={fullProfilePic}
-              alt="profile-large"
-              width={500}
-              height={500}
+          <Flex vertical align="center" gap={20}>
+            <div
               style={{
-                maxWidth: "100%",
-                height: "auto",
-                objectFit: "contain",
+                width: 120,
+                height: 120,
+                borderRadius: "50%",
+                overflow: "hidden",
+                border: "3px solid #f0f0f0",
+                cursor: "pointer",
               }}
-            />
-          </Modal> */}
-        </Flex>
-      </Col>
-    </Row>
+              onClick={() => setIsModalVisible(true)}
+            >
+              <Image
+                src={fullProfilePic}
+                alt="profile"
+                width={120}
+                height={120}
+                style={{ objectFit: "cover" }}
+              />
+            </div>
+
+            <Upload
+              disabled={loading}
+              showUploadList={false}
+              accept="image/*"
+              customRequest={({ file, onSuccess }) => {
+                handleImageUpload({ file: file as File });
+                setTimeout(() => onSuccess && onSuccess("ok"), 0);
+              }}
+            >
+              <Button
+                type="primary"
+                shape="round"
+                icon={<UploadOutlined />}
+                loading={loading}
+              >
+                Change Picture
+              </Button>
+            </Upload>
+
+            <Modal
+              open={isModalVisible}
+              footer={null}
+              onCancel={() => setIsModalVisible(false)}
+              centered
+              width="auto"
+              styles={{ body: { padding: 0 } }}
+            >
+              <Image
+                src={fullProfilePic}
+                alt="profile-large"
+                width={500}
+                height={500}
+                style={{
+                  maxWidth: "100%",
+                  height: "auto",
+                  objectFit: "contain",
+                }}
+              />
+            </Modal>
+          </Flex>
+        </Col>
+      </Row>
+      {user.type === "SHIPPER_COMPANY" && companyDetails && (
+        <CompanyProfileCard user={user} companyDetails={companyDetails} />
+      )}
+      {user.type === "INDIVIDUAL_DRIVER" && individualdriverDetails != null && (
+        <DriverProfileCard
+          user={user}
+          driverDetails={individualdriverDetails}
+          vehicles={vehicles}
+        />
+      )}
+      {user.type === "INDIVIDUAL_SHIPPER" &&
+        IndividualShipperDetails != null && (
+          <ShipperProfileCard
+            user={user}
+            shipperDetails={IndividualShipperDetails}
+          />
+        )}
+    </>
   );
 }
 

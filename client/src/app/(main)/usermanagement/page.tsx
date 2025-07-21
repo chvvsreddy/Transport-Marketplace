@@ -5,6 +5,8 @@ import Heading from "@/app/util/Heading/index";
 import { useSearch } from "@/app/util/SearchContext";
 import { getAllUsers } from "@/state/api";
 import { SocketContext } from "@/app/util/SocketContext";
+import { getLoggedUserFromLS } from "@/app/util/getLoggedUserFromLS";
+import { useRouter } from "next/navigation";
 
 const USERS_PER_PAGE = 6;
 
@@ -22,8 +24,13 @@ const Users = () => {
   const [userType, setUserType] = useState("All");
   const [onlineUserIds, setOnlineUserIds] = useState<string[]>([]);
   const { socket } = useContext(SocketContext) || {};
+  const router = useRouter();
   useEffect(() => {
     // Register as admin to receive online users
+
+    if (getLoggedUserFromLS().type != "ADMIN") {
+      router.push("/login");
+    }
 
     socket?.on("onlineUsers", (ids: string[]) => {
       console.log("online users", ids);

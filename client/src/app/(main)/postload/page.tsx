@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useState, useMemo } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useState,
+  useMemo,
+  useContext,
+} from "react";
 import { useRouter } from "next/navigation";
 import {
   Button,
@@ -29,6 +35,7 @@ import { createLoad } from "@/state/api";
 import Heading from "@/app/util/Heading";
 import TextArea from "antd/es/input/TextArea";
 import Shimmer from "../(components)/shimmerUi/Shimmer";
+import { SocketContext } from "@/app/util/SocketContext";
 
 interface AddressComponent {
   long_name: string;
@@ -134,7 +141,7 @@ export default function PostLoad() {
   const [selectedTruckType, setSelectedTruckType] = useState<string>("Open");
 
   const [isLoading, setIsLoading] = useState(true);
-
+  const { socket } = useContext(SocketContext) || {};
   // Debounced API call with cleanup
   const fetchLocation = debounce(
     (pin: string, setFn: (val: LocationData) => void) => {
@@ -276,6 +283,12 @@ export default function PostLoad() {
   async function callCreateLoad(payload: LoadPayload) {
     try {
       const load = await createLoad(payload);
+      if (load.id) {
+        if (socket?.id) {
+          socket?.emit("sendLoadNearDriver", { load });
+          console.log("loadSent", load);
+        }
+      }
       if (load) {
         message.success("Load posted successfully!");
         form.resetFields();
@@ -592,9 +605,10 @@ export default function PostLoad() {
                 >
                   <Radio.Group
                     onChange={(e) => {
-                      setSelectedTruckType(e.target.value);
+                      const value = e.target.value;
+                      setSelectedTruckType(value);
                       setActiveGoodsType(null);
-                      form.setFieldValue("truckType", e.target.value);
+                      form.setFieldValue("truckType", value);
                     }}
                   >
                     <Radio.Button value="Open">

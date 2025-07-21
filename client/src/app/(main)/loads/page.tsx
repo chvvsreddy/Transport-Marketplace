@@ -58,6 +58,7 @@ type AddressComponent = {
 };
 
 interface Vehicle {
+  isVehicleVerified: boolean;
   id: string;
   registrationNumber: string;
   make: string;
@@ -317,7 +318,8 @@ const Loads = () => {
                     vehicle.vehicleType?.type ===
                       load.specialRequirements?.type &&
                     vehicle.vehicleType.trollyOption ===
-                      load.specialRequirements.trollyOption
+                      load.specialRequirements.trollyOption &&
+                    vehicle.isVehicleVerified
                 )
               : false;
 
@@ -344,7 +346,7 @@ const Loads = () => {
     };
 
     fetchNearby();
-  }, [location, allData, hasFetchedNearbyLoads]);
+  }, [location, allData, hasFetchedNearbyLoads, activeVehicles]);
 
   useEffect(() => {
     if (socket) {
@@ -378,6 +380,22 @@ const Loads = () => {
       };
     }
   }, [socket]);
+
+  useEffect(() => {
+    const updateLoad = (newLoad: Load) => {
+      console.log("Updated allData:", newLoad);
+      if (!allData.find((l) => l.id === newLoad.id)) {
+        allData.unshift(newLoad);
+        console.log("Updated allData:", allData);
+      }
+    };
+
+    socket?.on("newLoadAvailable", updateLoad);
+
+    return () => {
+      socket?.off("newLoadAvailable", updateLoad);
+    };
+  }, [socket, allData]);
 
   if (!isVerified) {
     return <VerificationPending />;
@@ -1005,10 +1023,15 @@ const Loads = () => {
           </Modal>
         </div>
         <Modal
-          title={<p>Load Confirmation</p>}
+          title={<p className="text-base font-semibold">Load Confirmation</p>}
           open={open}
           footer={null}
           onCancel={() => setOpen(false)}
+          bodyStyle={{
+            maxHeight: "70vh",
+            overflowY: "auto",
+            padding: "1rem",
+          }}
         >
           {Array.isArray(dataWithOutTrips) &&
             dataWithOutTrips.map((data: any) => {
@@ -1016,27 +1039,32 @@ const Loads = () => {
               const isExpanded = expandedLoadIds.includes(loadId);
 
               return (
-                <div key={loadId} className="mb-4 border p-4 rounded">
-                  <div className="flex justify-between items-center">
-                    <div>
+                <div key={loadId} className="mb-4 border rounded-lg p-3">
+                  {/* Header with Email and Route Info */}
+                  <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-2">
+                    <div className="text-sm">
                       <b>{data?.user?.email}</b> has confirmed you for the load
                       <br />
-                      {data?.load?.origin?.city} →{" "}
-                      {data?.load?.destination?.city}
+                      <span>
+                        {data?.load?.origin?.city} →{" "}
+                        {data?.load?.destination?.city}
+                      </span>
                     </div>
-
                     <Button
                       type="link"
                       icon={isExpanded ? <UpOutlined /> : <DownOutlined />}
                       onClick={() => toggleExpand(loadId)}
+                      className="p-0 text-blue-600"
                     >
                       {isExpanded ? "Hide Details" : "Show Details"}
                     </Button>
                   </div>
 
+                  {/* Expandable Vehicle List */}
                   {isExpanded && (
                     <div className="mt-4">
                       <Radio.Group
+                        className="w-full flex flex-col gap-2"
                         onChange={(e) =>
                           setSelectedTrucks((prev) => ({
                             ...prev,
@@ -1045,8 +1073,8 @@ const Loads = () => {
                         }
                         value={selectedTrucks[loadId] || null}
                       >
-                        {activeVehicles && activeVehicles?.length > 0 ? (
-                          activeVehicles?.map((vehicle, index) => {
+                        {activeVehicles && activeVehicles.length > 0 ? (
+                          activeVehicles.map((vehicle, index) => {
                             const isCorrectVehicle =
                               data.load.specialRequirements.size ===
                                 vehicle.vehicleType.size &&
@@ -1055,44 +1083,46 @@ const Loads = () => {
                               data.load.specialRequirements.acOption ===
                                 vehicle.vehicleType.acOption &&
                               data.load.specialRequirements.trollyOption ===
-                                vehicle.vehicleType.trollyOption;
+                                vehicle.vehicleType.trollyOption &&
+                              vehicle.isVehicleVerified;
+
                             return (
                               isCorrectVehicle && (
                                 <div
-                                  className="box flex justify-between w-100 my-2"
                                   key={index}
+                                  className="w-full flex justify-between items-center border rounded-md p-2"
                                 >
-                                  <p>
-                                    <span className="labelStyle">
+                                  <div className="text-sm">
+                                    <span className="font-semibold block">
                                       {vehicle.model}
                                     </span>
-                                    <br />
-                                    <span className="valueStyle">
-                                      {" "}
+                                    <span className="text-gray-600">
                                       {vehicle.registrationNumber}
                                     </span>
-                                  </p>
+                                  </div>
                                   <Radio value={vehicle.registrationNumber} />
                                 </div>
                               )
                             );
                           })
                         ) : (
-                          <>
+                          <div className="text-center my-2">
                             <Link href="/trucks">
-                              <Button>ADD VEHICLE</Button>
+                              <Button type="primary" size="small">
+                                Add Vehicle
+                              </Button>
                             </Link>
-                          </>
+                          </div>
                         )}
                       </Radio.Group>
 
                       <Button
                         type="primary"
-                        className="mt-4"
+                        className="mt-4 w-full"
                         onClick={() => handleConfirmLoad(data.load, data.bid)}
                         disabled={!selectedTrucks[loadId]}
                       >
-                        Ok
+                        Confirm
                       </Button>
                     </div>
                   )}

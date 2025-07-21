@@ -1,4 +1,4 @@
-type LoadStatus =
+export type LoadStatus =
   | "AVAILABLE"
   | "PENDING"
   | "ASSIGNED"

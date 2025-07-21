@@ -84,6 +84,58 @@ export interface User {
   type: string;
 }
 
+interface DataFromAdmin {
+  userId: string;
+  isVerified: boolean;
+}
+
+interface VehicleDataFromAdmin {
+  vehicleId: string;
+  isDriverVerified: boolean;
+}
+
+export const updateUserProfileFromAdmin = async (obj: DataFromAdmin) => {
+  try {
+    const token = getTokenIdFromLs();
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/users`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(obj),
+      }
+    );
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("updating error:", error);
+  }
+};
+
+export const updateUserVehicleFromAdmin = async (obj: VehicleDataFromAdmin) => {
+  try {
+    const token = getTokenIdFromLs();
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/users`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(obj),
+      }
+    );
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("updating error:", error);
+  }
+};
+
 export const checkUser = async (obj: userDetails) => {
   try {
     const response = await fetch(
@@ -589,7 +641,47 @@ export const createIndividualDriverDetails = async (obj: any) => {
     console.error("creating error getting user for  individualDriverDetails");
   }
 };
+export const updateLoadByLoadId = async (obj: any) => {
+  try {
+    const token = getTokenIdFromLs();
+    const updateLoad = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/myloads`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(obj),
+      }
+    );
 
+    return updateLoad.json();
+  } catch (error) {
+    console.error("creating error getting user for  individualDriverDetails");
+  }
+};
+
+export const deleteLoadByLoadId = async (obj: any) => {
+  try {
+    const token = getTokenIdFromLs();
+    const deleteLoad = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/myloads`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(obj),
+      }
+    );
+
+    return deleteLoad.json();
+  } catch (error) {
+    console.error("creating error getting user for  individualDriverDetails");
+  }
+};
 export const getIndividualDriverDetails = async (userId: string) => {
   try {
     const response = await fetch(

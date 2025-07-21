@@ -410,9 +410,9 @@ export default function BidsAndOthers() {
         </Row>
 
         <div className="main-content">
-          <div className="bg-red-100 p-2 text-black rounded-md mb-2">
+          {/* <div className="bg-red-100 p-2 text-black rounded-md mb-2">
             <b>2 Carriars</b> from <b>2 Bids</b> Responded.
-          </div>
+          </div> */}
           <div className="flex gap-4">
             <DatePicker.RangePicker onChange={handleDateChange} />
             <Select
