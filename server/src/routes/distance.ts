@@ -34,4 +34,19 @@ router.post("/", async (req: Request, res: Response) => {
   }
 });
 
+router.patch("/", async (req, res) => {
+  const { origin, destination } = req.body;
+
+  const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${origin}&destinations=${destination}&key=${process.env.GOOGLE_MAPS_API_KEY}`;
+
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+    console.log("data", data);
+    res.status(200).json(data);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch distance matrix" });
+  }
+});
+
 export default router;

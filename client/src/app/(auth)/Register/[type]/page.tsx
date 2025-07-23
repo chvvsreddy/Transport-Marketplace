@@ -51,7 +51,7 @@ export default function Step3() {
       setUser(res);
     }
     getData();
-  }, []);
+  }, [userId]);
 
   const handleNext = () => {
     if (!cName || !GST || !pan) {

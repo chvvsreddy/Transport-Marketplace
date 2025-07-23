@@ -41,7 +41,7 @@ const Users = () => {
       socket?.off("online-users");
       socket?.disconnect();
     };
-  }, [socket]);
+  }, [socket, router]);
 
   useEffect(() => {
     const fetchUsers = async () => {

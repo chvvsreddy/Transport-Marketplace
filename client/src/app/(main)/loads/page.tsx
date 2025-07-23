@@ -82,8 +82,8 @@ interface Vehicle {
 
   createdAt: Date;
   updatedAt: Date;
-  trips?: any[];
-  devices?: any[];
+  trips?: never[];
+  devices?: never[];
 }
 
 interface Bid {
@@ -229,6 +229,7 @@ const Loads = () => {
       navigator.geolocation.getCurrentPosition(
         async ({ coords: { latitude: lat, longitude: lng } }) => {
           try {
+            console.log("lat", lat, "lng", lng);
             const geoRes = await fetch(
               `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`
             );
@@ -383,23 +384,21 @@ const Loads = () => {
 
   useEffect(() => {
     const updateLoad = (newLoad: Load) => {
-      console.log("Updated allData:", newLoad);
+      console.log("from socket data:", newLoad);
       if (!allData.find((l) => l.id === newLoad.id)) {
-        allData.unshift(newLoad);
-        console.log("Updated allData:", allData);
+        const updatedData = [newLoad, ...allData];
+        setFilteredLoads(updatedData);
+        console.log("Updated Data:", updatedData);
       }
     };
 
+    console.log("Updated allData:", allData);
     socket?.on("newLoadAvailable", updateLoad);
 
     return () => {
       socket?.off("newLoadAvailable", updateLoad);
     };
   }, [socket, allData]);
-
-  if (!isVerified) {
-    return <VerificationPending />;
-  }
 
   const totalPages = Math.ceil(filteredLoads.length / PAGE_SIZE);
   const paginatedLoads = filteredLoads.slice(
@@ -580,38 +579,63 @@ const Loads = () => {
       bid,
       findVehicle?.registrationNumber
     );
-    const createdTrip = await createTrip({
-      loadId: load.id,
-      driverId: bid.carrierId,
-      plannedRoute: {
-        distance: 0,
-        waypoints: [
-          {
-            lat: load.origin.lat,
-            lng: load.origin.lng,
-          },
-          {
-            lat: load.destination.lat,
-            lng: load.destination.lng,
-          },
-        ],
+
+    const origin = `${load.origin.lat},${load.origin.lng}`;
+    const destination = `${load.destination.lat},${load.destination.lng}`;
+    let distance;
+    let time;
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/distance`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
       },
-      vehicleId: findVehicle?.id,
-      estimatedDuration: 0,
-      distance: 0,
-    });
-    console.log("new trip : ", createdTrip);
-    if (createdTrip.id) {
-      const updateVehicle = await updateVehicleStatus({
-        registrationNumber: selectedTrucks[load.id],
-        newTrip: createdTrip,
-      });
-      setOpen(false);
-      console.log(updateVehicle);
-    } else {
-      message.error("trip not created");
-    }
+      body: JSON.stringify({ origin, destination }),
+    })
+      .then((res) => res.json())
+      .then(async (data) => {
+        const element = data.rows[0].elements[0];
+        const distanceInKm = element.distance.value / 1000;
+        const durationInHours = element.duration.value / 3600;
+        distance = distanceInKm.toFixed(2);
+        time = durationInHours.toFixed(2);
+
+        const createdTrip = await createTrip({
+          loadId: load.id,
+          driverId: bid.carrierId,
+          plannedRoute: {
+            distance: Number(distance),
+            waypoints: [
+              {
+                lat: load.origin.lat,
+                lng: load.origin.lng,
+              },
+              {
+                lat: load.destination.lat,
+                lng: load.destination.lng,
+              },
+            ],
+          },
+          vehicleId: findVehicle?.id,
+          estimatedDuration: Number(time),
+          distance: Number(distance),
+        });
+        console.log("new trip : ", createdTrip);
+        if (createdTrip.id) {
+          const updateVehicle = await updateVehicleStatus({
+            registrationNumber: selectedTrucks[load.id],
+            newTrip: createdTrip,
+          });
+          setOpen(false);
+          console.log(updateVehicle);
+        } else {
+          message.error("trip not created");
+        }
+      })
+      .catch((err) => console.error("Distance matrix error:", err));
   };
+  if (!isVerified) {
+    return <VerificationPending />;
+  }
 
   return isLoadingSpin ? (
     <Shimmer />
@@ -1034,6 +1058,7 @@ const Loads = () => {
           }}
         >
           {Array.isArray(dataWithOutTrips) &&
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             dataWithOutTrips.map((data: any) => {
               const loadId = data?.load?.id;
               const isExpanded = expandedLoadIds.includes(loadId);

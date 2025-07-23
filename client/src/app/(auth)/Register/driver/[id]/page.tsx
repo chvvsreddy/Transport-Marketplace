@@ -22,23 +22,15 @@ import {
   createIndividualDriverDetails,
   getIndividualDriverDetails,
   getSingleVehicleBtOwnerId,
-  getUser,
 } from "@/state/api";
 import { DatePicker, Upload } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import AddTruckForm from "@/app/(main)/(components)/AddTruckForm";
 
-interface User {
-  id: string;
-  email: string;
-  phone: string;
-  type: string;
-}
-
 export default function Step3() {
   const params = useParams();
   const userId = params?.id as string;
-  const [user, setUser] = useState<User | null>();
+
   const [form] = Form.useForm();
   const [currentStep, setCurrentStep] = useState<number>(0);
   const router = useRouter();
@@ -46,7 +38,6 @@ export default function Step3() {
 
   useEffect(() => {
     async function getData() {
-      const res = await getUser(userId ?? "");
       const response = await getIndividualDriverDetails(userId);
       const singleVehicle = await getSingleVehicleBtOwnerId(userId);
 
@@ -56,7 +47,6 @@ export default function Step3() {
       if (singleVehicle != null && response != null) {
         return router.push("/login");
       }
-      setUser(res);
     }
     getData();
   }, [userId]);

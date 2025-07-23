@@ -84,16 +84,6 @@ type Coordinate = {
   lng: number;
 };
 
-type Load = {
-  id: string;
-  origin: Coordinate;
-  specialRequirements: {
-    size: string;
-    acOption: string;
-    trollyOption: string;
-  };
-};
-
 //graphql setup
 app.use(
   "/graphql",
@@ -249,10 +239,6 @@ async function setupSocketServer() {
       deliveryWindowEnd: string;
     };
 
-    type SendLoadNearDriverPayload = {
-      load: Load;
-    };
-
     type Driver = {
       id: string;
       userId: string;
@@ -270,160 +256,156 @@ async function setupSocketServer() {
       }[];
     };
 
-    socket.on(
-      "sendLoadNearDriver",
-      async ({ load }: SendLoadNearDriverPayload) => {
-        const loadOrigin = `${load.origin.lat},${load.origin.lng}`;
-        console.log("load came to socket", load);
-        try {
-          // 1. Fetch drivers
-          const rawDrivers = await prisma.driverDetails.findMany({
-            select: {
-              id: true,
-              userId: true,
-              currentLocation: true,
-            },
-          });
+    socket.on("sendLoadNearDriver", async (load: Load) => {
+      const loadOrigin = `${load.origin.lat ?? 0},${load.origin.lng ?? 0}`;
+      console.log("load came to socket", load);
+      try {
+        // 1. Fetch drivers
+        const rawDrivers = await prisma.driverDetails.findMany({
+          select: {
+            id: true,
+            userId: true,
+            currentLocation: true,
+          },
+        });
 
-          const eligibleVehicles = await prisma.vehicle.findMany({
-            where: {
-              AND: [
-                {
-                  vehicleType: {
-                    path: ["size"],
-                    equals: load.specialRequirements.size,
-                  },
+        const eligibleVehicles = await prisma.vehicle.findMany({
+          where: {
+            AND: [
+              {
+                vehicleType: {
+                  path: ["size"],
+                  equals: load.specialRequirements.size,
                 },
-                {
-                  vehicleType: {
-                    path: ["acOption"],
-                    equals: load.specialRequirements.acOption,
-                  },
+              },
+              {
+                vehicleType: {
+                  path: ["acOption"],
+                  equals: load.specialRequirements.acOption,
                 },
-                {
-                  vehicleType: {
-                    path: ["trollyOption"],
-                    equals: load.specialRequirements.trollyOption,
-                  },
+              },
+              {
+                vehicleType: {
+                  path: ["trollyOption"],
+                  equals: load.specialRequirements.trollyOption,
                 },
-                {
-                  isVehicleVerified: true,
-                },
-              ],
-            },
-            select: {
-              ownerId: true,
-            },
-          });
+              },
+              {
+                isVehicleVerified: true,
+              },
+            ],
+          },
+          select: {
+            ownerId: true,
+          },
+        });
 
-          const eligibleUserIds = new Set(
-            eligibleVehicles.map((v) => v.ownerId)
-          );
+        const eligibleUserIds = new Set(eligibleVehicles.map((v) => v.ownerId));
 
-          const drivers: Driver[] = rawDrivers
-            .map((driver) => {
-              let parsedLocation: Coordinate | null = null;
+        const drivers: Driver[] = rawDrivers
+          .map((driver) => {
+            let parsedLocation: Coordinate | null = null;
 
-              try {
-                if (typeof driver.currentLocation === "string") {
-                  parsedLocation = JSON.parse(driver.currentLocation);
-                } else if (
-                  driver.currentLocation &&
-                  typeof driver.currentLocation === "object" &&
-                  "lat" in driver.currentLocation &&
-                  "lng" in driver.currentLocation
-                ) {
-                  parsedLocation = driver.currentLocation as Coordinate;
-                }
-              } catch (e) {
-                console.error(
-                  "Invalid location JSON for driver:",
-                  driver.id,
-                  e
-                );
-              }
-
-              if (
-                parsedLocation &&
-                typeof parsedLocation.lat === "number" &&
-                typeof parsedLocation.lng === "number" &&
-                eligibleUserIds.has(driver.userId)
+            try {
+              if (typeof driver.currentLocation === "string") {
+                parsedLocation = JSON.parse(driver.currentLocation);
+              } else if (
+                driver.currentLocation &&
+                typeof driver.currentLocation === "object" &&
+                "lat" in driver.currentLocation &&
+                "lng" in driver.currentLocation
               ) {
-                return {
-                  id: driver.id,
-                  userId: driver.userId,
-                  currentLocation: parsedLocation,
-                };
+                parsedLocation = driver.currentLocation as Coordinate;
               }
-
-              return null;
-            })
-            .filter((d): d is Driver => d !== null);
-
-          if (drivers.length === 0) return;
-
-          // 4. Prepare destinations
-          const destinations: Coordinate[] = drivers.map(
-            (d) => d.currentLocation
-          );
-
-          // 5. Call distance API
-          const distanceResponse = await fetch(
-            "http://localhost:8000/distance",
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ origin: loadOrigin, destinations }),
+            } catch (e) {
+              console.error("Invalid location JSON for driver:", driver.id, e);
             }
-          );
 
-          const distanceData: DistanceMatrixResponse =
-            await distanceResponse.json();
+            if (
+              parsedLocation &&
+              typeof parsedLocation.lat === "number" &&
+              typeof parsedLocation.lng === "number" &&
+              eligibleUserIds.has(driver.userId)
+            ) {
+              return {
+                id: driver.id,
+                userId: driver.userId,
+                currentLocation: parsedLocation,
+              };
+            }
 
-          if (
-            !distanceData.rows ||
-            !distanceData.rows[0]?.elements ||
-            distanceData.rows[0].elements.length !== drivers.length
-          ) {
-            console.warn("Invalid distance data");
-            return;
-          }
+            return null;
+          })
+          .filter((d): d is Driver => d !== null);
 
-          // 6. Filter nearby drivers (<= 50km)
-          const elements = distanceData.rows[0].elements;
+        if (drivers.length === 0) return;
 
-          const nearbyUserIds = elements
-            .map((element, index) => {
-              if (
-                element.status === "OK" &&
-                element.distance.value <= 50000 // 50km
-              ) {
-                return drivers[index].userId;
-              }
-              return null;
-            })
-            .filter((id): id is string => id !== null);
+        // 4. Prepare destinations
+        const destinations: Coordinate[] = drivers.map(
+          (d) => d.currentLocation
+        );
 
-          console.log("Nearby Drivers (within 50km):", nearbyUserIds);
+        // 5. Call distance API
+        const distanceResponse = await fetch("http://localhost:8000/distance", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ origin: loadOrigin, destinations }),
+        });
 
-          // 7. Emit to nearby drivers
-          await Promise.all(
-            nearbyUserIds.map(async (userId) => {
-              const receiverSocketId = await pubClient.hGet(
-                "onlineUsers",
-                userId
-              );
-              if (receiverSocketId) {
-                io.to(receiverSocketId).emit("newLoadAvailable", { load });
-                console.log("loadSent", receiverSocketId, "load is", load);
-              }
-            })
-          );
-        } catch (err) {
-          console.error("sendLoadNearDriver failed:", err);
+        const distanceData: DistanceMatrixResponse =
+          await distanceResponse.json();
+
+        if (
+          !distanceData.rows ||
+          !distanceData.rows[0]?.elements ||
+          distanceData.rows[0].elements.length !== drivers.length
+        ) {
+          console.warn("Invalid distance data");
+          return;
         }
+
+        // 6. Filter nearby drivers (<= 50km)
+        const elements = distanceData.rows[0].elements;
+
+        const nearbyUserIds = elements
+          .map((element, index) => {
+            if (
+              element.status === "OK" &&
+              element.distance.value <= 50000 // 50km
+            ) {
+              return drivers[index].userId;
+            }
+            return null;
+          })
+          .filter((id): id is string => id !== null);
+
+        console.log("Nearby Drivers (within 50km):", nearbyUserIds);
+
+        // 7. Emit to nearby drivers
+        await Promise.all(
+          nearbyUserIds.map(async (userId) => {
+            const receiverSocketId = await pubClient.hGet(
+              "onlineUsers",
+              userId
+            );
+            console.log(
+              "loadSent",
+              receiverSocketId,
+              "load is",
+              load,
+              "userId is ",
+              userId
+            );
+            if (receiverSocketId) {
+              io.to(receiverSocketId).emit("newLoadAvailable", load);
+              console.log("loadSent", receiverSocketId, "load is", load);
+            }
+          })
+        );
+      } catch (err) {
+        console.error("sendLoadNearDriver failed:", err);
       }
-    );
+    });
 
     // Updating bid status
     socket.on(

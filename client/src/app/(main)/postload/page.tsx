@@ -155,6 +155,8 @@ export default function PostLoad() {
     1000
   );
 
+  console.log("socket", socket?.id);
+
   useEffect(() => {
     fetchLocation(originPincode, setOriginLocation);
     return () => fetchLocation.cancel();
@@ -282,10 +284,16 @@ export default function PostLoad() {
 
   async function callCreateLoad(payload: LoadPayload) {
     try {
+      console.log("socket info", socket);
+      if (!socket?.id) {
+        message.error("failed try again");
+        return;
+      }
       const load = await createLoad(payload);
-      if (load.id) {
+      console.log("new load", load);
+      if (load.length >= 1) {
         if (socket?.id) {
-          socket?.emit("sendLoadNearDriver", { load });
+          socket?.emit("sendLoadNearDriver", load[0]);
           console.log("loadSent", load);
         }
       }
