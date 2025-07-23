@@ -9,7 +9,7 @@ import {
   WhatsAppOutlined,
 } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
-import { message } from "antd";
+import { Image, message } from "antd";
 
 const navigation = [
   { name: "Find Loads", href: "/findloads" },
@@ -80,7 +80,7 @@ const Header = () => {
             <div className="flex lg:flex-1">
               <span className="sr-only">GoodSeva</span>
               <Link href={"/"}>
-                <img
+                <Image
                   src="/goodseva-logo.png"
                   alt="Goodseva-logo"
                   className="h-12 w-auto"

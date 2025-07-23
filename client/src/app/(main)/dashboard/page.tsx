@@ -4,7 +4,7 @@ import { Package, Tag, TrendingDown, TrendingUp } from "lucide-react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useUser } from "@/app/util/UserContext";
-import { Button, Spin } from "antd";
+import { Button, Image, Spin } from "antd";
 import LoadTable from "./LoadsDash";
 import { format, parse } from "date-fns";
 import MonthlyLoadsChart from "./components/MontlyLoads";
@@ -47,6 +47,12 @@ type DashboardData = {
   }[];
   top5HighestPayments: { date: string; price: number }[];
 };
+
+interface Inputs {
+  startDate?: string;
+  endDate?: string;
+  userId: string;
+}
 
 const Dashboard = () => {
   const [fromDate, setFromDate] = useState(() =>
@@ -137,7 +143,7 @@ const Dashboard = () => {
         setIsVerified(false);
       }
 
-      const input: any = {
+      const input: Inputs = {
         userId: getLoggedUserFromLS().userId,
       };
 
@@ -185,7 +191,7 @@ const Dashboard = () => {
             </p>
             <Button className="mt-4">Know More</Button>
           </div>
-          <img src="/advt-1.jpg" alt="" />
+          <Image src="/advt-1.jpg" alt="" />
         </div>
         <div className="px-6 pb-6 flex items-center justify-end gap-4 mt-6 ">
           <div className="flex items-center gap-4 mt-4">

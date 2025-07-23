@@ -12,6 +12,7 @@ import {
   Checkbox,
   Flex,
   Spin,
+  Image,
 } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
@@ -40,6 +41,17 @@ const beforeUpload = (file: File) => {
   return true;
 };
 
+interface Values {
+  address: string;
+  city: string;
+  state: string;
+  country: string;
+  postalCode: string;
+  businessName: string;
+  businessGST: string;
+  aadhaarNumber: string;
+  panNumber: string;
+}
 export default function IndividualShipperForm() {
   const [form] = Form.useForm();
   const [aadhaarFile, setAadhaarFile] = useState<File | null>(null);
@@ -75,7 +87,7 @@ export default function IndividualShipperForm() {
     const { url } = await res.json();
     return url;
   }
-  const onFinish = async (values: any) => {
+  const onFinish = async (values: Values) => {
     setLoading(true);
     try {
       const {
@@ -167,7 +179,7 @@ export default function IndividualShipperForm() {
           style={{ borderBottom: "1px solid #B0B0B0", marginBottom: 20 }}
         >
           <Link href="/">
-            <img
+            <Image
               src="/goodseva-logo.png"
               alt="Goodseva-logo"
               className="h-12 w-auto"

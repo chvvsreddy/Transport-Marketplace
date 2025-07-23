@@ -21,8 +21,9 @@ const UserDetail = () => {
           setError(null);
           const data = await getUser(userId as string);
           setUser(data);
-        } catch (error) {
+        } catch (e) {
           setError("Failed to load user details. Please try again.");
+          console.log(e);
         } finally {
           setLoading(false);
         }
@@ -30,7 +31,7 @@ const UserDetail = () => {
 
       fetchUserDetails();
     }
-  }, [userId]);
+  }, [userId, setUser]);
 
   console.log(user);
 

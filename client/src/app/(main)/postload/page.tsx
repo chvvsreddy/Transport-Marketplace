@@ -76,7 +76,7 @@ interface SpecialRequirements {
   trollyOption: "With Trolly" | "Without Trolly";
 }
 
-interface LoadPayload {
+export interface LoadPayload {
   shipperId: string;
   origin: Location;
   destination: Location;

@@ -1,3 +1,4 @@
+import { LoadPayload } from "@/app/(main)/postload/page";
 import getTokenIdFromLs from "@/app/util/getTokenIdFromLS";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
@@ -78,6 +79,7 @@ export interface userDetails {
 }
 
 export interface User {
+  id?: string;
   email: string;
   passwordHash: string;
   phone: string;
@@ -290,7 +292,7 @@ export const getBids = async () => {
   }
 };
 
-export const updateBid = async (obj: any) => {
+export const updateBid = async (obj: unknown) => {
   try {
     const token = getTokenIdFromLs();
     const response = await fetch(
@@ -311,7 +313,7 @@ export const updateBid = async (obj: any) => {
     console.error("error on updating bid", error);
   }
 };
-export const updateBidStatus = async (obj: any) => {
+export const updateBidStatus = async (obj: unknown) => {
   try {
     const token = getTokenIdFromLs();
     const response = await fetch(
@@ -332,7 +334,7 @@ export const updateBidStatus = async (obj: any) => {
     console.error("error on updating bid", error);
   }
 };
-export const getLoadsById = async (obj: any) => {
+export const getLoadsById = async (obj: unknown) => {
   try {
     const token = getTokenIdFromLs();
     const response = await fetch(
@@ -354,7 +356,7 @@ export const getLoadsById = async (obj: any) => {
   }
 };
 
-export const getBidsByLoadId = async (obj: any) => {
+export const getBidsByLoadId = async (obj: unknown) => {
   try {
     const token = getTokenIdFromLs();
     const response = await fetch(
@@ -375,7 +377,7 @@ export const getBidsByLoadId = async (obj: any) => {
     console.error("bids getting By id, got error:", error);
   }
 };
-export const getTripsByLoadId = async (obj: any) => {
+export const getTripsByLoadId = async (obj: unknown) => {
   try {
     const token = getTokenIdFromLs();
     const response = await fetch(
@@ -419,10 +421,18 @@ export const getTripByLoadId = async (loadId: string) => {
   }
 };
 
-export const createLoad = async (obj: any) => {
+interface Location {
+  address?: string;
+  city?: string;
+  state?: string;
+  postalCode?: number | string;
+  country?: string;
+}
+
+export const createLoad = async (obj: LoadPayload) => {
   try {
     const token = getTokenIdFromLs();
-    const getLatLngFromGoogleAPI = async (location: any) => {
+    const getLatLngFromGoogleAPI = async (location: Location) => {
       const fullAddress = `${location.address}, ${location.city}, ${location.state}, ${location.postalCode}, ${location.country}`;
       const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
         fullAddress
@@ -479,7 +489,7 @@ export const createLoad = async (obj: any) => {
   }
 };
 
-export const getLoadByLoadId = async (loadId: any) => {
+export const getLoadByLoadId = async (loadId: unknown) => {
   const token = getTokenIdFromLs();
   try {
     const response = await fetch(
@@ -537,7 +547,7 @@ export const getDataForTripsAssigning = async (carrierId: string) => {
     console.error(" got error in filter active trips for assigning", e);
   }
 };
-export const getLoadByLoadIdForAdmin = async (loadId: any) => {
+export const getLoadByLoadIdForAdmin = async (loadId: string) => {
   try {
     const token = getTokenIdFromLs();
     const response = await fetch(
@@ -558,7 +568,7 @@ export const getLoadByLoadIdForAdmin = async (loadId: any) => {
   }
 };
 
-export const getLoadBidPaymentTripByUserId = async (obj: any) => {
+export const getLoadBidPaymentTripByUserId = async (obj: unknown) => {
   try {
     const token = getTokenIdFromLs();
     const response = await fetch(
@@ -593,7 +603,7 @@ export const getUserCompanyDetails = async (userId: string) => {
   }
 };
 
-export const createIndividualShipperDetails = async (obj: any) => {
+export const createIndividualShipperDetails = async (obj: unknown) => {
   try {
     const createdIndividualShipperDetails = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/Register/individualShipperDetails`,
@@ -607,6 +617,7 @@ export const createIndividualShipperDetails = async (obj: any) => {
     return createdIndividualShipperDetails.json();
   } catch (error) {
     console.error("creating error geeting user for  individualShipperDetails");
+    throw error;
   }
 };
 
@@ -625,7 +636,7 @@ export const getIndividualShipperDetails = async (userId: string) => {
   }
 };
 
-export const createIndividualDriverDetails = async (obj: any) => {
+export const createIndividualDriverDetails = async (obj: unknown) => {
   try {
     const createdIndividualDriverDetails = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/Register/individualDriverDetails`,
@@ -639,9 +650,10 @@ export const createIndividualDriverDetails = async (obj: any) => {
     return createdIndividualDriverDetails.json();
   } catch (error) {
     console.error("creating error getting user for  individualDriverDetails");
+    throw error;
   }
 };
-export const updateLoadByLoadId = async (obj: any) => {
+export const updateLoadByLoadId = async (obj: unknown) => {
   try {
     const token = getTokenIdFromLs();
     const updateLoad = await fetch(
@@ -659,10 +671,11 @@ export const updateLoadByLoadId = async (obj: any) => {
     return updateLoad.json();
   } catch (error) {
     console.error("creating error getting user for  individualDriverDetails");
+    throw error;
   }
 };
 
-export const deleteLoadByLoadId = async (obj: any) => {
+export const deleteLoadByLoadId = async (obj: unknown) => {
   try {
     const token = getTokenIdFromLs();
     const deleteLoad = await fetch(
@@ -679,7 +692,10 @@ export const deleteLoadByLoadId = async (obj: any) => {
 
     return deleteLoad.json();
   } catch (error) {
-    console.error("creating error getting user for  individualDriverDetails");
+    console.error(
+      "creating error getting user for  individualDriverDetails",
+      error
+    );
   }
 };
 export const getIndividualDriverDetails = async (userId: string) => {
@@ -696,7 +712,7 @@ export const getIndividualDriverDetails = async (userId: string) => {
     console.error(" got error getting user for  individualDriverDetails", e);
   }
 };
-export const getActiveVehiclesByOwnerId = async (obj: any) => {
+export const getActiveVehiclesByOwnerId = async (obj: unknown) => {
   try {
     const token = getTokenIdFromLs();
     const response = await fetch(
@@ -716,7 +732,7 @@ export const getActiveVehiclesByOwnerId = async (obj: any) => {
   }
 };
 
-export const fetchTrucksById = async (obj: any) => {
+export const fetchTrucksById = async (obj: unknown) => {
   try {
     const token = getTokenIdFromLs();
     const response = await fetch(
@@ -735,7 +751,7 @@ export const fetchTrucksById = async (obj: any) => {
     console.log(error);
   }
 };
-export const updateVehicleStatus = async (obj: any) => {
+export const updateVehicleStatus = async (obj: unknown) => {
   const token = getTokenIdFromLs();
   try {
     const response = await fetch(
@@ -754,7 +770,7 @@ export const updateVehicleStatus = async (obj: any) => {
     console.log(error);
   }
 };
-export const createTrip = async (obj: any) => {
+export const createTrip = async (obj: unknown) => {
   try {
     const token = getTokenIdFromLs();
     const response = await fetch(
@@ -773,7 +789,7 @@ export const createTrip = async (obj: any) => {
     console.log(error);
   }
 };
-export const createCompanyDetailsToUser = async (obj: any) => {
+export const createCompanyDetailsToUser = async (obj: unknown) => {
   try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/Register/companyDetails`,
@@ -788,7 +804,7 @@ export const createCompanyDetailsToUser = async (obj: any) => {
     console.log(error);
   }
 };
-export const getNotificationsByUserId = async (userId: any) => {
+export const getNotificationsByUserId = async (userId: string) => {
   try {
     const token = getTokenIdFromLs();
     const response = await fetch(
@@ -807,7 +823,7 @@ export const getNotificationsByUserId = async (userId: any) => {
   }
 };
 
-export const upadteNotifs = async (obj: any) => {
+export const upadteNotifs = async (obj: unknown) => {
   try {
     const token = getTokenIdFromLs();
     const response = await fetch(

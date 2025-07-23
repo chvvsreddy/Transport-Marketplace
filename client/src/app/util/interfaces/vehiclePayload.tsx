@@ -9,7 +9,7 @@ export interface VehiclePayload {
     width: number;
     height: number;
   };
-  vehicleType: any; // Can be made more specific if you know the structure (e.g., enum or object)
+  vehicleType: Requirements; // Can be made more specific if you know the structure (e.g., enum or object)
   insuranceNumber: string;
   insuranceExpiry: string; // Format: "YYYY-MM-DD"
   fitnessCertExpiry: string; // Format: "YYYY-MM-DD"
@@ -23,4 +23,10 @@ export interface VehiclePayload {
   driverLicense: string; // URL
   driverRC: string; // URL
   driverPAN: string; // URL
+}
+interface Requirements {
+  size: string;
+  type: string;
+  acOption: string;
+  trollyOption: string;
 }

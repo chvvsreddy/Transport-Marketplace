@@ -2,7 +2,7 @@ import { useCallback } from "react";
 
 export default function useNotification() {
   const showNotification = useCallback(
-    (title: any, options: any, onClickUrl: any) => {
+    (title: string, options: NotificationOptions, onClickUrl: string) => {
       if (!("Notification" in window)) {
         alert("This browser does not support desktop notifications");
         return;

@@ -14,6 +14,7 @@ import {
   Typography,
   Steps,
   Spin,
+  Image,
 } from "antd";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -26,6 +27,18 @@ import {
 import { DatePicker, Upload } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import AddTruckForm from "@/app/(main)/(components)/AddTruckForm";
+
+type DriverFormValues = {
+  licenseNumber: string;
+  licenseExpiry: moment.Moment; // or Date
+  insuranceNumber: string;
+  insuranceExpiry: moment.Moment; // or Date
+  emergencyContactName: string;
+  emergencyContactPhone: string;
+  licenseFront?: { originFileObj: RcFile }[];
+  licenseBack?: { originFileObj: RcFile }[];
+  insuranceDoc?: { originFileObj: RcFile }[];
+};
 
 export default function Step3() {
   const params = useParams();
@@ -49,7 +62,7 @@ export default function Step3() {
       }
     }
     getData();
-  }, [userId]);
+  }, [userId, router]);
 
   async function uploadToS3(file: File): Promise<string> {
     const formData = new FormData();
@@ -66,7 +79,7 @@ export default function Step3() {
     return url;
   }
 
-  const handleDriverSubmit = async (values: any) => {
+  const handleDriverSubmit = async (values: DriverFormValues) => {
     setLoading(true);
     try {
       const licenseFrontFile = values.licenseFront?.[0]
@@ -160,7 +173,7 @@ export default function Step3() {
               style={{ borderBottom: "1px solid #B0B0B0", marginBottom: 20 }}
             >
               <Link href="/">
-                <img
+                <Image
                   src="/goodseva-logo.png"
                   alt="Goodseva-logo"
                   className="h-12 w-auto"

@@ -7,23 +7,32 @@ import {
   useJsApiLoader,
 } from "@react-google-maps/api";
 
+type LatLngLiteral = google.maps.LatLngLiteral;
+
+interface MapComponentProps {
+  origin: LatLngLiteral;
+  destination: LatLngLiteral;
+}
+
 const containerStyle = {
   width: "100%",
   height: "400px",
 };
 
-const MapComponent = ({ origin, destination }: any) => {
+const MapComponent: React.FC<MapComponentProps> = ({ origin, destination }) => {
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
+    libraries: ["places"],
   });
 
-  const [directions, setDirections] = useState<any>(null);
-  const [distance, setDistance] = useState("");
-  const [duration, setDuration] = useState("");
-  const [requestDirections, setRequestDirections] = useState(false);
-  const [originAddress, setOriginAddress] = useState("");
+  const [directions, setDirections] =
+    useState<google.maps.DirectionsResult | null>(null);
+  const [distance, setDistance] = useState<string>("");
+  const [duration, setDuration] = useState<string>("");
+  const [requestDirections, setRequestDirections] = useState<boolean>(false);
+  const [originAddress, setOriginAddress] = useState<string>("");
 
-  const center = {
+  const center: LatLngLiteral = {
     lat: origin.lat,
     lng: origin.lng,
   };
@@ -35,8 +44,7 @@ const MapComponent = ({ origin, destination }: any) => {
   }, [origin, destination]);
 
   useEffect(() => {
-    if (!isLoaded) return;
-    if (!origin.lat || !origin.lng) return;
+    if (!isLoaded || !origin.lat || !origin.lng) return;
 
     const geocoder = new window.google.maps.Geocoder();
 
@@ -73,15 +81,18 @@ const MapComponent = ({ origin, destination }: any) => {
     );
   }, [origin, isLoaded]);
 
-  const handleDirectionsCallback = (result: any, status: any) => {
+  const handleDirectionsCallback = (
+    result: google.maps.DirectionsResult | null,
+    status: google.maps.DirectionsStatus
+  ) => {
     if (status === "OK" && result) {
       setDirections(result);
 
       const route = result.routes[0];
       if (route?.legs?.length > 0) {
         const leg = route.legs[0];
-        setDistance(leg.distance.text);
-        setDuration(leg.duration.text);
+        setDistance(leg.distance?.text || "");
+        setDuration(leg.duration?.text || "");
       }
 
       setRequestDirections(false);
@@ -103,9 +114,9 @@ const MapComponent = ({ origin, destination }: any) => {
         {requestDirections && (
           <DirectionsService
             options={{
-              origin: origin,
-              destination: destination,
-              travelMode: window.google.maps.TravelMode.DRIVING,
+              origin,
+              destination,
+              travelMode: google.maps.TravelMode.DRIVING,
             }}
             callback={handleDirectionsCallback}
           />

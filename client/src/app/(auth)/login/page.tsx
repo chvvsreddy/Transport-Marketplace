@@ -10,7 +10,7 @@ import {
   getUserCompanyDetails,
 } from "@/state/api";
 import { useRouter } from "next/navigation";
-import { message, Spin } from "antd";
+import { Image, message, Spin } from "antd";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -38,7 +38,7 @@ export default function LoginPage() {
         (res.type === "LOGISTICS_COMPANY" || res.type === "SHIPPER_COMPANY")
       ) {
         data = await getUserCompanyDetails(res.userId);
-        console.log("data for cs", data);
+
         if (data === null) {
           return router.push(`/Register/${res.type}?userId=${res.userId}`);
         }
@@ -52,7 +52,7 @@ export default function LoginPage() {
       } else if (res.userId && res.type === "INDIVIDUAL_DRIVER") {
         data = await getIndividualDriverDetails(res.userId);
         driverVehicleData = await getSingleVehicleBtOwnerId(res.userId);
-        console.log("driver data", driverVehicleData);
+
         if (data == null || driverVehicleData == null) {
           return router.push(`/Register/driver/${res.userId}`);
         }
@@ -94,14 +94,14 @@ export default function LoginPage() {
                   <div className="flex items-center space-x-6 lg:space-x-8">
                     <div className="grid shrink-0 grid-cols-1 gap-y-6 lg:gap-y-8">
                       <div className="h-44 w-64 overflow-hidden rounded-lg sm:opacity-0 lg:opacity-100">
-                        <img
+                        <Image
                           alt=""
                           src="Lorry.jpg"
                           className="size-full object-cover"
                         />
                       </div>
                       <div className="h-64 w-64 overflow-hidden rounded-lg">
-                        <img
+                        <Image
                           alt=""
                           src="happyness.png"
                           className="size-full object-cover"
@@ -111,21 +111,21 @@ export default function LoginPage() {
 
                     <div className="grid shrink-0 grid-cols-1 gap-y-6 lg:gap-y-8">
                       <div className="h-64 w-64 overflow-hidden rounded-lg">
-                        <img
+                        <Image
                           alt=""
                           src="happy.jpg"
                           className="size-full object-cover"
                         />
                       </div>
                       <div className="h-64 w-44 overflow-hidden rounded-lg">
-                        <img
+                        <Image
                           alt=""
                           src="happiness.png"
                           className="size-full object-cover"
                         />
                       </div>
                       <div className="h-44 w-64 overflow-hidden rounded-lg">
-                        <img
+                        <Image
                           alt=""
                           src="lorry1.png"
                           className="size-full object-cover"
@@ -140,7 +140,7 @@ export default function LoginPage() {
             <div className="flex flex-1 flex-col justify-center px-6 py-12 lg:px-8">
               <div className="flex justify-center">
                 <Link href={"/"}>
-                  <img
+                  <Image
                     src="/goodseva-logo.png"
                     alt="Goodseva-logo"
                     className="h-12 w-auto"

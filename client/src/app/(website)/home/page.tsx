@@ -22,7 +22,10 @@ const Home = () => {
               <div className="mx-auto max-w-2xl py-32 pt-0 lg:py-24 lg:pb-44">
                 <div className="text-center relative z-50">
                   <h1 className=" tracking-tight text-balance text-3xl sm:text-7xl">
-                    <span className="text-red-700 font-semibold">Digital Transport</span> @ it's BEST
+                    <span className="text-red-700 font-semibold">
+                      Digital Transport
+                    </span>{" "}
+                    @ it&apos;s BEST
                   </h1>
                   <p className="mt-8 text-lg font-medium text-pretty sm:text-xl/8">
                     Improve your logistics with our quick, seamless, and
@@ -32,7 +35,10 @@ const Home = () => {
                     <Link href="/" className="button-white">
                       Get started
                     </Link>
-                    <a href="#" className="text-sm/6 font-semibold text-gray-900">
+                    <a
+                      href="#"
+                      className="text-sm/6 font-semibold text-gray-900"
+                    >
                       Learn more <span aria-hidden="true">→</span>
                     </a>
                   </div>
@@ -41,12 +47,12 @@ const Home = () => {
             </div>
           </div>
         </div>
-        <Lp2/>
-        <Lp3/>
-        <Lp4/>
-        <Lp5/>
-        <Lp6/>
-        <Footer/>
+        <Lp2 />
+        <Lp3 />
+        <Lp4 />
+        <Lp5 />
+        <Lp6 />
+        <Footer />
       </div>
     </div>
   );

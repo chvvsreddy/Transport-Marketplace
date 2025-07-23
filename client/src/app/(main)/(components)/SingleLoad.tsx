@@ -311,15 +311,14 @@ export default function SingleLoad() {
               <p>Created at: {new Date(load.createdAt).toLocaleString()}</p>
               <p>Updated at: {new Date(load.updatedAt).toLocaleString()}</p>
             </div>
-            <p>
-              <span className="labelStyle">Status</span>
-              <br />
-              <div className="flex items-center gap-2 mt-1">
-                <Tag color={getStatusColor(load.status)}>
-                  {getStatusLabel(load.status)}
-                </Tag>
-              </div>
-            </p>
+
+            <span className="labelStyle" style={{ fontSize: "20px" }}>
+              Status :{" "}
+              <Tag color={getStatusColor(load.status)}>
+                {getStatusLabel(load.status)}
+              </Tag>
+            </span>
+
             <p>
               <span className="labelStyle">Load ID</span>
               <br />

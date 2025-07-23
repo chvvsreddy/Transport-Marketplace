@@ -7,6 +7,9 @@ import { EyeOutlined, DownOutlined, UpOutlined } from "@ant-design/icons";
 import { getLoadBidPaymentTripByUserId } from "../../../state/api";
 import { getLoggedUserFromLS } from "@/app/util/getLoggedUserFromLS";
 import Shimmer from "../(components)/shimmerUi/Shimmer";
+import { Load } from "@/app/util/interfaces/load.interface";
+import { Trip } from "../(components)/SingleLoad";
+import { Bid } from "@/app/util/interfaces/bid.interface";
 
 export interface Payment {
   id: string;
@@ -17,15 +20,15 @@ export interface Payment {
   status: string;
   method: string;
   transactionId?: string | null;
-  metadata?: Record<string, any> | null;
+  metadata?: Record<string, unknown> | null;
   createdAt: string;
   updatedAt: string;
 }
 
 interface LoadBidTripPayment {
-  load: any;
-  bid: any | null;
-  trip: any | null;
+  load: Load;
+  bid: Bid | null;
+  trip: Trip | null;
   payments: Payment[];
 }
 
@@ -53,7 +56,7 @@ export default function Payments() {
           type: getLoggedUserFromLS().type,
         });
         setData(result || []);
-      } catch (err: any) {
+      } catch (err) {
         setError("Failed to load payments.");
         console.error(err);
       } finally {

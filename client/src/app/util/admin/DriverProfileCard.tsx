@@ -4,7 +4,16 @@ import {
   Vehicle,
 } from "../interfaces/AdminInterfaces/user.interface.admin";
 import { User } from "./CompanyProfileCard";
-import { Button, Card, Col, message, Row, Select, Typography } from "antd";
+import {
+  Button,
+  Card,
+  Col,
+  Image,
+  message,
+  Row,
+  Select,
+  Typography,
+} from "antd";
 import {
   updateUserProfileFromAdmin,
   updateUserVehicleFromAdmin,
@@ -34,7 +43,7 @@ const renderFilePreview = (url: string) => {
   }
 
   return (
-    <img
+    <Image
       src={url}
       alt="Document"
       style={{ maxWidth: "100%", maxHeight: 300, borderRadius: 8 }}
@@ -329,7 +338,7 @@ export const DriverProfileCard: React.FC<DriverProfileCardProps> = ({
                       }}
                     />
                   ) : (
-                    <img
+                    <Image
                       src={url}
                       alt={label}
                       style={{

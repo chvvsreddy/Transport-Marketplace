@@ -3,6 +3,7 @@
 import { useAppDispatch, useAppSelector } from "@/app/redux";
 import { getLoggedUserFromLS } from "@/app/util/getLoggedUserFromLS";
 import { setIsSidebarCollapsed } from "@/state";
+
 import {
   BoxIcon,
   ChartBar,
@@ -17,18 +18,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
+import { SidebarLinkProps } from "../../logisticshipper/logisticsSidebar/logisticsSidebar";
 
 // SidebarLink Component
-const SidebarLink = ({
+const SidebarLink: React.FC<SidebarLinkProps> = ({
   href,
   label,
   isCollapsed,
   icon: Icon,
-}: {
-  href: string;
-  label: string;
-  isCollapsed: boolean;
-  icon: any;
 }) => {
   const pathname = usePathname();
   const isActive = "/" + pathname.split("/")[1] === href;
@@ -44,11 +41,7 @@ const SidebarLink = ({
         }`}
       >
         <Icon className="w-6 h-6 text-gray-700" />
-        <span
-          className={`${isCollapsed ? "hidden" : "block"} `}
-        >
-          {label}
-        </span>
+        <span className={`${isCollapsed ? "hidden" : "block"} `}>{label}</span>
       </div>
     </Link>
   );
@@ -72,17 +65,17 @@ const Sidebar = () => {
   return (
     <div className={sidebarClassNames}>
       {/* Header */}
-      <div className="flex justify-between items-center px-4 py-3 border-b border-gray-300" >
-        <div  style={{height:"37px"}}>
-        {!isSidebarCollapsed && (
-          <Image
-            src="/goodseva-logo.png"
-            alt="Goodseva-logo"
-            width={180}
-            height={36}
-            className="rounded"
-          />
-        )}
+      <div className="flex justify-between items-center px-4 py-3 border-b border-gray-300">
+        <div style={{ height: "37px" }}>
+          {!isSidebarCollapsed && (
+            <Image
+              src="/goodseva-logo.png"
+              alt="Goodseva-logo"
+              width={180}
+              height={36}
+              className="rounded"
+            />
+          )}
         </div>
 
         {/* Toggle Button (Mobile) */}
@@ -101,8 +94,9 @@ const Sidebar = () => {
       {/* Links */}
       <div className="flex-grow mt-8 px-4 overflow-y-auto max-h-[calc(100vh-100px)] scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100 pr-2">
         <h6
-          className={`${ isSidebarCollapsed ? "hidden" : "block" }  nav-subhead`} >
-         Overview
+          className={`${isSidebarCollapsed ? "hidden" : "block"}  nav-subhead`}
+        >
+          Overview
         </h6>
 
         <SidebarLink
@@ -113,7 +107,8 @@ const Sidebar = () => {
         />
 
         <h6
-          className={`${ isSidebarCollapsed ? "hidden" : "block" }  nav-subhead`} >
+          className={`${isSidebarCollapsed ? "hidden" : "block"}  nav-subhead`}
+        >
           Management
         </h6>
         <SidebarLink

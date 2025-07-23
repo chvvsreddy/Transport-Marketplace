@@ -103,6 +103,7 @@ export interface CompanyDetails {
   updatedAt: Date;
 }
 export interface VehicleType {
+  acOption: string;
   size: string;
   type: string;
   trollyOption: string;

@@ -17,7 +17,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-interface SidebarLinkProps {
+export interface SidebarLinkProps {
   href: string;
   label: string;
   isCollapsed: boolean;

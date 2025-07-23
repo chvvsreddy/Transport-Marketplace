@@ -9,6 +9,7 @@ import {
   UserOutlined,
   SafetyCertificateOutlined,
 } from "@ant-design/icons";
+import { Vehicle } from "@/app/util/interfaces/AdminInterfaces/user.interface.admin";
 
 const { Title, Text } = Typography;
 
@@ -33,7 +34,7 @@ const ViewTrucks = () => {
       </Title>
 
       <div className="grid gap-6 md:grid-cols-2">
-        {trucks.map((truck: any) => (
+        {trucks.map((truck: Vehicle) => (
           <Card
             key={truck.id}
             bordered
@@ -44,10 +45,10 @@ const ViewTrucks = () => {
                   🚛 {truck.registrationNumber} — {truck.model}
                 </span>
                 <Tag
-                  color={truck.isActive ? "green" : "red"}
+                  color={truck.isActive ? "red" : "green"}
                   className="mt-1 md:mt-0"
                 >
-                  {truck.isActive ? "Active" : "Inactive"}
+                  {truck.isActive ? "Inactive" : "active"}
                 </Tag>
               </div>
             }

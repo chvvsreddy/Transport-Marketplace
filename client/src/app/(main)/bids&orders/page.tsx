@@ -22,6 +22,7 @@ import { SocketContext } from "@/app/util/SocketContext";
 import Heading from "@/app/util/Heading";
 import Shimmer from "../(components)/shimmerUi/Shimmer";
 import { Tag } from "antd";
+import { Dayjs } from "dayjs";
 
 const { Paragraph, Text } = Typography;
 const { Option } = Select;
@@ -260,22 +261,21 @@ export default function BidsAndOthers() {
     setLoading(false);
   };
 
-  const handleDateChange = (dates: any) => {
-    if (!dates) {
+  const handleDateChange = (dates: [Dayjs | null, Dayjs | null] | null) => {
+    if (!dates || !dates[0] || !dates[1]) {
       setFilteredLoads(loads);
-      // setDateRange(null);
       return;
     }
 
     const [start, end] = dates;
-    const startDate = new Date(start.$d);
-    const endDate = new Date(end.$d);
-    // setDateRange([startDate, endDate]);
+    const startDate = start.toDate();
+    const endDate = end.toDate();
 
     const filtered = loads.filter((load) => {
       const created = new Date(load.createdAt);
       return created >= startDate && created <= endDate;
     });
+
     setFilteredLoads(filtered);
     setCurrentPage(1);
   };

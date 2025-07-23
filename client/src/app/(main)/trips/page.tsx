@@ -21,8 +21,8 @@ interface Trips {
   loadId: string;
   driverId: string;
   vehicleId: string;
-  plannedRoute: any;
-  actualRoute?: any;
+  plannedRoute: unknown;
+  actualRoute?: unknown;
   distance: number;
   estimatedDuration: number;
   actualDuration?: number;
@@ -137,7 +137,7 @@ export default function Trips() {
       };
       fetchData();
     }
-  }, [loggedUser]);
+  }, [loggedUser, isAdmin, isDriver]);
 
   const totalPages = Math.ceil(
     loads.filter((l) => l.status === "ASSIGNED").length / pageSize

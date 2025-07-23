@@ -6,7 +6,7 @@ import "../../(styles)/RegisterPage.css";
 
 import { createUser } from "@/state/api";
 import { useRouter } from "next/navigation";
-import { message, Radio, Spin } from "antd";
+import { Image, message, Radio, Spin } from "antd";
 
 const UserType = {
   ShipperCompany: "SHIPPER_COMPANY",
@@ -25,16 +25,46 @@ export default function RegisterPage() {
     type: "",
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const router = useRouter();
   const [loadingSpin, setLoadingSpin] = useState(false);
+  const [error, setError] = useState("");
+  const [validation, setValidation] = useState({
+    minLength: false,
+    uppercase: false,
+    lowercase: false,
+    number: false,
+    specialChar: false,
+  });
+
+  const router = useRouter();
 
   const handleChange = (e: { target: { name: string; value: string } }) => {
     const { name, value } = e.target;
-    setFormData((prevState) => ({
-      ...prevState,
+    setFormData((prev) => ({
+      ...prev,
       [name]: value,
     }));
+  };
+
+  const validatePassword = (pwd: string) => {
+    const pattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    return pattern.test(pwd);
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+
+    setFormData((prev) => ({
+      ...prev,
+      passwordHash: value,
+    }));
+
+    setValidation({
+      minLength: value.length >= 8,
+      uppercase: /[A-Z]/.test(value),
+      lowercase: /[a-z]/.test(value),
+      number: /\d/.test(value),
+      specialChar: /[!@#$%^&*(),.?":{}|<>]/.test(value),
+    });
   };
 
   const handleSubmit = async (e: { preventDefault: () => void }) => {
@@ -50,13 +80,18 @@ export default function RegisterPage() {
       ...formData,
       type,
     };
+    if (!validatePassword(dataToSubmit.passwordHash)) {
+      setLoading(false);
 
-    console.log("data from user : ", dataToSubmit);
+      message.error("password should meet requirements");
+
+      return;
+    }
 
     try {
       const res = await createUser(dataToSubmit);
       if (res.id) {
-        message.success("account created successfully");
+        message.success("Account created successfully");
         router.push(`/Register/${res.type}?userId=${res.id}`);
       } else {
         message.error("Registration failed. Please try again.");
@@ -74,240 +109,226 @@ export default function RegisterPage() {
   };
 
   return (
-    <>
-      <Spin spinning={loadingSpin}>
-        <div>
-          <div className="overflow-hidden bg-white">
-            <div className="mx-auto grid lg:grid-cols-3 gap-x-0 gap-y-16 sm:gap-y-20 lg:mx-0 lg:max-w-none  min-h-dvh">
-              <div className="login-left flex-1 flex-col justify-center py-12 px-12 lg:col-span-2 hidden lg:flex">
-                <div className="relative z-30">
-                  <p className="mt-2 text-2xl font-semibold text-white lg:text-5xl text-center lg:text-right">
-                    A better Transit
-                  </p>
-                  <div className="absolute transform sm:top-0 sm:left-1/2 sm:translate-x-8 lg:top-1/2 lg:left-1/2 lg:-translate-x-full lg:-translate-y-1/2">
-                    <div className="flex items-center space-x-6 lg:space-x-8">
-                      <div className="grid shrink-0 grid-cols-1 gap-y-6 lg:gap-y-8">
-                        <div className="h-44 w-64 overflow-hidden rounded-lg sm:opacity-0 lg:opacity-100">
-                          <img
-                            alt=""
-                            src="Lorry.jpg"
-                            className="size-full object-cover"
-                          />
-                        </div>
-                        <div className="h-64 w-64 overflow-hidden rounded-lg">
-                          <img
-                            alt=""
-                            src="happyness.png"
-                            className="size-full object-cover"
-                          />
-                        </div>
-                      </div>
+    <Spin spinning={loadingSpin}>
+      <div className="overflow-hidden bg-white">
+        <div className="mx-auto grid lg:grid-cols-3 gap-x-0 gap-y-16 sm:gap-y-20 lg:mx-0 lg:max-w-none min-h-dvh">
+          <div className="login-left flex-1 flex-col justify-center py-12 px-12 lg:col-span-2 hidden lg:flex">
+            <div className="relative z-30">
+              <p className="mt-2 text-2xl font-semibold text-white lg:text-5xl text-center lg:text-right">
+                A better Transit
+              </p>
+              <div className="absolute transform sm:top-0 sm:left-1/2 sm:translate-x-8 lg:top-1/2 lg:left-1/2 lg:-translate-x-full lg:-translate-y-1/2">
+                <div className="flex items-center space-x-6 lg:space-x-8">
+                  <div className="grid shrink-0 grid-cols-1 gap-y-6 lg:gap-y-8">
+                    <div className="h-44 w-64 overflow-hidden rounded-lg sm:opacity-0 lg:opacity-100">
+                      <Image
+                        alt=""
+                        src="Lorry.jpg"
+                        className="size-full object-cover"
+                      />
+                    </div>
+                    <div className="h-64 w-64 overflow-hidden rounded-lg">
+                      <Image
+                        alt=""
+                        src="happyness.png"
+                        className="size-full object-cover"
+                      />
+                    </div>
+                  </div>
 
-                      <div className="grid shrink-0 grid-cols-1 gap-y-6 lg:gap-y-8">
-                        <div className="h-64 w-64 overflow-hidden rounded-lg">
-                          <img
-                            alt=""
-                            src="happy.jpg"
-                            className="size-full object-cover"
-                          />
-                        </div>
-                        <div className="h-64 w-44 overflow-hidden rounded-lg">
-                          <img
-                            alt=""
-                            src="happiness.png"
-                            className="size-full object-cover"
-                          />
-                        </div>
-                        <div className="h-44 w-64 overflow-hidden rounded-lg">
-                          <img
-                            alt=""
-                            src="lorry1.png"
-                            className="size-full object-cover"
-                          />
-                        </div>
-                      </div>
+                  <div className="grid shrink-0 grid-cols-1 gap-y-6 lg:gap-y-8">
+                    <div className="h-64 w-64 overflow-hidden rounded-lg">
+                      <Image
+                        alt=""
+                        src="happy.jpg"
+                        className="size-full object-cover"
+                      />
+                    </div>
+                    <div className="h-64 w-44 overflow-hidden rounded-lg">
+                      <Image
+                        alt=""
+                        src="happiness.png"
+                        className="size-full object-cover"
+                      />
+                    </div>
+                    <div className="h-44 w-64 overflow-hidden rounded-lg">
+                      <Image
+                        alt=""
+                        src="lorry1.png"
+                        className="size-full object-cover"
+                      />
                     </div>
                   </div>
                 </div>
               </div>
-              <div className="flex flex-1 flex-col justify-center px-6 py-12 lg:px-8">
-                <div className="flex justify-center">
-                  <Link href={"/"}>
-                    <img
-                      src="/goodseva-logo.png"
-                      alt="Goodseva-logo"
-                      className="h-12 w-auto"
-                      width="auto"
-                      height="auto"
-                    />
-                  </Link>
-                </div>
-                <h2 className="mt-6 text-center text-2xl/9 font-bold tracking-tight text-gray-900">
-                  Create new account
-                </h2>
+            </div>
+          </div>
 
-                <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                      <label
-                        htmlFor="User Type"
-                        className="block text-sm/6 font-medium text-gray-900 mb-2"
-                      >
-                        User Type
-                      </label>
-                      <div className="flex gap-3">
-                        <Radio.Group
-                          value={userType1}
-                          onChange={(e) => setUserType1(e.target.value)}
-                        >
-                          <Radio.Button value="Carrier">Carrier</Radio.Button>
-                          <Radio.Button value="Shipper">Shipper</Radio.Button>
-                        </Radio.Group>
-                        <Radio.Group
-                          value={userType2}
-                          onChange={(e) => setUserType2(e.target.value)}
-                        >
-                          <Radio.Button value="Company">Company</Radio.Button>
-                          <Radio.Button value="Individual">
-                            Individual
-                          </Radio.Button>
-                        </Radio.Group>
-                      </div>
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="email"
-                        className="block text-sm/6 font-medium text-gray-900"
-                      >
-                        Email address
-                      </label>
-                      <div className="mt-2">
-                        <input
-                          id="email"
-                          name="email"
-                          type="email"
-                          required
-                          autoComplete="email"
-                          value={formData.email}
-                          onChange={handleChange}
-                          className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="mobile"
-                        className="block text-sm/6 font-medium text-gray-900"
-                      >
-                        Mobile No{" "}
-                      </label>
-                      <div className="mt-2">
-                        <input
-                          id="mobile"
-                          name="phone"
-                          type="text"
-                          required
-                          value={formData.phone}
-                          onChange={handleChange}
-                          className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="password"
-                        className="block text-sm/6 font-medium text-gray-900"
-                      >
-                        {" "}
-                        Password
-                      </label>
-                      <div className="mt-2">
-                        <input
-                          id="password"
-                          name="passwordHash"
-                          type="password"
-                          required
-                          autoComplete="current-password"
-                          value={formData.passwordHash}
-                          onChange={handleChange}
-                          className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-                        />
-                      </div>
+          {/* Right Panel */}
+          <div className="flex flex-1 flex-col justify-center px-6 py-12 lg:px-8">
+            <div className="flex justify-center">
+              <Link href={"/"}>
+                <Image
+                  src="/goodseva-logo.png"
+                  alt="Goodseva-logo"
+                  className="h-12 w-auto"
+                  width="auto"
+                  height="auto"
+                />
+              </Link>
+            </div>
+            <h2 className="mt-6 text-center text-2xl/9 font-bold tracking-tight text-gray-900">
+              Create new account
+            </h2>
 
-                      {/* <div className="flex items-center justify-between">
-                    <label
-                      htmlFor="userType"
-                      className="block text-sm/6 font-medium text-gray-900 pt-6"
+            <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">
+                    User Type
+                  </label>
+                  <div className="flex gap-3">
+                    <Radio.Group
+                      value={userType1}
+                      onChange={(e) => setUserType1(e.target.value)}
                     >
-                      Type
-                    </label>
-                    <div className="mt-2">
-                      <select
-                        id="userType"
-                        name="type"
-                        value={formData.type}
-                        onChange={handleChange}
-                        required
-                        className="block w-full mt-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                      >
-                        <option value="" disabled>
-                          Select a user type
-                        </option>
-                        {Object.entries(UserType).map(([key, value]) => (
-                          <option key={key} value={key}>
-                            {value}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div> */}
-                      <div className="flex justify-end mt-2">
-                        <div className="w-[30px] h-[30px] rounded-full bg-gray-200 flex items-center justify-center cursor-pointer">
-                          <svg
-                            className="w-3 h-3"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="black"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <polyline points="9 18 15 12 9 6" />
-                          </svg>
-                        </div>
-                      </div>
-                      <button
-                        type="submit"
-                        className="flex w-full justify-center button-primary mt-6"
-                        disabled={loading}
-                      >
-                        {loading ? "Signing up..." : "Sign up"}{" "}
-                        {/* Display loading text */}
-                      </button>
-
-                      {error && (
-                        <div className="text-center text-red-500 mt-4">
-                          {error}
-                        </div>
-                      )}
-                    </div>
-                  </form>
-
-                  <p className="mt-10 text-center text-sm/6 text-gray-500">
-                    Do you have an account?{" "}
-                    <Link
-                      href="/login"
-                      className="font-semibold text-orange-800 hover:text-orange-900"
+                      <Radio.Button value="Carrier">Carrier</Radio.Button>
+                      <Radio.Button value="Shipper">Shipper</Radio.Button>
+                    </Radio.Group>
+                    <Radio.Group
+                      value={userType2}
+                      onChange={(e) => setUserType2(e.target.value)}
                     >
-                      Sign in
-                    </Link>
-                  </p>
+                      <Radio.Button value="Company">Company</Radio.Button>
+                      <Radio.Button value="Individual">Individual</Radio.Button>
+                    </Radio.Group>
+                  </div>
                 </div>
-              </div>
+
+                <div>
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-gray-900"
+                  >
+                    Email address
+                  </label>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    autoComplete="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="mt-2 block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:outline-indigo-600"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="mobile"
+                    className="block text-sm font-medium text-gray-900"
+                  >
+                    Mobile No
+                  </label>
+                  <input
+                    id="mobile"
+                    name="phone"
+                    type="text"
+                    required
+                    value={formData.phone}
+                    onChange={handleChange}
+                    className="mt-2 block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:outline-indigo-600"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="password"
+                    className="block text-sm font-medium text-gray-900"
+                  >
+                    Password
+                  </label>
+                  <input
+                    id="password"
+                    name="passwordHash"
+                    type="password"
+                    required
+                    autoComplete="new-password"
+                    value={formData.passwordHash}
+                    onChange={handlePasswordChange}
+                    className="mt-2 block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:outline-indigo-600"
+                  />
+                  <ul className="mt-2 text-sm text-gray-600 space-y-1">
+                    <li
+                      className={
+                        validation.minLength ? "text-green-600" : "text-red-600"
+                      }
+                    >
+                      {validation.minLength ? "✔" : "✖"} Minimum 8 characters
+                    </li>
+                    <li
+                      className={
+                        validation.uppercase ? "text-green-600" : "text-red-600"
+                      }
+                    >
+                      {validation.uppercase ? "✔" : "✖"} At least one uppercase
+                      letter
+                    </li>
+                    <li
+                      className={
+                        validation.lowercase ? "text-green-600" : "text-red-600"
+                      }
+                    >
+                      {validation.lowercase ? "✔" : "✖"} At least one lowercase
+                      letter
+                    </li>
+                    <li
+                      className={
+                        validation.number ? "text-green-600" : "text-red-600"
+                      }
+                    >
+                      {validation.number ? "✔" : "✖"} At least one number
+                    </li>
+                    <li
+                      className={
+                        validation.specialChar
+                          ? "text-green-600"
+                          : "text-red-600"
+                      }
+                    >
+                      {validation.specialChar ? "✔" : "✖"} At least one special
+                      character
+                    </li>
+                  </ul>
+                </div>
+
+                <button
+                  type="submit"
+                  className="flex w-full justify-center button-primary mt-6"
+                  disabled={loading}
+                >
+                  {loading ? "Signing up..." : "Sign up"}
+                </button>
+
+                {error && (
+                  <div className="text-center text-red-500 mt-4">{error}</div>
+                )}
+              </form>
+
+              <p className="mt-10 text-center text-sm text-gray-500">
+                Do you have an account?{" "}
+                <Link
+                  href="/login"
+                  className="font-semibold text-orange-800 hover:text-orange-900"
+                >
+                  Sign in
+                </Link>
+              </p>
             </div>
           </div>
         </div>
-      </Spin>
-    </>
+      </div>
+    </Spin>
   );
 }

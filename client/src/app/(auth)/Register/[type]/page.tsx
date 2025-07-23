@@ -13,6 +13,7 @@ import {
   Space,
   Typography,
   Tabs,
+  Image,
 } from "antd";
 import Link from "next/link";
 import { useEffect } from "react";
@@ -482,7 +483,7 @@ export default function Step3() {
               }}
             >
               <Link href={"/"}>
-                <img
+                <Image
                   src="/goodseva-logo.png"
                   alt="Goodseva-logo"
                   className="h-12 w-auto"

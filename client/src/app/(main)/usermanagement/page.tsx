@@ -7,6 +7,8 @@ import { getAllUsers } from "@/state/api";
 import { SocketContext } from "@/app/util/SocketContext";
 import { getLoggedUserFromLS } from "@/app/util/getLoggedUserFromLS";
 import { useRouter } from "next/navigation";
+import { User } from "@/app/util/interfaces/user.interface";
+import { Image } from "antd";
 
 const USERS_PER_PAGE = 6;
 
@@ -46,7 +48,7 @@ const Users = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       const gettedAllUsers = await getAllUsers();
-      setUsers(gettedAllUsers.filter((u: any) => u.type !== "ADMIN"));
+      setUsers(gettedAllUsers.filter((u: User) => u.type !== "ADMIN"));
     };
 
     fetchUsers();
@@ -57,7 +59,7 @@ const Users = () => {
     setCurrentPage(1);
   };
 
-  const filteredUsers = users.filter((person: any) => {
+  const filteredUsers = users.filter((person: User) => {
     const matchesSearch =
       person.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       person.type.toLowerCase().includes(searchTerm.toLowerCase());
@@ -109,7 +111,7 @@ const Users = () => {
         ) : (
           <>
             <ul role="list" className="divide-y divide-gray-100">
-              {currentUsers.map((person: any) => (
+              {currentUsers.map((person: User) => (
                 <li
                   key={person.email}
                   className="py-5 hover:bg-gray-50 transition rounded-lg"
@@ -119,8 +121,9 @@ const Users = () => {
                     className="flex justify-between gap-x-6 px-4"
                   >
                     <div className="flex min-w-0 gap-x-4">
-                      <img
+                      <Image
                         alt=""
+                        width={50}
                         src={person.profilePic}
                         className="size-12 flex-none rounded-full bg-gray-50"
                       />
