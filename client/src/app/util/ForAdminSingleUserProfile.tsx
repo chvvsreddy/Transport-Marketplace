@@ -79,7 +79,7 @@ export default function ForAdminSingleUserProfile() {
 
       const userInfo = await getUser(userId);
       setUser(userInfo);
-      console.log("userinfo", userInfo);
+
       if (
         userInfo.type === "SHIPPER_COMPANY" ||
         userInfo.type === "LOGISTICS_COMPANY"

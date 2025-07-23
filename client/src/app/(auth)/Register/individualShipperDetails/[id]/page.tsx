@@ -140,8 +140,6 @@ export default function IndividualShipperForm() {
         panUrl: panUrl || null,
       };
 
-      console.log("payload", payload);
-
       const createAccount = await createIndividualShipperDetails(payload);
 
       if (createAccount?.id) {

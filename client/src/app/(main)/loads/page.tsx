@@ -384,15 +384,12 @@ const Loads = () => {
 
   useEffect(() => {
     const updateLoad = (newLoad: Load) => {
-      console.log("from socket data:", newLoad);
       if (!allData.find((l) => l.id === newLoad.id)) {
         const updatedData = [newLoad, ...allData];
         setFilteredLoads(updatedData);
-        console.log("Updated Data:", updatedData);
       }
     };
 
-    console.log("Updated allData:", allData);
     socket?.on("newLoadAvailable", updateLoad);
 
     return () => {
@@ -547,38 +544,12 @@ const Loads = () => {
     const findVehicle = activeVehicles?.find(
       (veh) => veh.registrationNumber === selectedTrucks[load.id]
     );
-    console.log({
-      loadId: load.id,
-      driverId: bid.carrierId,
-      plannedRoute: {
-        distance: 0,
-        waypoints: [
-          {
-            lat: load.origin.lat,
-            lng: load.origin.lng,
-          },
-          {
-            lat: load.destination.lat,
-            lng: load.destination.lng,
-          },
-        ],
-      },
-      vehicleId: findVehicle?.id,
-      estimatedDuration: 0,
-      distance: 0,
-    });
+
     const getDataWithoutTrips = await getDataForTripsAssigning(
       getLoggedUserFromLS().userId
     );
 
     setDataForTrips(getDataWithoutTrips);
-    console.log(
-      "Confirmed load:",
-      load,
-      "with truck:",
-      bid,
-      findVehicle?.registrationNumber
-    );
 
     const origin = `${load.origin.lat},${load.origin.lng}`;
     const destination = `${load.destination.lat},${load.destination.lng}`;
@@ -619,14 +590,13 @@ const Loads = () => {
           estimatedDuration: Number(time),
           distance: Number(distance),
         });
-        console.log("new trip : ", createdTrip);
+
         if (createdTrip.id) {
-          const updateVehicle = await updateVehicleStatus({
+          await updateVehicleStatus({
             registrationNumber: selectedTrucks[load.id],
             newTrip: createdTrip,
           });
           setOpen(false);
-          console.log(updateVehicle);
         } else {
           message.error("trip not created");
         }

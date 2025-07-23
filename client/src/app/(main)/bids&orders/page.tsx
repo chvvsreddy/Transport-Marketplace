@@ -410,9 +410,6 @@ export default function BidsAndOthers() {
         </Row>
 
         <div className="main-content">
-          {/* <div className="bg-red-100 p-2 text-black rounded-md mb-2">
-            <b>2 Carriars</b> from <b>2 Bids</b> Responded.
-          </div> */}
           <div className="flex gap-4">
             <DatePicker.RangePicker onChange={handleDateChange} />
             <Select
@@ -527,50 +524,6 @@ export default function BidsAndOthers() {
                               <strong> ₹{bid.negotiateShipperPrice}</strong>
                             </Paragraph>
                             <div>
-                              {/* {bid.status === "PENDING" && (
-                              <>
-                                {bid &&
-                                  bid.negotiateDriverPrice > 0 &&
-                                  bid.negotiateShipperPrice === 0 && (
-                                    <>
-                                      <Button
-                                        className="max-h-10"
-                                        onClick={() =>
-                                          handleNegotiateBid(bid, load)
-                                        }
-                                      >
-                                        Negotiate
-                                      </Button>
-                                      <Button
-                                        className="button-primary max-h-10"
-                                        onClick={() =>
-                                          acceptAfterDriverBid(
-                                            bid.id,
-                                            bid.carrierId,
-                                            bid.negotiateDriverPrice,
-                                            load.id
-                                          )
-                                        }
-                                      >
-                                        Accept
-                                      </Button>
-                                    </>
-                                  )}
-                                {bid.negotiateDriverPrice > 0 &&
-                                  bid.negotiateShipperPrice > 0 &&
-                                  bid.isDriverAccepted &&
-                                  bid.isShipperAccepted === false && (
-                                    <Button
-                                      className="button-primary max-h-10"
-                                      onClick={() =>
-                                        handleAcceptBid(bid.id, load.id)
-                                      }
-                                    >
-                                      Accept
-                                    </Button>
-                                  )}
-                              </>
-                            )} */}
                               {bid &&
                                 bid.isDriverAccepted &&
                                 bid.isShipperAccepted && (

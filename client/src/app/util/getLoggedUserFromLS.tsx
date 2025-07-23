@@ -24,7 +24,6 @@ export function getLoggedUserFromLS(): LoggedUser {
 
   if (!token || isTokenExpired(token)) {
     localStorage.removeItem("token");
-    console.log("no user found");
 
     return {
       userId: "no user",
@@ -35,7 +34,6 @@ export function getLoggedUserFromLS(): LoggedUser {
   }
 
   const userObj = jwtDecode<DecodedUser>(token);
-  console.log(userObj);
 
   return userObj;
 }

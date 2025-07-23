@@ -29,7 +29,6 @@ const SidebarLink: React.FC<SidebarLinkProps> = ({
 }) => {
   const pathname = usePathname();
   const isActive = "/" + pathname.split("/")[1] === href;
-  console.log(href);
 
   return (
     <Link href={href}>

@@ -29,19 +29,19 @@ const Users = () => {
   const router = useRouter();
   useEffect(() => {
     // Register as admin to receive online users
-
+    socket?.connect();
     if (getLoggedUserFromLS().type != "ADMIN") {
       router.push("/login");
     }
 
-    socket?.on("onlineUsers", (ids: string[]) => {
-      console.log("online users", ids);
-      setOnlineUserIds(ids);
-    });
+    if (socket?.id) {
+      socket?.on("onlineUsers", (ids: string[]) => {
+        setOnlineUserIds(ids);
+      });
+    }
 
     return () => {
       socket?.off("online-users");
-      socket?.disconnect();
     };
   }, [socket, router]);
 

@@ -9,7 +9,6 @@ import React, {
 } from "react";
 import { getLoggedUserFromLS } from "./getLoggedUserFromLS";
 import { getUser } from "@/state/api";
-// adjust paths as needed
 
 type User = {
   userId: string;

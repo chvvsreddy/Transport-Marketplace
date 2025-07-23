@@ -72,30 +72,29 @@ const Navbar = () => {
     fetchNotifications();
   }, [loggedUser.userId]);
 
-  const NOTIFICATION_EVENTS = [
-    "receiveBidPriceNotification",
-    "receiveLoadAcceptanceNotification",
-    "receiveNewBidNotification",
-    "receiveLoadAcceptanceByShipperNotification",
-    "receiveFixedLoadAcceptanceNotification",
-  ];
-
   useEffect(() => {
     if (!socket) return;
 
     const handleNotification = (notification: Notification) => {
-      console.log("🔔 notification received:", notification);
       setLatestNotifications((prev = []) => [notification, ...prev]);
       setCountOfNotifications((prev) => prev + 1);
     };
+
+    const NOTIFICATION_EVENTS = [
+      "receiveBidPriceNotification",
+      "receiveLoadAcceptanceNotification",
+      "receiveNewBidNotification",
+      "receiveLoadAcceptanceByShipperNotification",
+      "receiveFixedLoadAcceptanceNotification",
+    ];
 
     NOTIFICATION_EVENTS.forEach((eventName) => {
       socket.on(eventName, handleNotification);
     });
 
-    socket.on("message", (data) => {
-      console.log("Generic socket message:", data);
-    });
+    // socket.on("message", (data) => {
+    //   console.log("Generic socket message:", data);
+    // });
 
     return () => {
       NOTIFICATION_EVENTS.forEach((eventName) => {
@@ -141,7 +140,7 @@ const Navbar = () => {
       router.push("/login");
     }
   }, [router]);
-  console.log("pic", pic);
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     message.success("User loggedOut Successful");
@@ -304,6 +303,7 @@ const Navbar = () => {
                 onClick={() => {
                   setSettingsOpen(false);
                   handleLogout();
+                  socket.disconnect();
                 }}
                 className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
               >

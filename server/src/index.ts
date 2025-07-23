@@ -122,7 +122,9 @@ async function setupSocketServer() {
       await pubClient.hSet(onlineUsersKey, userId, socket.id);
 
       const userIds = await pubClient.hKeys(onlineUsersKey);
-      socket.emit("onlineUsers", userIds); // only to this admin socket
+      io.emit("onlineUsers", userIds); // only to this admin socket
+
+      console.log("onlineUsers", userIds);
 
       console.log(
         `Registered user: ${userId} | Active clients: ${io.engine.clientsCount}`

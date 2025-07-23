@@ -30,14 +30,11 @@ const CompanyProfileCard: React.FC<{
   );
 
   const handleSubmit = async () => {
-    // You can send `verificationStatus` to your backend here
-    console.log("Submit request clicked. New Status:", verificationStatus);
-
     const updateProfile = await updateUserProfileFromAdmin({
       userId: user.id,
       isVerified: verificationStatus === "true" ? true : false,
     });
-    console.log("updatedProfile", updateProfile);
+
     if (updateProfile.id) {
       message.success(
         `Request submitted: User marked as ${
@@ -62,7 +59,7 @@ const CompanyProfileCard: React.FC<{
         >
           <Col span={24}>
             <Card title="Company Profile" variant="borderless">
-              {/* ✅ Top-right Select + Submit Button */}
+              {/* Top-right Select + Submit Button */}
               <Row
                 justify="end"
                 align="middle"
@@ -86,7 +83,7 @@ const CompanyProfileCard: React.FC<{
                 </Col>
               </Row>
 
-              {/* 🧾 Company Info Grid */}
+              {/*  Company Info Grid */}
               <Row gutter={[16, 16]}>
                 <Col span={12}>
                   <Text strong>Company Name:</Text>

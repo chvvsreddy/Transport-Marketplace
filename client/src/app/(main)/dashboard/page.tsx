@@ -65,6 +65,7 @@ const Dashboard = () => {
   );
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+
   const { setUser, isVerified, setIsVerified } = useUser();
   const query = `
   query GetLoadsCountByDate($input: LoadStatsInput!) {
@@ -132,7 +133,7 @@ const Dashboard = () => {
     try {
       const userObj = getLoggedUserFromLS();
       if (!userObj || userObj.userId === "no user") {
-        return; // or redirect
+        return;
       }
 
       const checkingUser = await getUser(userObj.userId);
@@ -178,7 +179,6 @@ const Dashboard = () => {
     }
   }
 
-  console.log("dashboard data : ", dashboardData);
   return isVerified ? (
     <Spin spinning={loading}>
       <>

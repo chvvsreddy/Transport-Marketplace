@@ -22,7 +22,7 @@ const BidPriceTrendChart = ({ data }: { data: BidPriceTrend[] }) => {
   const isEmpty = data.length === 0;
 
   const fallbackData = [{ name: "No Bids", value: 1 }];
-  const COLORS = ["#d1d5db"]; // Tailwind gray-300
+  const COLORS = ["#d1d5db"];
 
   return (
     <div className="bg-white p-5 rounded-md border border-gray-200">

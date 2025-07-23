@@ -76,12 +76,12 @@ export const DriverProfileCard: React.FC<DriverProfileCardProps> = ({
   const { Option } = Select;
   const handleSubmit = async () => {
     const isVerified = selectedValue === "true";
-    console.log("Submitting status:", isVerified);
+
     const updateProfile = await updateUserProfileFromAdmin({
       userId: user.id,
       isVerified,
     });
-    console.log("updatedProfile", updateProfile);
+
     if (updateProfile.id) {
       message.success(
         `Request submitted: User marked as ${
@@ -114,13 +114,6 @@ export const DriverProfileCard: React.FC<DriverProfileCardProps> = ({
         }`
       );
     }
-    // TODO: API call or form submission
-    console.log(
-      `Submit: vehicle ${vehicleId}, isDriverVerified = ${isDriverVerified}`
-    );
-    console.log(
-      `Submit: vehicle ${vehicleId}, isDriverVerified = ${isDriverVerified},${updatedVehicle}`
-    );
   };
 
   return (
@@ -137,7 +130,7 @@ export const DriverProfileCard: React.FC<DriverProfileCardProps> = ({
         }}
       >
         <Col span={24}>
-          <Card title="Driver Profile" bordered={false}>
+          <Card title="Driver Profile" variant="outlined">
             <Row
               justify="space-between"
               align="middle"

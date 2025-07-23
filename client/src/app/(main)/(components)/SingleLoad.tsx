@@ -29,7 +29,7 @@ const props: UploadProps = {
   listType: "picture",
   previewFile(file) {
     console.log("Your upload file:", file);
-    // Your process logic. Here we just mock to the same file
+
     return fetch("https://next.json-generator.com/api/json/get/4ytyBoLK8", {
       method: "POST",
       body: file,
@@ -76,14 +76,6 @@ export interface Trip {
   createdAt: string;
   updatedAt: string;
   message?: string;
-
-  // Optional relational data (if included in response)
-  // load?: Load;
-  // driver?: User;
-  // vehicle?: Vehicle;
-  // events?: TripEvent[];
-  // documents?: Document[];
-  // payments?: Payment[];
 }
 
 export type TripStatus =
@@ -276,7 +268,6 @@ export default function SingleLoad() {
     fetchData();
   }, [bids]);
 
-  console.log("trip", trip);
   if (loading)
     return (
       <div className="p-6 text-gray-500">
@@ -292,16 +283,6 @@ export default function SingleLoad() {
     <>
       <div className="flex justify-between items-center pr-4">
         <Heading name="Load Details" />
-        {/* 
-        {pathname.includes("/myloads") && (
-          <button
-            className="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-            onClick={() => router.push(`/myloads/${loadId}/edit`)}
-            style={findBidActive && { display: "none" }}
-          >
-            <Edit className="inline mr-1" /> Edit
-          </button>
-        )} */}
       </div>
       <div className="main-content !p-0">
         <div className="grid grid-cols-4">
@@ -465,15 +446,7 @@ export default function SingleLoad() {
                   }`}
                 />
               </p>
-              {/* <div className="bg-red-100 p-2 text-black rounded-md mb-2">
-                Till now now one responded for the bid
-              </div>
-              <div className="bg-orange-100 p-2 text-black rounded-md mb-2">
-                2 Drivers Responded. Bid Going on...
-              </div>
-              <div className="bg-green-100 p-2 text-black rounded-md mb-2">
-                Bid completed. Mohan has confirmed for this load.
-              </div> */}
+
               {openSections.bid && (
                 <div className="pt-4 text-gray-500">
                   {bids.length === 0 && (
@@ -502,23 +475,6 @@ export default function SingleLoad() {
                 </div>
               )}
             </div>
-
-            {/* Documents Section */}
-            {/* <div>
-            <p onClick={() => toggleSection("documents")} className="accordian-header" >
-              Documents
-              <ArrowDownCircle
-                className={`transition-transform duration-200 ${
-                  openSections.documents ? "rotate-180" : ""
-                }`}
-              />
-            </p>
-            {openSections.documents && (
-              <div className="p-4 text-gray-500 italic">
-                Document list placeholder.
-              </div>
-            )}
-          </div> */}
 
             {/* Trip Section */}
             <div className="box mx-4 mb-4">

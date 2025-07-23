@@ -49,12 +49,12 @@ interface VehicleFormValues {
   fitnessCertExpiry: dayjs.Dayjs;
   permitType?: string;
   driverName: string;
-  driverImage?: UploadFile[]; // 👈 change to UploadFile[]
+  driverImage?: UploadFile[];
   contact1: string;
   contact2?: string;
   driverLicense: UploadFile[];
-  driverRC: UploadFile[]; // 👈 change to UploadFile[]
-  driverPAN: UploadFile[]; // 👈 change to UploadFile[]
+  driverRC: UploadFile[];
+  driverPAN: UploadFile[];
 }
 
 export interface GoodsOption {
@@ -103,7 +103,6 @@ const AddTruckForm = () => {
     []
   );
 
-  // 👇 Upload helper with console logs
   const uploadFileToS3 = async (file: File): Promise<string | null> => {
     const formData = new FormData();
     formData.append("file", file);
@@ -148,13 +147,6 @@ const AddTruckForm = () => {
           driverPANFile ? uploadFileToS3(driverPANFile) : null,
           driverLicenseFile ? uploadFileToS3(driverLicenseFile) : null,
         ]);
-
-      console.log("✅ Uploaded URLs:", {
-        driverImageUrl,
-        driverRCUrl,
-        driverPANUrl,
-        driverLicenseUrl,
-      });
       const vehicleTypeJson = {
         size: selectedGoodsTitle ?? "",
         type: values.truckType ?? "",
@@ -190,8 +182,6 @@ const AddTruckForm = () => {
         driverRC: driverRCUrl ?? "",
         driverPAN: driverPANUrl ?? "",
       };
-
-      console.log("📦 Payload to be sent:", payload);
 
       await axios.post(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/trucks`,

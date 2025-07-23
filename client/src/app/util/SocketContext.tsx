@@ -30,18 +30,17 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     }
 
     const handleConnect = () => {
-      console.log("✅ Connected:", socket.id);
       setIsConnected(true);
 
       const user = getLoggedUserFromLS();
+      console.log("user", user);
       const userId = user?.userId;
       if (userId) {
         socket.emit("register", userId);
       }
     };
 
-    const handleDisconnect = (reason: string) => {
-      console.log("❌ Disconnected:", reason);
+    const handleDisconnect = () => {
       setIsConnected(false);
     };
 

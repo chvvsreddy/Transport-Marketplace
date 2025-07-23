@@ -33,8 +33,6 @@ const UserDetail = () => {
     }
   }, [userId, setUser]);
 
-  console.log(user);
-
   if (loading) return <div>Loading user details...</div>;
   if (error) return <div>{error}</div>;
   if (!user) return <div>No user found</div>;

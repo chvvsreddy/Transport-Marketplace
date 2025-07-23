@@ -33,12 +33,11 @@ const ShipperProfileCard: React.FC<Props> = ({ user, shipperDetails }) => {
   };
 
   const handleSubmit = async () => {
-    // Replace with actual API call or prop method
     const updateProfile = await updateUserProfileFromAdmin({
       userId: user.id,
       isVerified: verificationStatus === "true" ? true : false,
     });
-    console.log("updatedProfile", updateProfile);
+
     if (updateProfile.id) {
       message.success(
         `Request submitted: User marked as ${
@@ -46,8 +45,6 @@ const ShipperProfileCard: React.FC<Props> = ({ user, shipperDetails }) => {
         }`
       );
     }
-
-    // TODO: Trigger backend update
   };
 
   return (
