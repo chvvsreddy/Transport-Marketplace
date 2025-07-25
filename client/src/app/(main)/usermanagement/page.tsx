@@ -27,12 +27,15 @@ const Users = () => {
   const [onlineUserIds, setOnlineUserIds] = useState<string[]>([]);
   const { socket } = useContext(SocketContext) || {};
   const router = useRouter();
+
   useEffect(() => {
     // Register as admin to receive online users
     socket?.connect();
     if (getLoggedUserFromLS().type != "ADMIN") {
       router.push("/login");
     }
+
+    socket?.emit("sendAdminIdForOnlineUsers", getLoggedUserFromLS().userId);
 
     if (socket?.id) {
       socket?.on("onlineUsers", (ids: string[]) => {

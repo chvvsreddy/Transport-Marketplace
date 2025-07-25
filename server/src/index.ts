@@ -119,16 +119,18 @@ async function setupSocketServer() {
 
     // Registering user with their socket ID
     socket.on("register", async (userId) => {
+      console.log(
+        `Registered user: ${userId} | Active clients: ${io.engine.clientsCount}`
+      );
+    });
+
+    socket.on("sendAdminIdForOnlineUsers", async (userId) => {
       await pubClient.hSet(onlineUsersKey, userId, socket.id);
 
       const userIds = await pubClient.hKeys(onlineUsersKey);
       io.emit("onlineUsers", userIds); // only to this admin socket
 
       console.log("onlineUsers", userIds);
-
-      console.log(
-        `Registered user: ${userId} | Active clients: ${io.engine.clientsCount}`
-      );
     });
 
     socket.on(

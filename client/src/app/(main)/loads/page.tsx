@@ -168,7 +168,7 @@ const Loads = () => {
   const allData = useMemo(() => allLoads || [], [allLoads]);
 
   const [location, setLocation] = useState<Location | null>(null);
-  const [Bids, setBids] = useState<Bid[]>([]);
+  const [Bids, setBids] = useState<Bid[] | []>([]);
   const [filteredLoads, setFilteredLoads] = useState<Load[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -333,9 +333,10 @@ const Loads = () => {
           })
         );
 
-        const filtered = availableNearbyLoadsResults.filter(
-          (load): load is Load => load !== null
-        );
+        const filtered =
+          availableNearbyLoadsResults.filter(
+            (load): load is Load => load !== null
+          ) ?? [];
 
         setFilteredLoads(filtered);
         setHasFetchedNearbyLoads(true);
@@ -530,16 +531,13 @@ const Loads = () => {
       <div className="text-center text-red-500 py-4">Failed to fetch Loads</div>
     );
 
-  const countOfBid = Bids.filter(
-    (bid) => bid.carrierId === getLoggedUserFromLS().userId
-  );
+  const countOfBid =
+    Bids.filter((bid) => bid.carrierId === getLoggedUserFromLS().userId) ?? [];
 
-  const countOfFixedLoads = allData.filter(
-    (load) => load.price >= 0 && load.bidPrice == 0
-  );
-  const countOfBidLoads = allData.filter(
-    (load) => load.price >= 0 && load.bidPrice > 0
-  );
+  const countOfFixedLoads =
+    allData.filter((load) => load.price >= 0 && load.bidPrice == 0) ?? [];
+  const countOfBidLoads =
+    allData.filter((load) => load.price >= 0 && load.bidPrice > 0) ?? [];
   const handleConfirmLoad = async (load: Load, bid: Bid) => {
     const findVehicle = activeVehicles?.find(
       (veh) => veh.registrationNumber === selectedTrucks[load.id]
