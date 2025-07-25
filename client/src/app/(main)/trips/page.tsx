@@ -183,14 +183,6 @@ export default function Trips() {
         <Col span={24} md={6}>
           <Heading name="Trips" />
         </Col>
-        <Col span={24} md={18}>
-          <div className="flex md:justify-end gap-2 md:mt-0 overflow-auto ml-4">
-            <div className="page-filter-tabs active">5 All</div>
-            <div className="page-filter-tabs">1 Not Started</div>
-            <div className="page-filter-tabs">2 InTransit</div>
-            <div className="page-filter-tabs">1 Completed</div>
-          </div>
-        </Col>
       </Row>
 
       <div className="main-content">

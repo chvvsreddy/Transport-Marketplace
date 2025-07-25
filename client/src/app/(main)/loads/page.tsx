@@ -12,13 +12,7 @@ import {
   Radio,
   Spin,
 } from "antd";
-import React, {
-  useState,
-  useEffect,
-  useContext,
-  useLayoutEffect,
-  useMemo,
-} from "react";
+import React, { useState, useEffect, useContext, useLayoutEffect } from "react";
 import Heading from "@/app/util/Heading/index";
 import {
   createBid,
@@ -27,8 +21,8 @@ import {
   getBids,
   getDataForTripsAssigning,
   getLoadByLoadIdForAdmin,
+  getLoads,
   updateVehicleStatus,
-  useGetAllLoadsQuery,
 } from "@/state/api";
 import { getLoggedUserFromLS } from "@/app/util/getLoggedUserFromLS";
 import { SocketContext } from "@/app/util/SocketContext";
@@ -163,9 +157,7 @@ const fetchNearbyLoads = async (currentLoc: Location, allLoads: Load[]) => {
 };
 
 const Loads = () => {
-  const { data, isLoading, isError } = useGetAllLoadsQuery();
-  const allLoads = data as Load[] | undefined;
-  const allData = useMemo(() => allLoads || [], [allLoads]);
+  const [allData, setAllData] = useState<Load[] | []>([]);
 
   const [location, setLocation] = useState<Location | null>(null);
   const [Bids, setBids] = useState<Bid[] | []>([]);
@@ -208,6 +200,12 @@ const Loads = () => {
     }
 
     const fetchInitialData = async () => {
+      const loads = await getLoads();
+      if (!loads) {
+        setIsLoading(false);
+        return;
+      }
+      setAllData(loads);
       const getDataWithoutTrips = await getDataForTripsAssigning(
         getLoggedUserFromLS().userId
       );
@@ -387,6 +385,7 @@ const Loads = () => {
     const updateLoad = (newLoad: Load) => {
       if (!allData.find((l) => l.id === newLoad.id)) {
         const updatedData = [newLoad, ...allData];
+        setAllData(updatedData);
         setFilteredLoads(updatedData);
       }
     };
@@ -426,7 +425,7 @@ const Loads = () => {
       const existingBid = Bids.find(
         (bid) => bid.loadId === selectedLoad.id && bid.carrierId === userId
       );
-      const findUserIdByLoad = allLoads?.find(
+      const findUserIdByLoad = allData?.find(
         (load) => load.id === existingBid?.loadId
       );
       const loggedUser = getLoggedUserFromLS();
@@ -498,7 +497,7 @@ const Loads = () => {
 
       if (getLoad.status === "AVAILABLE") {
         const currentBid = Bids.find((bid) => bid.id === bidId);
-        const findUserIdByLoad = allLoads?.find(
+        const findUserIdByLoad = allData?.find(
           (load) => load.id === currentBid?.loadId
         );
         socket?.emit("updateBidStatus", {
@@ -520,13 +519,13 @@ const Loads = () => {
     }
   };
 
-  if (isLoading)
+  if (loading && !isLoadingSpin)
     return (
       <div className="py-4">
         <Shimmer />
       </div>
     );
-  if (isError || !allData)
+  if (!allData)
     return (
       <div className="text-center text-red-500 py-4">Failed to fetch Loads</div>
     );
@@ -535,9 +534,13 @@ const Loads = () => {
     Bids.filter((bid) => bid.carrierId === getLoggedUserFromLS().userId) ?? [];
 
   const countOfFixedLoads =
-    allData.filter((load) => load.price >= 0 && load.bidPrice == 0) ?? [];
+    allData.length > 0
+      ? allData.filter((load) => load.price >= 0 && load.bidPrice == 0)
+      : [];
   const countOfBidLoads =
-    allData.filter((load) => load.price >= 0 && load.bidPrice > 0) ?? [];
+    allData.length > 0
+      ? allData.filter((load) => load.price >= 0 && load.bidPrice > 0)
+      : [];
   const handleConfirmLoad = async (load: Load, bid: Bid) => {
     const findVehicle = activeVehicles?.find(
       (veh) => veh.registrationNumber === selectedTrucks[load.id]
@@ -604,6 +607,8 @@ const Loads = () => {
   if (!isVerified) {
     return <VerificationPending />;
   }
+
+  console.log("allData", allData);
 
   return isLoadingSpin ? (
     <Shimmer />
@@ -1019,7 +1024,7 @@ const Loads = () => {
           open={open}
           footer={null}
           onCancel={() => setOpen(false)}
-          bodyStyle={{
+          style={{
             maxHeight: "70vh",
             overflowY: "auto",
             padding: "1rem",
