@@ -1,0 +1,73 @@
+# Traefik Static Configuration for QA Environment
+# Global configuration
+global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
+
+# API and dashboard configuration
+api:
+  dashboard: true
+  insecure: false
+  debug: false
+
+# Entry points
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entrypoint:
+          to: websecure
+          scheme: https
+          permanent: true
+  websecure:
+    address: ":443"
+
+# Providers
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+    watch: true
+    network: goodseva-network
+  file:
+    filename: /etc/traefik/dynamic.yml
+    watch: true
+
+# Certificate resolver for SSL
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: admin@goodseva.com
+      storage: /acme.json
+      keyType: EC256
+      httpChallenge:
+        entryPoint: web
+      # Uncomment for staging/testing
+      # caServer: https://acme-staging-v02.api.letsencrypt.org/directory
+
+# Logging
+log:
+  level: INFO
+  format: json
+  filePath: /var/log/traefik/traefik.log
+
+accessLog:
+  format: json
+  filePath: /var/log/traefik/access.log
+  bufferingSize: 100
+  filters:
+    statusCodes:
+      - "400-499"
+      - "500-599"
+
+# Metrics (optional)
+metrics:
+  prometheus:
+    addEntryPointsLabels: true
+    addServicesLabels: true
+    addRoutersLabels: true
+
+# Ping endpoint for health checks
+ping:
+  entryPoint: web

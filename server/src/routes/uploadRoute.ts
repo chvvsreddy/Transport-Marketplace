@@ -2,7 +2,7 @@
 
 import express, { Request, Response } from "express";
 import { upload } from "../middleware/upload";
-import { uploadToS3 } from "../..//utils/s3";
+import { uploadToS3 } from "../../utils/s3";
 
 const router = express.Router();
 

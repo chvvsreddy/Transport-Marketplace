@@ -25,6 +25,7 @@ RUN npx prisma generate
 
 # Copy source code
 COPY ../server/src ./src/
+COPY ../server/utils ./utils/
 COPY ../server/ecosystem.config.js ./
 
 # Create directories and set permissions
@@ -41,5 +42,5 @@ EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:3001/health || exit 1
 
-# Start the application in development mode
-CMD ["sh", "-c", "npx prisma generate && concurrently 'npx tsc -w' 'nodemon --exec ts-node src/index.ts'"]
+# Start the application using tsx for reliable TypeScript execution
+CMD ["sh", "-c", "npx prisma generate && npx tsx src/index.ts"]

@@ -5,3 +5,14 @@ server/dist/
 client/.env/
 server/.env/
 client/.next/
+
+# Environment Files Security
+deployment/.env
+deployment/.env.qa
+deployment/traefik/acme.json
+deployment/traefik/logs/
+deployment/traefik/data/
+
+# Docker volumes and logs
+**/logs/
+**/*.log
