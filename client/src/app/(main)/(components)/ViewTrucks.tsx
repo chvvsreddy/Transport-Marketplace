@@ -37,7 +37,7 @@ const ViewTrucks = () => {
         {trucks.map((truck: Vehicle) => (
           <Card
             key={truck.id}
-            bordered
+            variant="outlined"
             className="shadow-sm"
             title={
               <div className="flex justify-between items-center flex-wrap">

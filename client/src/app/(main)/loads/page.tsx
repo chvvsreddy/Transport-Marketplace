@@ -383,10 +383,12 @@ const Loads = () => {
 
   useEffect(() => {
     const updateLoad = (newLoad: Load) => {
+      console.log("data updated via socket", newLoad);
       if (!allData.find((l) => l.id === newLoad.id)) {
         const updatedData = [newLoad, ...allData];
         setAllData(updatedData);
         setFilteredLoads(updatedData);
+        console.log("data updated", updatedData);
       }
     };
 
@@ -531,15 +533,17 @@ const Loads = () => {
     );
 
   const countOfBid =
-    Bids.filter((bid) => bid.carrierId === getLoggedUserFromLS().userId) ?? [];
+    Bids.length > 0
+      ? Bids.filter((bid) => bid.carrierId === getLoggedUserFromLS().userId)
+      : [];
 
   const countOfFixedLoads =
-    allData.length > 0
-      ? allData.filter((load) => load.price >= 0 && load.bidPrice == 0)
+    filteredLoads.length > 0
+      ? filteredLoads.filter((load) => load.price >= 0 && load.bidPrice == 0)
       : [];
   const countOfBidLoads =
-    allData.length > 0
-      ? allData.filter((load) => load.price >= 0 && load.bidPrice > 0)
+    filteredLoads.length > 0
+      ? filteredLoads.filter((load) => load.price >= 0 && load.bidPrice > 0)
       : [];
   const handleConfirmLoad = async (load: Load, bid: Bid) => {
     const findVehicle = activeVehicles?.find(
@@ -635,7 +639,7 @@ const Loads = () => {
             <Col span={24} md={12}>
               <div className="flex flex-wrap md:justify-end gap-2 mt-2 md:mt-0">
                 <div className="page-filter-tabs active">
-                  {allData.length} All
+                  {filteredLoads.length} All
                 </div>
                 <div className="page-filter-tabs">
                   {countOfFixedLoads.length} Fixed Price

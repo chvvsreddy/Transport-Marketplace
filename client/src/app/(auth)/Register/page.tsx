@@ -4,7 +4,13 @@ import Link from "next/link";
 import { useState } from "react";
 import "../../(styles)/RegisterPage.css";
 
-import { createUser } from "@/state/api";
+import {
+  createUser,
+  getIndividualDriverDetails,
+  getIndividualShipperDetails,
+  getSingleVehicleBtOwnerId,
+  getUserCompanyDetails,
+} from "@/state/api";
 import { useRouter } from "next/navigation";
 import { Image, message, Radio, Spin } from "antd";
 
@@ -81,18 +87,39 @@ export default function RegisterPage() {
       type,
     };
     if (!validatePassword(dataToSubmit.passwordHash)) {
-      setLoading(false);
-
       message.error("password should meet requirements");
-
+      setLoading(false);
+      setLoadingSpin(false);
       return;
     }
 
     try {
       const res = await createUser(dataToSubmit);
+      let data;
+      let driverVehicleData;
       if (res.id) {
-        message.success("Account created successfully");
-        router.push(`/Register/${res.type}?userId=${res.id}`);
+        if (
+          res.id &&
+          (res.type === "LOGISTICS_COMPANY" || res.type === "SHIPPER_COMPANY")
+        ) {
+          data = await getUserCompanyDetails(res.id);
+
+          if (data === null) {
+            return router.push(`/Register/${res.type}?userId=${res.id}`);
+          }
+        } else if (res.id && res.type === "INDIVIDUAL_SHIPPER") {
+          data = await getIndividualShipperDetails(res.id);
+          if (data == null) {
+            return router.push(`/Register/individualShipperDetails/${res.id}`);
+          }
+        } else if (res.id && res.type === "INDIVIDUAL_DRIVER") {
+          data = await getIndividualDriverDetails(res.userId);
+          driverVehicleData = await getSingleVehicleBtOwnerId(res.id);
+
+          if (data == null || driverVehicleData == null) {
+            return router.push(`/Register/driver/${res.id}`);
+          }
+        }
       } else {
         message.error("Registration failed. Please try again.");
       }

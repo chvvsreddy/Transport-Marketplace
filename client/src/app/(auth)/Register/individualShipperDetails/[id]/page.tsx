@@ -181,6 +181,7 @@ export default function IndividualShipperForm() {
               src="/goodseva-logo.png"
               alt="Goodseva-logo"
               className="h-12 w-auto"
+              width={100}
             />
           </Link>
           <Typography.Title level={2}>REGISTER</Typography.Title>
