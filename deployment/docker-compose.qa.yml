@@ -1,0 +1,127 @@
+services:
+  # Traefik Reverse Proxy
+  traefik:
+    image: traefik:v3.0
+    container_name: goodseva-traefik-qa
+    command:
+      - --configFile=/etc/traefik/traefik.yml
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"  # Traefik dashboard
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
+      - ./traefik/acme.json:/acme.json
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`qa-traefik.goodseva.com`)"
+      - "traefik.http.routers.dashboard.entrypoints=websecure"
+      - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.dashboard.service=api@internal"
+    networks:
+      - goodseva-network
+    restart: unless-stopped
+
+  # PostgreSQL Database - QA
+  postgres:
+    environment:
+      POSTGRES_DB: ${DB_NAME:-goodseva_qa}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_HOST_AUTH_METHOD: trust
+    command: postgres -c log_statement=all -c log_destination=stderr
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-goodseva_qa}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  # Redis Cache - QA
+  redis:
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+    command: redis-server --appendonly yes --loglevel notice
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+
+  # Server API - QA
+  server:
+    environment:
+      NODE_ENV: qa
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-goodseva_qa}
+      REDIS_URL: redis://redis:6379
+      PORT: 3001
+      JWT_SECRET: ${JWT_SECRET:-qa-jwt-secret-key}
+      LOG_LEVEL: info
+      DEBUG: goodseva:*
+      # AWS S3 Configuration
+      AWS_REGION: ${AWS_REGION}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`qa-api.goodseva.com`)"
+      - "traefik.http.routers.api.entrypoints=websecure"
+      - "traefik.http.routers.api.tls.certresolver=letsencrypt"
+      - "traefik.http.services.api.loadbalancer.server.port=3001"
+      - "traefik.http.routers.api.middlewares=secure-headers@file"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      traefik:
+        condition: service_started
+
+  # Client Frontend - QA
+  client:
+    environment:
+      NODE_ENV: qa
+      NEXT_PUBLIC_API_URL: https://qa-api.goodseva.com
+      NEXT_PUBLIC_API_BASE_URL: https://qa-api.goodseva.com
+      NEXT_PUBLIC_SOCKET_URL: https://qa-api.goodseva.com
+      NEXT_PUBLIC_APP_URL: https://qa.goodseva.com
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.app.rule=Host(`qa.goodseva.com`)"
+      - "traefik.http.routers.app.entrypoints=websecure"
+      - "traefik.http.routers.app.tls.certresolver=letsencrypt"
+      - "traefik.http.services.app.loadbalancer.server.port=3000"
+      - "traefik.http.routers.app.middlewares=secure-headers@file"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    depends_on:
+      - server
+      - traefik
+
+volumes:
+  postgres_data_qa:
+    driver: local
+  redis_data_qa:
+    driver: local
+  server_dist_qa:
+    driver: local
+  client_next_qa:
+    driver: local
+
+networks:
+  goodseva-network:
+    driver: bridge

@@ -11,7 +11,9 @@ RESET  := \033[0m
 # Docker compose files
 COMPOSE_FILE := deployment/docker-compose.yml
 COMPOSE_DEV_FILE := deployment/docker-compose.dev.yml
+COMPOSE_QA_FILE := deployment/docker-compose.qa.yml
 COMPOSE_CMD := docker-compose -f $(COMPOSE_FILE) -f $(COMPOSE_DEV_FILE)
+COMPOSE_QA_CMD := docker-compose -f $(COMPOSE_FILE) -f $(COMPOSE_QA_FILE) --env-file deployment/.env.qa
 
 # Default target
 .DEFAULT_GOAL := help
@@ -29,6 +31,9 @@ help: ## Display this help message
 	@echo ""
 	@echo "$(GREEN)Database Commands:$(RESET)"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | grep -E 'db-' | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(YELLOW)%-20s$(RESET) %s\n", $$1, $$2}'
+	@echo ""
+	@echo "$(GREEN)QA Commands:$(RESET)"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | grep -E 'qa-' | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(YELLOW)%-20s$(RESET) %s\n", $$1, $$2}'
 	@echo ""
 	@echo "$(GREEN)Service Commands:$(RESET)"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | grep -E '(server|client)-' | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(YELLOW)%-20s$(RESET) %s\n", $$1, $$2}'
@@ -198,3 +203,80 @@ stop: down ## Alias for 'down'
 
 .PHONY: ps
 ps: status ## Alias for 'status'
+
+# QA Environment Commands
+.PHONY: qa-up
+qa-up: ## Start QA environment with Traefik
+	@echo "$(GREEN)🚀 Starting QA environment...$(RESET)"
+	@$(COMPOSE_QA_CMD) up -d
+	@echo "$(GREEN)✅ QA services started successfully!$(RESET)"
+	@echo "$(BLUE)🌐 App: https://qa.goodseva.com$(RESET)"
+	@echo "$(BLUE)🔗 API: https://qa-api.goodseva.com$(RESET)"
+	@echo "$(BLUE)📊 Traefik: https://qa-traefik.goodseva.com$(RESET)"
+
+.PHONY: qa-down
+qa-down: ## Stop QA environment
+	@echo "$(YELLOW)🛑 Stopping QA environment...$(RESET)"
+	@$(COMPOSE_QA_CMD) down
+	@echo "$(GREEN)✅ QA services stopped successfully!$(RESET)"
+
+.PHONY: qa-restart
+qa-restart: ## Restart QA environment
+	@echo "$(YELLOW)🔄 Restarting QA environment...$(RESET)"
+	@$(COMPOSE_QA_CMD) restart
+	@echo "$(GREEN)✅ QA services restarted successfully!$(RESET)"
+
+.PHONY: qa-build
+qa-build: ## Build QA Docker images
+	@echo "$(GREEN)🔨 Building QA Docker images...$(RESET)"
+	@$(COMPOSE_QA_CMD) build --no-cache
+	@echo "$(GREEN)✅ QA images built successfully!$(RESET)"
+
+.PHONY: qa-logs
+qa-logs: ## View QA environment logs
+	@echo "$(BLUE)📋 Viewing QA environment logs...$(RESET)"
+	@$(COMPOSE_QA_CMD) logs -f
+
+.PHONY: qa-status
+qa-status: ## Show QA environment status
+	@echo "$(BLUE)📊 QA Environment Status:$(RESET)"
+	@$(COMPOSE_QA_CMD) ps
+
+.PHONY: qa-clean
+qa-clean: ## Clean QA environment completely
+	@echo "$(RED)🧹 Cleaning QA environment...$(RESET)"
+	@$(COMPOSE_QA_CMD) down -v --remove-orphans
+	@echo "$(GREEN)✅ QA environment cleaned!$(RESET)"
+
+.PHONY: qa-shell-server
+qa-shell-server: ## Access QA server container shell
+	@echo "$(BLUE)🖥️  Accessing QA server shell...$(RESET)"
+	@$(COMPOSE_QA_CMD) exec server sh
+
+.PHONY: qa-shell-client
+qa-shell-client: ## Access QA client container shell
+	@echo "$(BLUE)🖥️  Accessing QA client shell...$(RESET)"
+	@$(COMPOSE_QA_CMD) exec client sh
+
+.PHONY: qa-db-migrate
+qa-db-migrate: ## Run QA database migrations
+	@echo "$(GREEN)📊 Running QA database migrations...$(RESET)"
+	@$(COMPOSE_QA_CMD) exec server npx prisma migrate dev --name qa_migration
+	@$(COMPOSE_QA_CMD) exec server npx prisma generate
+	@echo "$(GREEN)✅ QA migrations completed!$(RESET)"
+
+.PHONY: qa-db-seed
+qa-db-seed: ## Seed QA database with test data
+	@echo "$(GREEN)🌱 Seeding QA database...$(RESET)"
+	@$(COMPOSE_QA_CMD) exec server npm run seed
+	@echo "$(GREEN)✅ QA database seeded successfully!$(RESET)"
+
+.PHONY: qa-health
+qa-health: ## Check QA environment health
+	@echo "$(BLUE)🏥 QA Health Check:$(RESET)"
+	@$(COMPOSE_QA_CMD) ps --filter "health=healthy" --format "table {{.Name}}\t{{.Status}}\t{{.Ports}}"
+
+.PHONY: qa-traefik-logs
+qa-traefik-logs: ## View Traefik logs in QA
+	@echo "$(BLUE)📋 Traefik logs:$(RESET)"
+	@$(COMPOSE_QA_CMD) logs -f traefik

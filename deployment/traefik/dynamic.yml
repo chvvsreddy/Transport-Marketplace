@@ -1,0 +1,151 @@
+# Traefik Dynamic Configuration for QA Environment
+http:
+  middlewares:
+    # Security headers middleware
+    secure-headers:
+      headers:
+        accessControlAllowMethods:
+          - GET
+          - OPTIONS
+          - PUT
+          - POST
+          - DELETE
+          - PATCH
+        accessControlAllowOriginList:
+          - "https://qa.goodseva.com"
+          - "https://qa-api.goodseva.com"
+        accessControlMaxAge: 100
+        hostsProxyHeaders:
+          - "X-Forwarded-Host"
+        referrerPolicy: "same-origin"
+        sslRedirect: true
+        forceSTSHeader: true
+        stsIncludeSubdomains: true
+        stsPreload: true
+        stsSeconds: 31536000
+        customFrameOptionsValue: "SAMEORIGIN"
+        contentTypeNosniff: true
+        browserXssFilter: true
+        customRequestHeaders:
+          X-Forwarded-Proto: "https"
+
+    # Rate limiting middleware (optional)
+    rate-limit:
+      rateLimit:
+        average: 100
+        burst: 200
+        period: 1m
+
+    # CORS middleware for API
+    cors-headers:
+      headers:
+        accessControlAllowCredentials: true
+        accessControlAllowHeaders:
+          - "Authorization"
+          - "Content-Type"
+          - "Accept"
+          - "Origin"
+          - "User-Agent"
+          - "DNT"
+          - "Cache-Control"
+          - "X-Mx-ReqToken"
+          - "Keep-Alive"
+          - "X-Requested-With"
+          - "If-Modified-Since"
+        accessControlAllowMethods:
+          - "GET"
+          - "POST"
+          - "PUT"
+          - "DELETE"
+          - "OPTIONS"
+          - "PATCH"
+        accessControlAllowOriginList:
+          - "https://qa.goodseva.com"
+        accessControlMaxAge: 100
+
+  routers:
+    # Main application router
+    qa-app:
+      rule: "Host(`qa.goodseva.com`)"
+      entryPoints:
+        - websecure
+      middlewares:
+        - secure-headers
+      service: app-service
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "qa.goodseva.com"
+
+    # API router with CORS
+    qa-api:
+      rule: "Host(`qa-api.goodseva.com`)"
+      entryPoints:
+        - websecure
+      middlewares:
+        - secure-headers
+        - cors-headers
+      service: api-service
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "qa-api.goodseva.com"
+
+    # Traefik dashboard router
+    qa-dashboard:
+      rule: "Host(`qa-traefik.goodseva.com`)"
+      entryPoints:
+        - websecure
+      middlewares:
+        - secure-headers
+      service: api@internal
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "qa-traefik.goodseva.com"
+
+  services:
+    # Client application service
+    app-service:
+      loadBalancer:
+        servers:
+          - url: "http://client:3000"
+        healthCheck:
+          path: "/"
+          interval: "30s"
+          timeout: "10s"
+        sticky:
+          cookie:
+            name: "goodseva-qa-app"
+            secure: true
+            httpOnly: true
+
+    # Server API service
+    api-service:
+      loadBalancer:
+        servers:
+          - url: "http://server:3001"
+        healthCheck:
+          path: "/health"
+          interval: "30s"
+          timeout: "10s"
+        sticky:
+          cookie:
+            name: "goodseva-qa-api"
+            secure: true
+            httpOnly: true
+
+# TLS Configuration
+tls:
+  options:
+    default:
+      minVersion: "VersionTLS12"
+      cipherSuites:
+        - "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
+        - "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305"
+        - "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
+        - "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256"
+      curvePreferences:
+        - "CurveP521"
+        - "CurveP384"
+      sniStrict: true

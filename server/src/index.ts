@@ -79,6 +79,40 @@ app.use("/Register/individualShipperDetails", individualShipperRoutes);
 app.use("/Register/individualDriverDetails", individualDriverRoutes);
 app.use("/admin/users", adminProfileUsersRoutes);
 
+// Health check endpoint for QA monitoring
+app.get("/health", async (req, res) => {
+  try {
+    // Check database connection
+    await prisma.$queryRaw`SELECT 1`;
+    
+    // Check Redis connection  
+    const redisClient = createClient({ url: process.env.REDIS_URL });
+    await redisClient.connect();
+    await redisClient.ping();
+    await redisClient.disconnect();
+
+    res.status(200).json({
+      status: "healthy",
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      environment: process.env.NODE_ENV,
+      version: "1.0.0",
+      services: {
+        database: "connected",
+        redis: "connected",
+        server: "running"
+      }
+    });
+  } catch (error) {
+    res.status(503).json({
+      status: "unhealthy",
+      timestamp: new Date().toISOString(),
+      error: error instanceof Error ? error.message : "Unknown error",
+      environment: process.env.NODE_ENV
+    });
+  }
+});
+
 type Coordinate = {
   lat: number;
   lng: number;
